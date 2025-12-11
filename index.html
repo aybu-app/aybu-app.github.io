@@ -587,7 +587,21 @@
                 }
                 r++;
             }
-            return classes;
+            
+            // Deduplicate Lunches: Keep only the first one found
+            const uniqueClasses = [];
+            let lunchAdded = false;
+            for (const cls of classes) {
+                if (cls.type === 'lunch') {
+                    if (!lunchAdded) {
+                        uniqueClasses.push(cls);
+                        lunchAdded = true;
+                    }
+                } else {
+                    uniqueClasses.push(cls);
+                }
+            }
+            return uniqueClasses;
         }
 
         // 2. Handle Input (Debounced)
