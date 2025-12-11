@@ -16,12 +16,14 @@
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
         
+        /* Glass Header */
         .glass-header {
             background: rgba(255, 255, 255, 0.96);
             backdrop-filter: blur(16px);
             border-bottom: 1px solid rgba(226, 232, 240, 0.8);
         }
 
+        /* Timeline Line */
         .time-connector {
             position: absolute;
             left: 23px;
@@ -33,6 +35,7 @@
         }
         .last-item .time-connector { display: none; }
 
+        /* Animations */
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(15px) scale(0.98); }
             to { opacity: 1; transform: translateY(0) scale(1); }
@@ -62,6 +65,7 @@
         .toggle-btn.active { background-color: white; color: #2563EB; border-color: #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .toggle-btn.inactive { background-color: transparent; color: #94a3b8; }
 
+        /* Install Modal Animation */
         .modal-enter { animation: modalFadeIn 0.3s ease-out forwards; }
         @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
         
@@ -88,6 +92,7 @@
             
             <!-- Top Row: Title & Language -->
             <div class="flex items-center justify-between">
+                <!-- Left: Logo & Title -->
                 <div class="flex items-center gap-3">
                     <div id="phase-icon" class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white font-extrabold text-sm shadow-lg shadow-blue-200/50 transform transition-transform hover:rotate-3">
                         D1
@@ -98,7 +103,7 @@
                     </div>
                 </div>
 
-                <!-- Language Toggle -->
+                <!-- Right: Segmented Language Toggle (Restored) -->
                 <div class="flex bg-slate-100/80 p-1 rounded-lg">
                     <button onclick="setLanguage('TR')" id="btn-tr" class="toggle-btn btn-press px-3 py-1.5 text-[10px] font-bold rounded-md">TR</button>
                     <button onclick="setLanguage('EN')" id="btn-en" class="toggle-btn btn-press px-3 py-1.5 text-[10px] font-bold rounded-md">EN</button>
@@ -168,7 +173,7 @@
 
     </main>
     
-    <!-- Install Modal -->
+    <!-- Install Guide Modal -->
     <div id="installModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
         <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl modal-enter relative">
             <button onclick="closeInstallModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-2"><i class="fas fa-times text-xl"></i></button>
@@ -191,16 +196,16 @@
         </div>
     </div>
 
-    <!-- Go To Today Button -->
-    <button id="todayBtn" onclick="goToToday()" class="hidden fixed bottom-8 right-6 bg-white text-blue-600 w-14 h-14 rounded-2xl shadow-2xl shadow-blue-900/20 border border-blue-50 flex items-center justify-center z-40 btn-press transition-all hover:bg-blue-50 group" title="Go to Today">
-        <i class="fas fa-calendar-day text-xl group-hover:scale-110 transition-transform"></i>
+    <!-- Sync/Reset Button -->
+    <button id="resetBtn" onclick="resetApp()" class="hidden fixed bottom-8 right-6 bg-white text-rose-500 w-14 h-14 rounded-2xl shadow-2xl shadow-rose-900/10 border border-rose-50 flex items-center justify-center z-40 btn-press transition-all hover:bg-rose-50 group" title="Reset">
+        <i class="fas fa-sync-alt text-lg group-hover:rotate-180 transition-transform duration-700"></i>
     </button>
 
     <script>
         const SCHEDULE_FILENAME = 'schedule.xlsx'; 
         let workbookData = null;
-        const STORAGE_KEY_DATA = 'aybu_data_v48'; 
-        const STORAGE_KEY_LANG = 'aybu_lang_v48';
+        const STORAGE_KEY_DATA = 'aybu_data_v49'; 
+        const STORAGE_KEY_LANG = 'aybu_lang_v49';
         let currentLang = 'EN'; 
 
         const TRANSLATIONS = {
@@ -269,6 +274,7 @@
             }
         });
 
+        // --- CORE FUNCTIONS ---
         function openInstallModal() { document.getElementById('installModal').classList.remove('hidden'); }
         function closeInstallModal() { document.getElementById('installModal').classList.add('hidden'); }
         function closeInstallBanner() { document.getElementById('installBanner').classList.add('hidden'); localStorage.setItem('installBannerDismissed', 'true'); }
@@ -296,7 +302,7 @@
                     workbookData = JSON.parse(cachedData);
                     setLoading(false);
                     processSchedule(document.getElementById('datePicker').value);
-                    document.getElementById('todayBtn').classList.remove('hidden');
+                    document.getElementById('resetBtn').classList.remove('hidden');
                     return; 
                 } catch(e) {}
             }
@@ -307,13 +313,11 @@
                 const workbook = XLSX.read(arrayBuffer, { type: 'array', cellDates: true });
                 const sheet = workbook.Sheets[workbook.SheetNames[0]];
                 let rawData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
-                
                 workbookData = sanitizeData(rawData);
-                
                 try { localStorage.setItem(STORAGE_KEY_DATA, JSON.stringify(workbookData)); } catch (err) {}
                 setLoading(false);
                 processSchedule(document.getElementById('datePicker').value);
-                document.getElementById('todayBtn').classList.remove('hidden');
+                document.getElementById('resetBtn').classList.remove('hidden');
             } catch (err) {
                 setLoading(false);
                 document.getElementById('uploadSection').classList.remove('hidden');
@@ -333,13 +337,10 @@
                 const workbook = XLSX.read(data, { type: 'array', cellDates: true });
                 const sheet = workbook.Sheets[workbook.SheetNames[0]];
                 let rawData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
-                
                 workbookData = sanitizeData(rawData);
-                
                 try { localStorage.setItem(STORAGE_KEY_DATA, JSON.stringify(workbookData)); } catch (err) {}
                 setLoading(false);
                 document.getElementById('uploadSection').classList.add('hidden');
-                document.getElementById('todayBtn').classList.remove('hidden');
                 processSchedule(document.getElementById('datePicker').value);
             };
             reader.readAsArrayBuffer(file);
@@ -376,22 +377,6 @@
             if (navigator.vibrate) navigator.vibrate(5);
         }
 
-        window.goToToday = function() {
-            vibrate();
-            const now = new Date();
-            const todayStr = getLocalDateString(now);
-            document.getElementById('datePicker').value = todayStr;
-            updateDateDisplay(now);
-            
-            const container = document.getElementById('scheduleContainer');
-            container.classList.remove('anim-slide-left', 'anim-slide-right');
-            container.classList.remove('card-enter');
-            void container.offsetWidth; 
-            container.classList.add('card-enter');
-
-            if(workbookData) processSchedule(todayStr);
-        }
-
         window.changeDay = function(offset) {
             vibrate();
             const picker = document.getElementById('datePicker');
@@ -400,19 +385,15 @@
 
             const parts = currentVal.split('-');
             const currentDate = new Date(parts[0], parts[1] - 1, parts[2]);
-            
             do {
                 currentDate.setDate(currentDate.getDate() + offset);
             } while (currentDate.getDay() === 0 || currentDate.getDay() === 6); 
-            
             const newDateStr = getLocalDateString(currentDate);
             picker.value = newDateStr;
             updateDateDisplay(currentDate);
-            
             const container = document.getElementById('scheduleContainer');
             container.classList.remove('anim-slide-left', 'anim-slide-right', 'card-enter');
             void container.offsetWidth; 
-
             if (workbookData) {
                 processSchedule(newDateStr);
                 container.classList.add(offset > 0 ? 'anim-slide-right' : 'anim-slide-left');
