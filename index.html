@@ -658,18 +658,17 @@
                 const card = document.createElement('div');
                 
                 // --- Structure Strategy ---
-                // We use a responsive approach within a single card block.
-                // Mobile: Flex Column (Time/Icon on top or left rail? No, let's keep the Rail.)
-                // Desktop: Grid with 3 columns [Time] [Rail] [Content]
+                // Mobile: Flex Row [Time] [Axis] [Content]
+                // Desktop: Grid [Time] [Axis] [Content]
                 
-                card.className = `relative card-enter ${isLast ? 'last-item' : ''} mb-4 md:mb-0`;
+                card.className = `relative card-enter ${isLast ? 'last-item' : ''} mb-0`; // Removed mb-4 to tighten timeline
                 card.style.animationDelay = `${index * 0.05}s`;
                 
                 let circleClass = "bg-white border-2 border-slate-200";
                 let iconClass = "text-slate-300";
                 let icon = "fa-clock";
                 let cardBg = "bg-white border-slate-100 shadow-sm hover:border-blue-200";
-                let timeColorDesktop = "text-slate-400";
+                let timeColor = "text-slate-400"; // Default time color
 
                 // Badges & Colors
                 let timeBadgeClass = "text-slate-500 bg-slate-100";
@@ -679,7 +678,7 @@
                     iconClass = "text-white"; 
                     cardBg = "glow-border shadow-lg transform md:scale-[1.02] border-blue-200";
                     timeBadgeClass = "text-blue-700 bg-blue-100";
-                    timeColorDesktop = "text-blue-600 font-extrabold scale-110 origin-right transition-transform";
+                    timeColor = "text-blue-600 font-extrabold scale-110 origin-right transition-transform";
                 } else if (isLunch) {
                     circleClass = "bg-amber-100 border-2 border-amber-200"; iconClass = "text-amber-500"; icon = "fa-utensils"; 
                     cardBg = "bg-amber-50/50 border-amber-100 border-dashed";
@@ -717,9 +716,9 @@
                 card.innerHTML = `
                     <div class="flex flex-row md:grid md:grid-cols-[100px_60px_1fr] md:gap-2">
                         
-                        <!-- Desktop Time Column (Hidden on Mobile) -->
-                        <div class="hidden md:flex flex-col items-end pt-6 pr-2">
-                            <span class="text-xl ${timeColorDesktop} font-bold tracking-tight">${cls.time}</span>
+                        <!-- Time Column (Separate on Mobile & Desktop) -->
+                        <div class="flex flex-col items-end pt-4 pr-3 w-14 shrink-0 md:w-auto md:pt-6 md:pr-2">
+                            <span class="text-xs md:text-xl ${timeColor} font-bold tracking-tight font-mono">${cls.time}</span>
                         </div>
 
                         <!-- Timeline Axis Column -->
@@ -729,21 +728,18 @@
                                 <i class="fas ${icon} ${iconClass} text-sm"></i>
                             </div>
                             <!-- Connector Lines -->
-                            <!-- Mobile Connector: Absolute positioning logic handled by CSS classes -->
                             <div class="time-connector mobile-connector md:hidden"></div>
-                            <!-- Desktop Connector: Centered logic -->
                             <div class="time-connector desktop-connector hidden md:block"></div>
                         </div>
 
                         <!-- Content Card Column -->
-                        <div class="flex-1 min-w-0 pl-4 md:pl-0 pb-8 md:pb-6">
+                        <div class="flex-1 min-w-0 pl-3 md:pl-0 pb-8 md:pb-6">
                             <div class="p-5 rounded-2xl border ${cardBg} transition-all duration-300 h-full flex flex-col justify-center">
                                 
-                                <!-- Card Header (Mobile Only for Time) -->
-                                <div class="flex justify-between items-center mb-2 md:mb-1">
+                                <!-- Card Header -->
+                                <div class="flex justify-between items-center ${badgeHtml ? 'mb-2' : ''} md:mb-1">
                                     <div class="flex items-center">
-                                        <!-- Time Badge: Visible Mobile, Hidden Desktop (since we have the big time col) -->
-                                        <span class="md:hidden font-mono text-xs font-bold ${timeBadgeClass} px-2 py-1 rounded-lg mr-2">${cls.time}</span>
+                                        <!-- Note: Time removed from here as it is now on the left -->
                                         ${badgeHtml}
                                     </div>
                                 </div>
