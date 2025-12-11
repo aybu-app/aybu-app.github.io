@@ -152,14 +152,14 @@
                         </button>
                         
                         <!-- Search Button -->
-                         <button onclick="toggleSearch()" class="btn-press w-9 h-9 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700">
+                         <button onclick="toggleSearch()" id="searchBtn" class="btn-press w-9 h-9 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700">
                             <i class="fas fa-search text-xs"></i>
                         </button>
                     </div>
                 </div>
 
                 <!-- Date Controls -->
-                <div class="flex items-center justify-between gap-2 bg-slate-100/80 dark:bg-slate-800/80 p-1.5 rounded-2xl backdrop-blur-sm border border-white/50 dark:border-slate-700/50 shadow-sm w-full md:w-auto md:min-w-[320px]">
+                <div id="dateControls" class="flex items-center justify-between gap-2 bg-slate-100/80 dark:bg-slate-800/80 p-1.5 rounded-2xl backdrop-blur-sm border border-white/50 dark:border-slate-700/50 shadow-sm w-full md:w-auto md:min-w-[320px]">
                     <button onclick="changeDay(-1)" class="btn-press w-10 h-10 flex flex-none items-center justify-center rounded-xl bg-white dark:bg-slate-700 text-slate-400 dark:text-slate-300 shadow-sm hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                         <i class="fas fa-chevron-left text-xs"></i>
                     </button>
@@ -181,9 +181,12 @@
             <div id="searchContainer" class="w-full">
                 <div class="relative">
                     <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" id="searchInput" placeholder="Search classes, rooms, topics..." 
-                           class="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 focus:border-blue-300 dark:focus:border-blue-500 outline-none transition-all text-sm font-medium placeholder:text-slate-400 dark:text-slate-200"
-                           oninput="filterSchedule(this.value)">
+                    <input type="text" id="searchInput" placeholder="Search entire semester..." 
+                           class="w-full pl-10 pr-10 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 focus:border-blue-300 dark:focus:border-blue-500 outline-none transition-all text-sm font-medium placeholder:text-slate-400 dark:text-slate-200"
+                           oninput="handleGlobalSearch(this.value)">
+                    <button onclick="toggleSearch()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -201,6 +204,9 @@
         <!-- Week View Container -->
         <div id="weekContainer" class="hidden mt-4 grid grid-cols-1 md:grid-cols-5 gap-4"></div>
 
+        <!-- Search Results Container -->
+        <div id="searchResultsContainer" class="hidden mt-4 space-y-4"></div>
+
         <!-- Empty State / Error State -->
         <div id="emptyState" class="hidden text-center py-24 px-6 card-enter">
             <div id="emptyIcon" class="text-6xl text-slate-200 dark:text-slate-700 mb-5 transform transition-transform hover:scale-110 duration-300 inline-block"><i class="fas fa-calendar-check"></i></div>
@@ -211,8 +217,8 @@
         <!-- No Search Results -->
         <div id="noSearchResults" class="hidden text-center py-16 px-6 card-enter">
              <div class="text-4xl text-slate-200 dark:text-slate-700 mb-4 inline-block"><i class="fas fa-search"></i></div>
-             <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300">No results found</h3>
-             <p class="text-slate-400 dark:text-slate-500 text-sm">Try a different keyword.</p>
+             <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300">No matching classes</h3>
+             <p class="text-slate-400 dark:text-slate-500 text-sm">Try searching for a subject name or room.</p>
         </div>
 
         <!-- Loading -->
@@ -256,11 +262,13 @@
     <script>
         const SCHEDULE_FILENAME = 'schedule.xlsx'; 
         let workbookData = null;
+        let searchIndex = []; // Stores the global index of all classes
+        
         const STORAGE_KEY_DATA = 'aybu_data_v48'; 
         const STORAGE_KEY_LANG = 'aybu_lang_v48';
         const STORAGE_KEY_THEME = 'aybu_theme_v1';
         let currentLang = 'EN';
-        let viewMode = 'day'; // 'day' or 'week'
+        let viewMode = 'day'; // 'day', 'week', 'search'
 
         const TRANSLATIONS = {
             EN: {
@@ -350,7 +358,12 @@
                 const parts = e.target.value.split('-');
                 const d = new Date(parts[0], parts[1] - 1, parts[2]); 
                 updateDateDisplay(d);
-                refreshView();
+                if (document.getElementById('searchContainer').classList.contains('open')) {
+                   // If search is open, clicking date should probably close search
+                   toggleSearch();
+                } else {
+                   refreshView();
+                }
             });
 
             setInterval(updateDayProgress, 60000); 
@@ -375,7 +388,6 @@
                 updateThemeIcon(false);
             }
             
-            // Smart Storage: If user aligns with system, remove override to restore auto-updates
             if (next === systemDark) {
                 localStorage.removeItem(STORAGE_KEY_THEME);
             } else {
@@ -389,6 +401,11 @@
         }
 
         function toggleViewMode() {
+            if (viewMode === 'search') {
+                viewMode = 'day';
+                toggleSearch(); // close search
+                return;
+            }
             viewMode = viewMode === 'day' ? 'week' : 'day';
             const btn = document.getElementById('viewToggleBtn');
             btn.querySelector('i').className = viewMode === 'day' ? 'fas fa-columns text-xs' : 'fas fa-calendar-day text-xs';
@@ -398,14 +415,18 @@
         function refreshView() {
             const pickerVal = document.getElementById('datePicker').value;
             if(!pickerVal || !workbookData) return;
-
-            document.getElementById('searchInput').value = '';
             
+            // Hide Search Results
+            document.getElementById('searchResultsContainer').classList.add('hidden');
+            document.getElementById('noSearchResults').classList.add('hidden');
+            document.getElementById('dateControls').classList.remove('hidden'); // Show dates
+
             if (viewMode === 'day') {
                 document.getElementById('scheduleContainer').classList.remove('hidden');
                 document.getElementById('weekContainer').classList.add('hidden');
+                document.getElementById('emptyState').classList.add('hidden');
                 processSchedule(pickerVal);
-            } else {
+            } else if (viewMode === 'week') {
                 document.getElementById('scheduleContainer').classList.add('hidden');
                 document.getElementById('weekContainer').classList.remove('hidden');
                 document.getElementById('emptyState').classList.add('hidden');
@@ -421,39 +442,222 @@
             const container = document.getElementById('searchContainer');
             const input = document.getElementById('searchInput');
             container.classList.toggle('open');
+            
             if(container.classList.contains('open')) {
                 input.focus();
+                viewMode = 'search'; // track state
+                document.getElementById('scheduleContainer').classList.add('hidden');
+                document.getElementById('weekContainer').classList.add('hidden');
+                document.getElementById('emptyState').classList.add('hidden');
+                document.getElementById('dateControls').classList.add('hidden'); // Hide date controls while searching
+                handleGlobalSearch(input.value);
             } else {
                 input.value = '';
-                // Only filter day view for now
-                if(viewMode === 'day') filterSchedule('');
+                viewMode = 'day'; // default back to day
+                document.getElementById('searchResultsContainer').innerHTML = '';
+                document.getElementById('searchResultsContainer').classList.add('hidden');
+                document.getElementById('noSearchResults').classList.add('hidden');
+                refreshView(); // restore view
                 input.blur();
             }
         }
 
-        function filterSchedule(query) {
-            const term = query.toLowerCase().trim();
-            // Filter logic depends on view, but sticking to Day view for search simplicity for now
-            const container = document.getElementById('scheduleContainer');
-            const items = container.querySelectorAll('.card-enter');
-            let hasVisible = false;
+        // --- GLOBAL SEARCH ENGINE ---
+        
+        // 1. Build Index (Run once on load/lang change)
+        function buildSearchIndex() {
+            if (!workbookData) return;
+            searchIndex = [];
+            const isEnglish = currentLang === 'EN';
+            const splitColumn = 8;
+            
+            // Scan whole sheet for dates
+            // A smarter approach than iterating all cells:
+            // Iterate all rows, finding rows that look like dates in the relevant columns
+            
+            for (let r = 0; r < workbookData.length; r++) {
+                const row = workbookData[r];
+                for (let c = 0; c < row.length; c++) {
+                    
+                    // Filter by language side
+                    if (isEnglish && c <= splitColumn) continue;
+                    if (!isEnglish && c > splitColumn) continue;
 
-            items.forEach(item => {
-                const text = item.innerText.toLowerCase();
-                if (text.includes(term)) {
-                    item.classList.remove('hidden');
-                    hasVisible = true;
-                } else {
-                    item.classList.add('hidden');
+                    const dateStr = normalizeDate(row[c]);
+                    if (dateStr) {
+                        // Found a date header! Now extract classes for this day.
+                        // We duplicate getClasses logic here, or refactor getClasses to accept row/col.
+                        // Refactoring is cleaner. Let's use a helper.
+                        const classes = extractClassesForColumn(r, c);
+                        if (classes.length > 0) {
+                            searchIndex.push({ date: dateStr, items: classes });
+                        }
+                    }
                 }
-            });
-
-            const noResults = document.getElementById('noSearchResults');
-            if (!hasVisible && term.length > 0) {
-                noResults.classList.remove('hidden');
-            } else {
-                noResults.classList.add('hidden');
             }
+        }
+
+        // Helper to extract classes given a specific Date Header coordinate
+        function extractClassesForColumn(dateRowIndex, targetColIndex) {
+            const classes = [];
+            const isEnglish = currentLang === 'EN';
+            let timeColIndex = -1;
+
+            // Find time column relative to this date
+            for(let offset = 1; offset <= 4; offset++) {
+                const checkRow = workbookData[dateRowIndex + offset];
+                if(checkRow) {
+                    for (let c = targetColIndex - 1; c >= 0; c--) {
+                        const val = String(checkRow[c] || "");
+                        if (val.match(/^\d{1,2}[:.]\d{2}/)) { timeColIndex = c; break; }
+                    }
+                }
+                if (timeColIndex !== -1) break;
+            }
+            if (timeColIndex === -1) timeColIndex = isEnglish ? 9 : 0; // Fallback
+
+            let r = dateRowIndex + 1;
+            const maxRows = Math.min(workbookData.length, dateRowIndex + 60); // Limit lookahead
+
+            while (r < maxRows) {
+                const row = workbookData[r];
+                if (isRowBarrier(row)) break;
+
+                const timeVal = timeColIndex !== -1 ? String(row[timeColIndex]).trim() : "";
+                const timeMatch = timeVal.match(/(\d{1,2})[:.](\d{2})/);
+                
+                if (timeMatch) {
+                    let timeSlot = `${timeMatch[1]}:${timeMatch[2]}`;
+                    const hour = parseInt(timeMatch[1]);
+                    const isLunchTime = (hour === 12 || hour === 13);
+                    let contentLines = [];
+                    
+                    const cellVal = row[targetColIndex];
+                    if (cellVal && !isGarbageContent(cellVal)) {
+                        const s = String(cellVal).trim();
+                        if(s.length > 2) contentLines.push(s);
+                    }
+                    
+                    // Multi-row merge
+                    let subR = r + 1;
+                    while (subR < maxRows) {
+                        const subRow = workbookData[subR];
+                        if (isRowBarrier(subRow)) break; 
+                        const nextTime = String(subRow[timeColIndex] || "").trim();
+                        if (nextTime.match(/\d{1,2}[:.]\d{2}/)) break; 
+                        
+                        const nextVal = subRow[targetColIndex];
+                        if (nextVal && !isGarbageContent(nextVal)) {
+                             const s = String(nextVal).trim();
+                             if(s.length > 2 && !contentLines.includes(s)) contentLines.push(s);
+                        }
+                        subR++;
+                    }
+                    r = subR - 1;
+
+                    if (contentLines.length > 0) {
+                        const rawJoined = contentLines.join(" ");
+                        const joinedLower = rawJoined.toLowerCase();
+                        
+                        // Basic Types
+                        let isLab = rawJoined.toUpperCase().includes("LAB") && !joinedLower.includes("inkılab") && !joinedLower.includes("history");
+                        const isClinical = CLINICAL_KEYWORDS.some(kw => joinedLower.includes(kw));
+                        const isFreelance = joinedLower.includes("freelance") || joinedLower.includes("bireysel");
+                        const isLunchText = joinedLower.includes("lunch") || joinedLower.includes("öğle arası");
+                        
+                        // We skip pure lunch/breaks in search index to keep it clean, unless text matches query later
+                        if (!isLunchText) {
+                             classes.push({ time: timeSlot, lines: contentLines, raw: rawJoined, isLab, isClinical, type: isFreelance ? 'freelance' : 'normal' });
+                        }
+                    }
+                }
+                r++;
+            }
+            return classes;
+        }
+
+        // 2. Handle Input (Debounced)
+        let debounceTimer;
+        function handleGlobalSearch(query) {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                const term = query.toLowerCase().trim();
+                const container = document.getElementById('searchResultsContainer');
+                const noRes = document.getElementById('noSearchResults');
+                
+                if (term.length < 2) {
+                    container.innerHTML = '';
+                    container.classList.add('hidden');
+                    noRes.classList.add('hidden');
+                    return;
+                }
+
+                container.classList.remove('hidden');
+                container.innerHTML = '';
+                
+                let count = 0;
+                const maxResults = 50; // Limit rendering for perf
+
+                // Filter Index
+                for (const day of searchIndex) {
+                    const matches = day.items.filter(item => item.raw.toLowerCase().includes(term));
+                    if (matches.length > 0) {
+                        // Render Date Header
+                        const dateObj = new Date(day.date);
+                        const dateHeader = document.createElement('div');
+                        dateHeader.className = "flex items-center gap-2 mt-6 mb-2 px-2";
+                        dateHeader.innerHTML = `
+                            <div class="h-px bg-slate-200 dark:bg-slate-700 flex-1"></div>
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">${dateObj.toLocaleDateString(currentLang==='TR'?'tr-TR':'en-US', { weekday:'short', month:'short', day:'numeric' })}</span>
+                            <div class="h-px bg-slate-200 dark:bg-slate-700 flex-1"></div>
+                        `;
+                        container.appendChild(dateHeader);
+
+                        // Render Items
+                        matches.forEach(item => {
+                            const card = document.createElement('div');
+                            card.className = "bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm cursor-pointer hover:border-blue-300 dark:hover:border-blue-500 transition-all active:scale-[0.98]";
+                            card.onclick = () => jumpToDate(day.date);
+                            
+                            let highlightClass = "text-slate-800 dark:text-slate-200";
+                            if(item.isLab) highlightClass = "text-rose-600 dark:text-rose-400";
+                            if(item.isClinical) highlightClass = "text-violet-600 dark:text-violet-400";
+
+                            card.innerHTML = `
+                                <div class="flex justify-between items-start">
+                                    <div class="flex-1">
+                                        <div class="font-bold text-sm ${highlightClass}">${item.lines[0]}</div>
+                                        ${item.lines.length > 1 ? `<div class="text-xs text-slate-500 mt-1">${item.lines[1]}</div>` : ''}
+                                    </div>
+                                    <span class="font-mono text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 px-2 py-1 rounded-lg ml-3">${item.time}</span>
+                                </div>
+                            `;
+                            container.appendChild(card);
+                            count++;
+                        });
+                    }
+                    if (count >= maxResults) break; 
+                }
+
+                if (count === 0) {
+                    noRes.classList.remove('hidden');
+                } else {
+                    noRes.classList.add('hidden');
+                }
+
+            }, 300);
+        }
+
+        function jumpToDate(dateStr) {
+            // Close search
+            toggleSearch();
+            // Set date
+            document.getElementById('datePicker').value = dateStr;
+            const parts = dateStr.split('-');
+            const d = new Date(parts[0], parts[1] - 1, parts[2]);
+            updateDateDisplay(d);
+            // Refresh
+            refreshView();
         }
 
         function sanitizeData(data) {
@@ -478,6 +682,7 @@
                 try {
                     workbookData = JSON.parse(cachedData);
                     setLoading(false);
+                    buildSearchIndex(); // Build index immediately
                     refreshView();
                     document.getElementById('todayBtn').classList.remove('hidden');
                     return; 
@@ -493,6 +698,7 @@
                 workbookData = sanitizeData(rawData);
                 try { localStorage.setItem(STORAGE_KEY_DATA, JSON.stringify(workbookData)); } catch (err) {}
                 setLoading(false);
+                buildSearchIndex(); // Build index
                 refreshView();
                 document.getElementById('todayBtn').classList.remove('hidden');
             } catch (err) {
@@ -538,7 +744,9 @@
             const todayStr = getLocalDateString(now);
             document.getElementById('datePicker').value = todayStr;
             updateDateDisplay(now);
-            document.getElementById('searchInput').value = ''; 
+            
+            // Ensure search is closed
+            if(viewMode === 'search') toggleSearch();
             
             const container = document.getElementById('scheduleContainer');
             container.classList.remove('anim-slide-left', 'anim-slide-right', 'card-enter');
@@ -553,7 +761,9 @@
             const picker = document.getElementById('datePicker');
             const currentVal = picker.value;
             if (!currentVal) return;
-            document.getElementById('searchInput').value = ''; 
+            
+            // Ensure search is closed
+            if(viewMode === 'search') toggleSearch();
 
             const parts = currentVal.split('-');
             const currentDate = new Date(parts[0], parts[1] - 1, parts[2]);
@@ -621,6 +831,9 @@
             document.getElementById('txt-install-ios').innerHTML = t.installIOS;
             document.getElementById('txt-install-android').innerHTML = t.installAndroid;
             document.getElementById('txt-install-close').textContent = t.installClose;
+
+            // Rebuild index for new language
+            if (workbookData) buildSearchIndex();
 
             const pickerDate = document.getElementById('datePicker').value;
             if(pickerDate) {
@@ -723,84 +936,8 @@
             }
 
             if (dateRowIndex === -1) return [];
-
-            let timeColIndex = -1;
-            for(let offset = 1; offset <= 4; offset++) {
-                const checkRow = workbookData[dateRowIndex + offset];
-                if(checkRow) {
-                    for (let c = targetColIndex - 1; c >= 0; c--) {
-                        const val = String(checkRow[c] || "");
-                        if (val.match(/^\d{1,2}[:.]\d{2}/)) { timeColIndex = c; break; }
-                    }
-                }
-                if (timeColIndex !== -1) break;
-            }
-            if (timeColIndex === -1) timeColIndex = isEnglish ? 9 : 0; 
-
-            const classes = [];
-            let r = dateRowIndex + 1;
-            const maxRows = Math.min(workbookData.length, dateRowIndex + 100); 
-
-            while (r < maxRows) {
-                const row = workbookData[r];
-                if (isRowBarrier(row)) break;
-
-                const timeVal = timeColIndex !== -1 ? String(row[timeColIndex]).trim() : "";
-                const timeMatch = timeVal.match(/(\d{1,2})[:.](\d{2})/);
-                
-                if (timeMatch) {
-                    let timeSlot = `${timeMatch[1]}:${timeMatch[2]}`;
-                    const hour = parseInt(timeMatch[1]);
-                    const isLunchTime = (hour === 12 || hour === 13);
-                    let contentLines = [];
-                    const addLine = (val) => {
-                        const s = String(val || "").trim();
-                        if (!s || s === "undefined" || s.length < 3) return;
-                        if (isGarbageContent(val)) return;
-                        if (!contentLines.includes(s)) contentLines.push(s);
-                    };
-                    addLine(row[targetColIndex]);
-                    let subR = r + 1;
-                    while (subR < maxRows) {
-                        const subRow = workbookData[subR];
-                        if (isRowBarrier(subRow)) break; 
-                        const nextTime = String(subRow[timeColIndex] || "").trim();
-                        if (nextTime.match(/\d{1,2}[:.]\d{2}/)) break; 
-                        addLine(subRow[targetColIndex]);
-                        subR++;
-                    }
-                    r = subR - 1;
-
-                    if (contentLines.length > 0) {
-                        const rawJoined = contentLines.join(" ");
-                        const joinedLower = rawJoined.toLocaleLowerCase('tr-TR');
-                        const joinedUpper = rawJoined.toUpperCase();
-                        
-                        const isNewYear = NEW_YEAR_KEYWORDS.some(kw => joinedLower.includes(kw));
-                        const isEid = EID_KEYWORDS.some(kw => joinedLower.includes(kw));
-                        const isHoliday = HOLIDAY_KEYWORDS.some(kw => joinedLower.includes(kw));
-                        
-                        let isLab = joinedUpper.includes("LAB");
-                        if (joinedLower.includes("inkılab") || joinedLower.includes("inkilap") || joinedLower.includes("history")) {
-                            isLab = false;
-                        }
-                        const isClinical = CLINICAL_KEYWORDS.some(kw => joinedLower.includes(kw));
-                        const isFreelance = joinedLower.includes("freelance") || joinedLower.includes("bireysel");
-                        const isLunchText = joinedLower.includes("lunch") || joinedLower.includes("öğle arası");
-                        
-                        if (isNewYear) classes.push({ time: timeSlot, lines: [rawJoined], type: 'new_year_item' });
-                        else if (isEid) classes.push({ time: timeSlot, lines: [rawJoined], type: 'eid_item' });
-                        else if (isHoliday) classes.push({ time: timeSlot, lines: [rawJoined], type: 'holiday_item' });
-                        else if (isLunchText) classes.push({ time: timeSlot, lines: [TRANSLATIONS[currentLang].lunch], type: 'lunch' });
-                        else if (isFreelance) classes.push({ time: timeSlot, lines: [TRANSLATIONS[currentLang].freelance], type: 'freelance' });
-                        else classes.push({ time: timeSlot, lines: contentLines, isLab: isLab, isClinical: isClinical });
-                    } else if (isLunchTime) {
-                        classes.push({ time: timeSlot, lines: [TRANSLATIONS[currentLang].lunch], type: 'lunch' });
-                    }
-                }
-                r++;
-            }
-            return classes;
+            // Re-use our new helper
+            return extractClassesForColumn(dateRowIndex, targetColIndex);
         }
 
         // Day View Handler
@@ -825,12 +962,6 @@
 
             // Handle special full-day events
             if (classes.length === 0) {
-                 // Check if it's just not found vs empty
-                 // Since getClassesForDate returns empty for both, we rely on standard empty state
-                 // But we could add logic to distinguish if needed.
-                 // For now, assume if empty array returned, check for date existence handled inside getClasses
-                 // Actually getClasses returns empty if date not found OR no classes. 
-                 // We will stick to generic "No classes".
                  showEmptyState(TRANSLATIONS[currentLang].emptyTitle, [TRANSLATIONS[currentLang].emptyDesc], '<i class="fas fa-calendar-check"></i>');
                  return;
             }
