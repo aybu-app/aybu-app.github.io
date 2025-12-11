@@ -91,6 +91,18 @@
         #searchContainer { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); max-height: 0; overflow: hidden; opacity: 0; }
         #searchContainer.open { max-height: 80px; opacity: 1; margin-top: 0.5rem; }
     </style>
+    <!-- Early Theme Script to prevent flash -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('aybu_theme_v1');
+            const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (savedTheme === 'dark' || (!savedTheme && systemDark)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        })();
+    </script>
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen pb-32 transition-colors duration-300">
 
@@ -297,7 +309,14 @@
             function applyTheme() {
                 const savedTheme = localStorage.getItem(STORAGE_KEY_THEME);
                 // If saved is 'dark', OR if nothing saved and system is dark -> Dark Mode
-                if (savedTheme === 'dark' || (!savedTheme && mediaQuery.matches)) {
+                const systemDark = mediaQuery.matches;
+                let isDark = false;
+                
+                if (savedTheme === 'dark') isDark = true;
+                else if (savedTheme === 'light') isDark = false;
+                else isDark = systemDark; // Auto mode
+                
+                if (isDark) {
                     document.documentElement.classList.add('dark');
                     updateThemeIcon(true);
                 } else {
@@ -309,7 +328,7 @@
             // Apply on load
             applyTheme();
 
-            // Listen for system changes (e.g. sunset/sunrise automatic switch)
+            // Listen for system changes
             mediaQuery.addEventListener('change', () => {
                 // Only follow system if user hasn't manually overridden via the button
                 if (!localStorage.getItem(STORAGE_KEY_THEME)) {
@@ -344,14 +363,29 @@
 
         // --- CORE FUNCTIONS ---
         function toggleDarkMode() {
-            const isDark = document.documentElement.classList.toggle('dark');
-            localStorage.setItem(STORAGE_KEY_THEME, isDark ? 'dark' : 'light');
-            updateThemeIcon(isDark);
+            const current = document.documentElement.classList.contains('dark');
+            const next = !current;
+            const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            if (next) {
+                document.documentElement.classList.add('dark');
+                updateThemeIcon(true);
+            } else {
+                document.documentElement.classList.remove('dark');
+                updateThemeIcon(false);
+            }
+            
+            // Smart Storage: If user aligns with system, remove override to restore auto-updates
+            if (next === systemDark) {
+                localStorage.removeItem(STORAGE_KEY_THEME);
+            } else {
+                localStorage.setItem(STORAGE_KEY_THEME, next ? 'dark' : 'light');
+            }
         }
 
         function updateThemeIcon(isDark) {
             const icon = document.getElementById('darkModeIcon');
-            icon.className = isDark ? 'fas fa-sun text-yellow-400' : 'fas fa-moon text-xs';
+            if(icon) icon.className = isDark ? 'fas fa-sun text-yellow-400' : 'fas fa-moon text-xs';
         }
 
         function toggleViewMode() {
