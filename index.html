@@ -563,10 +563,22 @@
                         const isFreelance = joinedLower.includes("freelance") || joinedLower.includes("bireysel");
                         const isLunchText = joinedLower.includes("lunch") || joinedLower.includes("öğle arası");
                         
-                        if (isLunchText) {
+                        // Holiday Types
+                        const isNewYear = NEW_YEAR_KEYWORDS.some(kw => joinedLower.includes(kw));
+                        const isEid = EID_KEYWORDS.some(kw => joinedLower.includes(kw));
+                        const isHoliday = HOLIDAY_KEYWORDS.some(kw => joinedLower.includes(kw));
+                        
+                        let type = 'normal';
+                        if (isNewYear) type = 'new_year_item';
+                        else if (isEid) type = 'eid_item';
+                        else if (isHoliday) type = 'holiday_item';
+                        else if (isLunchText) type = 'lunch';
+                        else if (isFreelance) type = 'freelance';
+
+                        if (type === 'lunch') {
                              classes.push({ time: timeSlot, lines: [TRANSLATIONS[currentLang].lunch], raw: "Lunch", isLab: false, isClinical: false, type: 'lunch' });
                         } else {
-                             classes.push({ time: timeSlot, lines: contentLines, raw: rawJoined, isLab, isClinical, type: isFreelance ? 'freelance' : 'normal' });
+                             classes.push({ time: timeSlot, lines: contentLines, raw: rawJoined, isLab, isClinical, type: type });
                         }
                     } else if (isLunchTime) {
                         // Add default lunch if empty at lunch time
@@ -1031,10 +1043,18 @@
                 } else {
                     classes.forEach(cls => {
                         let cardClass = "bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700";
-                        if(cls.isLab) cardClass = "bg-rose-50 dark:bg-rose-900/20 border-rose-100 dark:border-rose-900/50";
-                        else if(cls.isClinical) cardClass = "bg-violet-50 dark:bg-violet-900/20 border-violet-100 dark:border-violet-900/50";
-                        else if(cls.type === 'freelance') cardClass = "bg-slate-50 dark:bg-slate-900 border-slate-100 dark:border-slate-800 opacity-60";
-                        else if(cls.type === 'lunch') cardClass = "bg-amber-50 dark:bg-amber-900/10 border-amber-100 dark:border-amber-900/30 border-dashed opacity-80";
+                        
+                        if (['holiday_item', 'new_year_item', 'eid_item'].includes(cls.type)) {
+                            cardClass = "bg-teal-50 dark:bg-teal-900/20 border-teal-100 dark:border-teal-900/50";
+                        } else if(cls.isLab) {
+                            cardClass = "bg-rose-50 dark:bg-rose-900/20 border-rose-100 dark:border-rose-900/50";
+                        } else if(cls.isClinical) {
+                            cardClass = "bg-violet-50 dark:bg-violet-900/20 border-violet-100 dark:border-violet-900/50";
+                        } else if(cls.type === 'freelance') {
+                            cardClass = "bg-slate-50 dark:bg-slate-900 border-slate-100 dark:border-slate-800 opacity-60";
+                        } else if(cls.type === 'lunch') {
+                            cardClass = "bg-amber-50 dark:bg-amber-900/10 border-amber-100 dark:border-amber-900/30 border-dashed opacity-80";
+                        }
 
                         col.innerHTML += `
                             <div class="p-3 rounded-xl border ${cardClass} shadow-sm text-sm">
