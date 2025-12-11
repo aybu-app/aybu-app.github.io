@@ -72,7 +72,11 @@
         }
         @keyframes gradientMove { 0% { background-position: 0% 50% } 50% { background-position: 100% 50% } 100% { background-position: 0% 50% } }
 
-        .btn-press { transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1); }
+        /* FIX: Added touch-action: manipulation to prevent double-tap zoom on buttons */
+        .btn-press { 
+            transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1); 
+            touch-action: manipulation; 
+        }
         .btn-press:active { transform: scale(0.92); }
 
         .progress-container { height: 3px; width: 100%; background: #f1f5f9; position: absolute; bottom: 0; left: 0; }
