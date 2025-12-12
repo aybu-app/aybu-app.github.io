@@ -80,7 +80,8 @@
     <div id="installBanner" class="hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-[length:200%_auto] animate-[gradientMove_5s_ease_infinite] text-white px-4 py-3 shadow-lg relative z-50 cursor-pointer border-b border-white/10" onclick="openInstallModal()">
         <div class="max-w-6xl mx-auto flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm shadow-inner border border-white/10">
+                <!-- Added animate-bounce for attention -->
+                <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm shadow-inner border border-white/10 animate-[bounce_2s_infinite]">
                     <i class="fas fa-download text-white text-sm"></i>
                 </div>
                 <div class="flex flex-col">
@@ -442,7 +443,7 @@
             if (!window.matchMedia('(display-mode: standalone)').matches && !localStorage.getItem('installBannerDismissed')) {
                 const banner = document.getElementById('installBanner');
                 banner.classList.remove('hidden');
-                setTimeout(() => banner.classList.add('hidden'), 10000);
+                // Removed setTimeout to keep banner visible until dismissed
             }
         }
         
