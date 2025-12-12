@@ -120,8 +120,10 @@
                         </div>
                         
                         <!-- Dark Mode Toggle -->
-                        <button onclick="toggleDarkMode()" class="btn-press w-9 h-9 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700">
-                            <i id="darkModeIcon" class="fas fa-moon text-xs"></i>
+                        <button onclick="toggleDarkMode()" class="btn-press w-9 h-9 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 relative group">
+                            <i id="darkModeIcon" class="fas fa-magic text-xs"></i>
+                            <!-- Optional Tooltip for desktop -->
+                            <span id="themeTooltip" class="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[9px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap hidden md:block">Auto</span>
                         </button>
 
                         <!-- View Toggle (Day/Week) -->
@@ -358,17 +360,58 @@
             checkInstallBanner();
         });
 
+        // REFACTORED THEME LOGIC START
         function initTheme() {
             const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
             const apply = () => {
                 const saved = localStorage.getItem(CONFIG.STORAGE_KEYS.THEME);
                 const isDark = saved === 'dark' || (!saved && mediaQuery.matches);
                 document.documentElement.classList.toggle('dark', isDark);
-                updateThemeIcon(isDark);
+                updateThemeIcon(saved); // Pass saved state directly
             };
             apply();
             mediaQuery.addEventListener('change', () => !localStorage.getItem(CONFIG.STORAGE_KEYS.THEME) && apply());
         }
+
+        function toggleDarkMode() {
+            if (navigator.vibrate) navigator.vibrate(5);
+            const current = localStorage.getItem(CONFIG.STORAGE_KEYS.THEME);
+            let next = null;
+
+            // Cycle: Auto (null) -> Light -> Dark -> Auto
+            if (current === null) next = 'light';
+            else if (current === 'light') next = 'dark';
+            else next = null; // Back to auto
+
+            if (next) localStorage.setItem(CONFIG.STORAGE_KEYS.THEME, next);
+            else localStorage.removeItem(CONFIG.STORAGE_KEYS.THEME);
+
+            // Apply immediately
+            const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+            const isDark = next === 'dark' || (!next && mediaQuery.matches);
+            document.documentElement.classList.toggle('dark', isDark);
+            updateThemeIcon(next);
+        }
+
+        function updateThemeIcon(state) {
+            const icon = document.getElementById('darkModeIcon');
+            const tooltip = document.getElementById('themeTooltip');
+            if(!icon) return;
+
+            // State can be 'light', 'dark', or null (auto)
+            if (state === 'light') {
+                icon.className = 'fas fa-sun text-yellow-500';
+                if(tooltip) tooltip.textContent = 'Light';
+            } else if (state === 'dark') {
+                icon.className = 'fas fa-moon text-blue-400';
+                if(tooltip) tooltip.textContent = 'Dark';
+            } else {
+                // Auto
+                icon.className = 'fas fa-magic text-slate-400 dark:text-slate-500';
+                if(tooltip) tooltip.textContent = 'Auto';
+            }
+        }
+        // REFACTORED THEME LOGIC END
 
         function initLang() {
             const saved = localStorage.getItem(CONFIG.STORAGE_KEYS.LANG);
@@ -394,18 +437,6 @@
                 banner.classList.remove('hidden');
                 setTimeout(() => banner.classList.add('hidden'), 10000);
             }
-        }
-
-        function toggleDarkMode() {
-            const isDark = !document.documentElement.classList.contains('dark');
-            document.documentElement.classList.toggle('dark', isDark);
-            updateThemeIcon(isDark);
-            localStorage.setItem(CONFIG.STORAGE_KEYS.THEME, isDark ? 'dark' : 'light');
-        }
-
-        function updateThemeIcon(isDark) {
-            const icon = document.getElementById('darkModeIcon');
-            if(icon) icon.className = isDark ? 'fas fa-sun text-yellow-400' : 'fas fa-moon text-xs';
         }
         
         // RE-ADDED MISSING FUNCTION
