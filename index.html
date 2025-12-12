@@ -50,10 +50,7 @@
     
     <style>
         body { -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
-        
-        /* Optimization: Content Visibility for long lists if needed */
         .content-optimized { content-visibility: auto; contain-intrinsic-size: 100px; }
-
         .glow-border { position: relative; z-index: 1; transition: transform 0.3s ease; }
         .glow-border::before {
             content: ""; position: absolute; inset: -2px; border-radius: 20px;
@@ -62,25 +59,20 @@
             z-index: -1; opacity: 0.7; pointer-events: none;
         }
         @keyframes gradientMove { 0% { background-position: 0% 50% } 50% { background-position: 100% 50% } 100% { background-position: 0% 50% } }
-
-        .time-connector { position: absolute; z-index: 0; background-color: #e2e8f0; } /* Fallback color */
+        .time-connector { position: absolute; z-index: 0; background-color: #e2e8f0; } 
         .dark .time-connector { background-color: #334155; }
         .mobile-connector { left: 23px; top: 45px; bottom: -20px; width: 2px; }
         .desktop-connector { display: none; }
         .last-item .time-connector { display: none; }
-        
         @media (min-width: 768px) {
             .desktop-connector { left: 50%; transform: translateX(-50%); top: 3rem; bottom: -2rem; width: 2px; display: block; }
         }
-
         .btn-press { transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1); touch-action: manipulation; }
         .btn-press:active { transform: scale(0.92); }
-
         #searchContainer { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); max-height: 0; overflow: hidden; opacity: 0; }
         #searchContainer.open { max-height: 80px; opacity: 1; margin-top: 0.5rem; }
     </style>
     <script>
-        // Inline Critical Theme Script to prevent flash
         (function() {
             try {
                 const savedTheme = localStorage.getItem('aybu_theme_v1');
@@ -130,7 +122,7 @@
                     </div>
 
                     <div class="flex items-center gap-2">
-                         <button id="langToggleBtn" class="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-lg cursor-pointer select-none border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <button id="langToggleBtn" class="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-lg cursor-pointer select-none border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <div id="lang-tr" class="px-2.5 py-1 rounded-md text-[10px] font-bold text-slate-400 dark:text-slate-500 transition-all">TR</div>
                             <div id="lang-en" class="px-2.5 py-1 rounded-md text-[10px] font-bold bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 shadow-sm transition-all">EN</div>
                         </button>
@@ -235,7 +227,7 @@
 
     <footer class="w-full max-w-6xl mx-auto px-4 py-6 text-center">
         <div class="text-[10px] font-bold text-slate-300 dark:text-slate-700 tracking-widest uppercase">
-            AYBU Medicine Schedule • v2.1
+            AYBU Medicine Schedule • v2.2
         </div>
     </footer>
 
@@ -244,7 +236,6 @@
     </button>
 
     <script>
-        // WRAPPED IN IIFE TO PREVENT GLOBAL POLLUTION
         (function() {
             "use strict";
 
@@ -262,22 +253,28 @@
                 CLINICAL: ["clinical skills", "clinical skill", "klinik beceri", "cst", "beceri eğitimi"],
                 LAB_EXCLUDES: ["inkılab", "history"]
             };
+            
+            // New: Subtle colors for standard lessons
+            const SUBJECT_PALETTE = [
+                { border: 'border-l-sky-500 dark:border-l-sky-400', icon: 'text-sky-500 dark:text-sky-400' },
+                { border: 'border-l-emerald-500 dark:border-l-emerald-400', icon: 'text-emerald-500 dark:text-emerald-400' },
+                { border: 'border-l-indigo-500 dark:border-l-indigo-400', icon: 'text-indigo-500 dark:text-indigo-400' },
+                { border: 'border-l-teal-500 dark:border-l-teal-400', icon: 'text-teal-500 dark:text-teal-400' },
+                { border: 'border-l-fuchsia-500 dark:border-l-fuchsia-400', icon: 'text-fuchsia-500 dark:text-fuchsia-400' },
+            ];
 
             // --- 2. UTILITIES ---
             const DateUtils = {
-                // Optimization: Cached today string to avoid re-calculation in loops
                 _cachedToday: null,
-                
                 normalize: (cellVal) => {
                     if (!cellVal) return null;
                     if (cellVal instanceof Date) {
-                        // Adjust timezone offset (original logic preserved)
                         const safeDate = new Date(cellVal.getTime() + (12 * 60 * 60 * 1000));
                         return `${safeDate.getUTCFullYear()}-${String(safeDate.getUTCMonth() + 1).padStart(2, '0')}-${String(safeDate.getUTCDate()).padStart(2, '0')}`;
                     }
                     if (typeof cellVal === 'string') {
                         const s = cellVal.trim();
-                        if (s.length === 10 && s[4] === '-') return s; // Fast check for YYYY-MM-DD
+                        if (s.length === 10 && s[4] === '-') return s; 
                         if (s.includes('T')) return s.split('T')[0]; 
                     }
                     return null;
@@ -294,10 +291,17 @@
                     const m = String(now.getMonth() + 1).padStart(2, '0');
                     const d = String(now.getDate()).padStart(2, '0');
                     DateUtils._cachedToday = `${y}-${m}-${d}`;
-                    // Invalidate cache at midnight? Simplified for now.
                     return DateUtils._cachedToday;
                 }
             };
+
+            function getSubjectTheme(title) {
+                if(!title) return SUBJECT_PALETTE[0];
+                let hash = 0;
+                for (let i = 0; i < title.length; i++) hash = title.charCodeAt(i) + ((hash << 5) - hash);
+                const index = Math.abs(hash) % SUBJECT_PALETTE.length;
+                return SUBJECT_PALETTE[index];
+            }
 
             // --- 3. STATE ---
             let workbookData = null;
@@ -347,10 +351,7 @@
             // --- 4. INITIALIZATION ---
 
             document.addEventListener('DOMContentLoaded', () => {
-                // Event Listeners setup
                 setupEventListeners();
-                
-                // Init core
                 initTheme(); 
                 initLang(); 
                 initDate();
@@ -385,7 +386,7 @@
                 document.getElementById('todayBtn').onclick = goToToday;
             }
 
-            // --- THEME LOGIC ---
+            // --- THEME & NAV LOGIC ---
             let themeTooltipTimeout;
             function initTheme() {
                 const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
@@ -403,10 +404,8 @@
                 if (navigator.vibrate) navigator.vibrate(5);
                 const current = localStorage.getItem(CONFIG.STORAGE_KEYS.THEME);
                 let next = current === null ? 'light' : (current === 'light' ? 'dark' : null);
-
                 if (next) localStorage.setItem(CONFIG.STORAGE_KEYS.THEME, next);
                 else localStorage.removeItem(CONFIG.STORAGE_KEYS.THEME);
-                
                 const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
                 const isDark = next === 'dark' || (!next && mediaQuery.matches);
                 document.documentElement.classList.toggle('dark', isDark);
@@ -417,34 +416,20 @@
                 const icon = document.getElementById('darkModeIcon');
                 const tooltip = document.getElementById('themeTooltip');
                 if(!icon) return;
-
                 let label = 'Auto';
-                if (state === 'light') { 
-                    icon.className = 'fas fa-sun text-yellow-500 text-xs'; 
-                    label = 'Light';
-                } else if (state === 'dark') { 
-                    icon.className = 'fas fa-moon text-blue-400 text-xs';
-                    label = 'Dark'; 
-                } else { 
-                    icon.className = 'fas fa-circle-half-stroke text-slate-400 dark:text-slate-500 text-xs';
-                    label = 'Auto'; 
-                }
+                if (state === 'light') { icon.className = 'fas fa-sun text-yellow-500 text-xs'; label = 'Light'; } 
+                else if (state === 'dark') { icon.className = 'fas fa-moon text-blue-400 text-xs'; label = 'Dark'; } 
+                else { icon.className = 'fas fa-circle-half-stroke text-slate-400 dark:text-slate-500 text-xs'; label = 'Auto'; }
 
                 if(tooltip) {
                     tooltip.textContent = label;
                     if (showFeedback) {
-                        tooltip.classList.remove('opacity-0');
-                        tooltip.classList.add('opacity-100');
+                        tooltip.classList.remove('opacity-0'); tooltip.classList.add('opacity-100');
                         clearTimeout(themeTooltipTimeout);
                         themeTooltipTimeout = setTimeout(() => { tooltip.classList.remove('opacity-100'); tooltip.classList.add('opacity-0'); }, 1500);
-                    } else {
-                        tooltip.classList.remove('opacity-100');
-                        tooltip.classList.add('opacity-0');
-                    }
+                    } else { tooltip.classList.remove('opacity-100'); tooltip.classList.add('opacity-0'); }
                 }
             }
-
-            // --- NAVIGATION LOGIC ---
 
             function initLang() {
                 const saved = localStorage.getItem(CONFIG.STORAGE_KEYS.LANG);
@@ -527,7 +512,6 @@
             function buildSearchIndexes() {
                 if (!workbookData) return;
                 searchIndexes = { EN: [], TR: [] };
-                // Optimization: Pre-calculate common regex/strings
                 for (let r = 0; r < workbookData.length; r++) {
                     const row = workbookData[r];
                     for (let c = 0; c < row.length; c++) {
@@ -548,7 +532,6 @@
                 const isEnglish = langOverride ? (langOverride === 'EN') : (currentLang === 'EN');
                 let timeColIndex = -1;
                 
-                // Heuristic to find time column
                 for(let offset = 1; offset <= 4; offset++) {
                     const checkRow = workbookData[dateRowIndex + offset];
                     if(checkRow) {
@@ -601,8 +584,6 @@
                         r = subR - 1;
                         if (contentLines.length > 0) {
                             const rawJoined = contentLines.join(" ");
-                            
-                            // Optimization: Check keywords using single lowercase conversion
                             const joinedLower = rawJoined.toLocaleLowerCase('tr-TR');
                             let isLab = rawJoined.toUpperCase().includes("LAB") && !CONSTANTS.LAB_EXCLUDES.some(ex => joinedLower.includes(ex));
                             const isClinical = CONSTANTS.CLINICAL.some(kw => joinedLower.includes(kw));
@@ -693,7 +674,7 @@
 
                     container.appendChild(fragment);
                     noRes.classList.toggle('hidden', count > 0);
-                }, 250); // Slightly faster debounce
+                }, 250);
             }
 
             function jumpToDate(dateStr) {
@@ -708,7 +689,6 @@
                 setLoading(true);
                 let cachedData = null;
 
-                // 1. Fast Path: LocalStorage
                 try {
                     const stored = localStorage.getItem(CONFIG.STORAGE_KEYS.DATA);
                     if(stored) {
@@ -721,13 +701,11 @@
                     }
                 } catch(e) { console.error("Cache load error:", e); }
 
-                // 2. Slow Path: Network
                 try {
                     const response = await fetch(CONFIG.SCHEDULE_FILENAME + '?v=' + new Date().getTime());
                     if (!response.ok) throw new Error("Auto-fetch failed");
                     
                     const arrayBuffer = await response.arrayBuffer();
-                    
                     const waitForXLSX = () => new Promise(resolve => {
                         if (window.XLSX) resolve();
                         else document.querySelector('script[src*="xlsx"]').addEventListener('load', resolve);
@@ -750,7 +728,6 @@
                     } else if(!cachedData) {
                         completeInit();
                     }
-
                 } catch (err) {
                     console.warn("Fetch failed (Demo Mode):", err);
                     if(!workbookData) {
@@ -817,7 +794,7 @@
                 const currentDate = DateUtils.parse(picker.value);
                 const jump = viewMode === 'week' ? (offset * 7) : offset;
                 currentDate.setDate(currentDate.getDate() + jump);
-                if (viewMode === 'day') { // Skip weekends logic
+                if (viewMode === 'day') { 
                     while (currentDate.getDay() === 0 || currentDate.getDay() === 6) {
                         currentDate.setDate(currentDate.getDate() + (offset > 0 ? 1 : -1));
                     }
@@ -836,7 +813,6 @@
             function setLanguage(lang, shouldProcess = true) {
                 currentLang = lang;
                 localStorage.setItem(CONFIG.STORAGE_KEYS.LANG, lang);
-                
                 const trBtn = document.getElementById('lang-tr');
                 const enBtn = document.getElementById('lang-en');
                 const active = "px-2.5 py-1 rounded-md text-[10px] font-bold bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm transition-all";
@@ -891,9 +867,7 @@
                     const val = row[i];
                     if (!val) continue;
                     if (typeof val === 'string' && val.length > 5) {
-                        // Optimization: Check specifically for date string format before Regex
                         if(val[4] === '-' && val.length === 10) return true; 
-                        
                         const s = val.toLocaleLowerCase('tr-TR').trim();
                         if (s === 'week' || s === 'hafta') return true;
                         if (s.startsWith('committee') || s.startsWith('komite') || s.startsWith('phase') || s.startsWith('dönem')) return true;
@@ -921,7 +895,6 @@
                 outerLoop:
                 for (let r = 0; r < workbookData.length; r++) {
                     const row = workbookData[r];
-                    // Optimization: Only scan relevant columns roughly
                     for (let c = 0; c < row.length; c++) {
                         if (row[c] === targetDateString) {
                             if ((isEnglish && c > CONFIG.SPLIT_COLUMN_INDEX) || (!isEnglish && c <= CONFIG.SPLIT_COLUMN_INDEX)) {
@@ -1026,6 +999,11 @@
                             else if(cls.isClinical) cardClass = "bg-violet-50 dark:bg-violet-900/20 border-violet-100 dark:border-violet-900/50";
                             else if(cls.type === 'freelance') cardClass = "bg-slate-50 dark:bg-slate-900 border-slate-100 dark:border-slate-800 opacity-60";
                             else if(cls.type === 'lunch') cardClass = "bg-amber-50 dark:bg-amber-900/10 border-amber-100 dark:border-amber-900/30 border-dashed opacity-80";
+                            else {
+                                // Apply colorful border to normal classes
+                                const theme = getSubjectTheme(cls.lines[0]);
+                                cardClass = `bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 border-l-4 ${theme.border}`;
+                            }
 
                             colContent += `
                                 <div class="p-3 rounded-xl border ${cardClass} shadow-sm text-sm">
@@ -1046,7 +1024,6 @@
                 const t = TRANSLATIONS[currentLang];
                 const fragment = document.createDocumentFragment();
                 
-                // PERFORMANCE: Calculate "Now" once outside the loop
                 const now = new Date();
                 const currentMinutes = now.getHours() * 60 + now.getMinutes();
                 const isToday = targetDateStr === DateUtils.getTodayString();
@@ -1094,6 +1071,11 @@
                         circleClass = "bg-violet-100 dark:bg-violet-900/30 border-2 border-violet-200 dark:border-violet-800";
                         iconClass = "text-violet-500 dark:text-violet-400"; icon = "fa-stethoscope"; 
                         cardBg = "bg-violet-50/50 dark:bg-violet-900/10 border-violet-200 dark:border-violet-900/30 shadow-md border-l-4 border-l-violet-500 dark:border-l-violet-600";
+                    } else {
+                        // Standard lesson - Apply hashed color
+                        const theme = getSubjectTheme(cls.lines[0]);
+                        cardBg = `bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm border-l-4 ${theme.border}`;
+                        iconClass = theme.icon;
                     }
 
                     if (cls.isLab) badgeHtml = `<span class="bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-300 text-[10px] font-bold px-2 py-0.5 rounded border border-rose-200 dark:border-rose-800 ml-2">${t.badgeLab}</span>`;
@@ -1131,7 +1113,6 @@
                 });
                 container.appendChild(fragment);
                 
-                // Scroll to active class if exists
                 setTimeout(() => {
                     const active = container.querySelector('.glow-border');
                     if (active) active.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
