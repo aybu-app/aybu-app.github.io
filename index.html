@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="transition-colors duration-300">
+<html lang="en" class="transition-colors duration-300 overflow-x-hidden">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -48,7 +48,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
-        body { -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
+        html, body { overflow-x: hidden; width: 100%; position: relative; -webkit-tap-highlight-color: transparent; }
         
         /* Hide scrollbar for horizontal strip but allow scroll */
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -107,11 +107,12 @@
     </div>
 
     <!-- Header -->
-    <header class="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 shadow-sm transition-all duration-300">
-        <div class="max-w-4xl mx-auto px-4 pt-3 pb-1 flex flex-col gap-3">
+    <header class="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 shadow-sm transition-all duration-300 w-full">
+        <!-- Main Container: Removed global padding to fix side-scroll -->
+        <div class="max-w-4xl mx-auto pt-3 pb-1 flex flex-col gap-3 w-full">
             
-            <!-- Top Row: Branding & Actions -->
-            <div class="flex items-center justify-between">
+            <!-- Top Row: Branding & Actions (Added px-4 explicitly here) -->
+            <div class="flex items-center justify-between px-4">
                 <div class="flex items-center gap-3 cursor-pointer" onclick="goToToday()">
                     <div id="phase-icon" class="w-9 h-9 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-lg flex items-center justify-center text-white font-extrabold text-sm shadow-md shadow-blue-500/20">
                         D1
@@ -149,8 +150,8 @@
                 </div>
             </div>
 
-            <!-- Search Bar (Expandable) -->
-            <div id="searchContainer" class="w-full">
+            <!-- Search Bar (Added px-4 explicitly here) -->
+            <div id="searchContainer" class="w-full px-4">
                 <div class="relative">
                     <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                     <input type="text" id="searchInput" placeholder="Search topics, rooms..." 
@@ -161,7 +162,8 @@
             </div>
             
             <!-- Horizontal Date Strip -->
-            <div id="dateStrip" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 -mx-4 px-4 scroll-smooth select-none">
+            <!-- Removed -mx-4 negative margins, used internal padding instead to prevent overflow -->
+            <div id="dateStrip" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 px-4 scroll-smooth select-none w-full">
                 <!-- Javascript will inject days here -->
             </div>
         </div>
@@ -241,7 +243,7 @@
 
     <!-- Footer -->
     <footer class="w-full text-center py-6">
-        <div class="text-[10px] font-bold text-slate-300 dark:text-slate-700 uppercase tracking-widest">AYBU Medicine • v2.2 Fixed</div>
+        <div class="text-[10px] font-bold text-slate-300 dark:text-slate-700 uppercase tracking-widest">AYBU Medicine • v2.3 Fixed</div>
     </footer>
 
     <!-- Floating Today Button -->
