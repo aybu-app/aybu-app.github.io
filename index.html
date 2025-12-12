@@ -106,46 +106,49 @@
         </div>
     </div>
 
-    <header class="sticky top-0 z-40 px-4 md:px-8 pt-3 pb-2 shadow-sm transition-all duration-300 bg-white/96 dark:bg-slate-900/96 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-700/80">
+    <header class="sticky top-0 z-40 px-3 md:px-8 pt-3 pb-2 shadow-sm transition-all duration-300 bg-white/96 dark:bg-slate-900/96 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-700/80">
         <div class="max-w-6xl mx-auto flex flex-col gap-3">
             
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                <div class="flex items-center justify-between md:justify-start gap-4 w-full md:w-auto">
-                    <div class="flex items-center gap-3 cursor-default">
-                        <div id="phase-icon" class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white font-extrabold text-sm shadow-lg shadow-blue-200/50 transform transition-transform hover:rotate-3">
+                <div class="flex items-center justify-between md:justify-start gap-2 md:gap-4 w-full md:w-auto">
+                    <!-- Logo / Title Section -->
+                    <div class="flex items-center gap-2 md:gap-3 cursor-default min-w-0">
+                        <div id="phase-icon" class="w-9 h-9 md:w-10 md:h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white font-extrabold text-sm shadow-lg shadow-blue-200/50 transform transition-transform hover:rotate-3 shrink-0">
                             D1
                         </div>
-                        <div class="min-w-[100px] md:min-w-[160px]">
-                            <h1 id="txt-title" class="font-extrabold text-sm md:text-base leading-tight text-slate-900 dark:text-white tracking-tight">Phase I</h1>
+                        <div class="min-w-0 md:min-w-[160px]">
+                            <h1 id="txt-title" class="font-extrabold text-sm md:text-base leading-tight text-slate-900 dark:text-white tracking-tight truncate">Phase I</h1>
                             <p id="txt-subtitle" class="text-[10px] md:text-xs text-slate-500 dark:text-slate-400 font-bold tracking-wide uppercase truncate">AYBU Medicine</p>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-2">
-                        <button id="langToggleBtn" class="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-lg cursor-pointer select-none border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <div id="lang-tr" class="px-2.5 py-1 rounded-md text-[10px] font-bold text-slate-400 dark:text-slate-500 transition-all">TR</div>
-                            <div id="lang-en" class="px-2.5 py-1 rounded-md text-[10px] font-bold bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 shadow-sm transition-all">EN</div>
+                    <!-- Action Buttons -->
+                    <div class="flex items-center gap-1 md:gap-2 shrink-0">
+                        <button id="langToggleBtn" class="flex items-center bg-slate-100 dark:bg-slate-800 p-0.5 md:p-1 rounded-lg cursor-pointer select-none border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <div id="lang-tr" class="px-1.5 md:px-2.5 py-1 rounded-md text-[10px] font-bold text-slate-400 dark:text-slate-500 transition-all">TR</div>
+                            <div id="lang-en" class="px-1.5 md:px-2.5 py-1 rounded-md text-[10px] font-bold bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 shadow-sm transition-all">EN</div>
                         </button>
                         
-                        <button aria-label="Toggle Theme" id="themeToggleBtn" class="btn-press w-9 h-9 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 relative group">
+                        <button aria-label="Toggle Theme" id="themeToggleBtn" class="btn-press w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 relative group">
                             <i id="darkModeIcon" class="fas fa-circle-half-stroke text-xs"></i>
                             <span id="themeTooltip" class="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[9px] px-2 py-1 rounded opacity-0 transition-opacity duration-300 pointer-events-none whitespace-nowrap z-50 shadow-sm">Auto</span>
                         </button>
 
-                        <button aria-label="Cafeteria Menu" id="openMenuBtn" class="btn-press w-9 h-9 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700">
+                        <button aria-label="Cafeteria Menu" id="openMenuBtn" class="btn-press w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700">
                             <i class="fas fa-utensils text-xs"></i>
                         </button>
 
-                        <button aria-label="Switch View" id="viewToggleBtn" class="btn-press w-9 h-9 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700" title="Switch View">
+                        <button aria-label="Switch View" id="viewToggleBtn" class="btn-press w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700" title="Switch View">
                             <i class="fas fa-columns text-xs"></i>
                         </button>
                         
-                         <button aria-label="Search" id="searchBtn" class="btn-press w-9 h-9 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700">
+                         <button aria-label="Search" id="searchBtn" class="btn-press w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700">
                             <i class="fas fa-search text-xs"></i>
                          </button>
                     </div>
                 </div>
 
+                <!-- Date Controls -->
                 <div id="dateControls" class="flex items-center justify-between gap-2 bg-slate-100/80 dark:bg-slate-800/80 p-1.5 rounded-2xl backdrop-blur-sm border border-white/50 dark:border-slate-700/50 shadow-sm w-full md:w-auto md:min-w-[320px]">
                     <button aria-label="Previous Day" id="prevDayBtn" class="btn-press w-10 h-10 flex flex-none items-center justify-center rounded-xl bg-white dark:bg-slate-700 text-slate-400 dark:text-slate-300 shadow-sm hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                         <i class="fas fa-chevron-left text-xs"></i>
@@ -363,8 +366,8 @@
                 
                 if ('serviceWorker' in navigator) {
                    navigator.serviceWorker.register('sw.js').catch(err => console.log('SW fail', err));
-                initMenuSystem();
                 }
+                initMenuSystem();
 
                 setInterval(updateDayProgress, 30000); 
                 // Auto refresh view every minute to update "X min left"
@@ -443,40 +446,67 @@
 
             function processMenuHtml(html) {
                 const doc = new DOMParser().parseFromString(html, 'text/html');
-                const lines = (doc.body.innerText || "").split('\n').map(l => l.trim()).filter(l => l);
+                const rawText = doc.body.innerText || "";
+                // Split by newline, trim, and remove empty lines
+                const lines = rawText.split('\n').map(l => l.trim()).filter(l => l);
                 
                 const today = new Date();
                 // Update date display in modal
-                document.getElementById('menuDateDisplay').textContent = today.toLocaleDateString(currentLang==='TR'?'tr-TR':'en-US', { weekday:'long', day:'numeric', month:'long' });
+                const dateDisplay = document.getElementById('menuDateDisplay');
+                if(dateDisplay) {
+                     dateDisplay.textContent = today.toLocaleDateString(currentLang==='TR'?'tr-TR':'en-US', { weekday:'long', day:'numeric', month:'long' });
+                }
 
                 if(today.getDay() === 0 || today.getDay() === 6) {
                     renderMenuMessage("Weekend Mode", "No service today.", "fa-couch", "text-amber-400");
                     return;
                 }
 
-                const daysMap = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"];
-                const todayName = daysMap[today.getDay() - 1];
+                // Reference days in Turkish Uppercase for robust matching
+                const daysMap = ["PAZARTESİ", "SALI", "ÇARŞAMBA", "PERŞEMBE", "CUMA", "CUMARTESİ", "PAZAR"];
+                
+                const dayIndex = today.getDay() - 1; // 0 for Monday
+                const todayName = daysMap[dayIndex]; // e.g. "PAZARTESİ"
+
                 let items = [];
                 let foundWeek = false;
                 let capturing = false;
 
-                // Simple scraping logic (adapted from your menu.html)
                 for (const line of lines) {
+                    const lineUpper = line.toLocaleUpperCase('tr-TR');
+
+                    // 1. Detect Week Date Range (e.g., 20.11.2023 - 24.11.2023)
+                    // This signals the start of the menu table
                     if (line.match(/(\d{2}\.\d{2}\.\d{4})\s*-\s*(\d{2}\.\d{2}\.\d{4})/)) {
-                        // Simplified date check: assume the first date range found is the current week
-                        // or add robust logic if needed. For now, we trust the site updates weekly.
                         foundWeek = true; 
-                        capturing = false;
+                        capturing = false; // Reset capturing
                         continue;
                     }
+
                     if (foundWeek) {
-                        if (daysMap.includes(line)) {
-                            capturing = (line === todayName);
-                            continue;
+                        // 2. Check if the line is a Day Header
+                        // We check if lineUpper matches any day in our list
+                        const matchedDay = daysMap.find(d => lineUpper === d || lineUpper.startsWith(d + ' '));
+
+                        if (matchedDay) {
+                            // If we found a day header, we update capturing status.
+                            // We only capture if this header matches TODAY.
+                            capturing = (matchedDay === todayName);
+                            continue; // Don't add the header itself to items
                         }
+
+                        // 3. Capture items
                         if (capturing) {
-                            if (line.includes("HIZLI") || line.includes("İLETİŞİM")) break;
-                            items.push(line);
+                            // Stop triggers
+                            if (lineUpper.includes("HIZLI") || lineUpper.includes("İLETİŞİM") || lineUpper.includes("TOPLAM")) {
+                                capturing = false;
+                                break; 
+                            }
+                            
+                            // Basic noise filter (ignore very short lines)
+                            if (line.length > 2) {
+                                items.push(line);
+                            }
                         }
                     }
                 }
@@ -542,7 +572,7 @@
             }
 
             // Call this at the end of your main init function
-            initMenuSystem();
+            // initMenuSystem(); // Already called in DOMContentLoaded
             function setupEventListeners() {
                 document.getElementById('installBanner').onclick = openInstallModal;
                 document.getElementById('closeInstallBtn').onclick = (e) => { e.stopPropagation(); closeInstallBanner(); };
@@ -993,8 +1023,8 @@
                 localStorage.setItem(CONFIG.STORAGE_KEYS.LANG, lang);
                 const trBtn = document.getElementById('lang-tr');
                 const enBtn = document.getElementById('lang-en');
-                const active = "px-2.5 py-1 rounded-md text-[10px] font-bold bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm transition-all";
-                const inactive = "px-2.5 py-1 rounded-md text-[10px] font-bold text-slate-400 dark:text-slate-500 transition-all hover:text-slate-600 dark:hover:text-slate-300";
+                const active = "px-1.5 md:px-2.5 py-1 rounded-md text-[10px] font-bold bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm transition-all";
+                const inactive = "px-1.5 md:px-2.5 py-1 rounded-md text-[10px] font-bold text-slate-400 dark:text-slate-500 transition-all hover:text-slate-600 dark:hover:text-slate-300";
                 
                 if (lang === 'EN') { enBtn.className = active; trBtn.className = inactive; } 
                 else { trBtn.className = active.replace('text-blue-600', 'text-red-600 dark:text-red-400'); enBtn.className = inactive; }
@@ -1408,3 +1438,5 @@
 </div>
 </body>
 </html>
+
+
