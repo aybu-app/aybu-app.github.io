@@ -108,10 +108,9 @@
 
     <!-- Header -->
     <header class="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 shadow-sm transition-all duration-300 w-full">
-        <!-- Main Container: Removed global padding to fix side-scroll -->
         <div class="max-w-4xl mx-auto pt-3 pb-1 flex flex-col gap-3 w-full">
             
-            <!-- Top Row: Branding & Actions (Added px-4 explicitly here) -->
+            <!-- Top Row: Branding & Actions -->
             <div class="flex items-center justify-between px-4">
                 <div class="flex items-center gap-3 cursor-pointer" onclick="goToToday()">
                     <div id="phase-icon" class="w-9 h-9 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-lg flex items-center justify-center text-white font-extrabold text-sm shadow-md shadow-blue-500/20">
@@ -150,7 +149,7 @@
                 </div>
             </div>
 
-            <!-- Search Bar (Added px-4 explicitly here) -->
+            <!-- Search Bar -->
             <div id="searchContainer" class="w-full px-4">
                 <div class="relative">
                     <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
@@ -162,7 +161,6 @@
             </div>
             
             <!-- Horizontal Date Strip -->
-            <!-- Removed -mx-4 negative margins, used internal padding instead to prevent overflow -->
             <div id="dateStrip" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 px-4 scroll-smooth select-none w-full">
                 <!-- Javascript will inject days here -->
             </div>
@@ -243,7 +241,7 @@
 
     <!-- Footer -->
     <footer class="w-full text-center py-6">
-        <div class="text-[10px] font-bold text-slate-300 dark:text-slate-700 uppercase tracking-widest">AYBU Medicine • v2.3 Fixed</div>
+        <div class="text-[10px] font-bold text-slate-300 dark:text-slate-700 uppercase tracking-widest">AYBU Medicine • v2.4 Fixed</div>
     </footer>
 
     <!-- Floating Today Button -->
@@ -884,16 +882,23 @@
                 const matches = day.items.filter(i => i.raw.toLowerCase().includes(term));
                 if(matches.length) {
                     const dateHeader = document.createElement('div');
-                    dateHeader.className = "text-xs font-bold text-slate-400 uppercase mt-4 mb-1 pl-1";
-                    dateHeader.textContent = day.date;
+                    dateHeader.className = "flex items-center gap-2 mt-4 mb-2 pl-1";
+                    
+                    // Format date nicely
+                    const dObj = DateUtils.parse(day.date);
+                    const locale = currentLang === 'TR' ? 'tr-TR' : 'en-US';
+                    const dateFormatted = dObj.toLocaleDateString(locale, { weekday: 'long', month: 'short', day: 'numeric' });
+                    
+                    dateHeader.innerHTML = `<span class="text-xs font-bold text-blue-500 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded-md uppercase tracking-wide">${dateFormatted}</span>`;
                     cont.appendChild(dateHeader);
                     
                     matches.forEach(m => {
                         const el = document.createElement('div');
-                        el.className = "bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-100 dark:border-slate-700 text-sm cursor-pointer hover:border-blue-400";
-                        el.innerHTML = `<div class="font-bold text-slate-700 dark:text-slate-200">${m.lines[0]}</div><div class="text-xs text-slate-400">${m.time}</div>`;
+                        el.className = "bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-100 dark:border-slate-700 text-sm cursor-pointer hover:border-blue-400 active:scale-[0.98] transition-all";
+                        el.innerHTML = `<div class="font-bold text-slate-700 dark:text-slate-200">${m.lines[0]}</div><div class="text-xs text-slate-400 mt-1 flex items-center gap-1"><i class="far fa-clock"></i> ${m.time}</div>`;
                         el.onclick = () => {
                             document.getElementById('datePicker').value = day.date;
+                            renderDateStrip(); // Force slider sync
                             toggleSearch();
                         }
                         cont.appendChild(el);
