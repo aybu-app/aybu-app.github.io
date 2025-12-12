@@ -413,70 +413,40 @@
                 modal.onclick = (e) => { if(e.target === modal) closeMenu(); };
             }
 
-            const MENU_CACHE_KEY = 'aybu_menu_cache_v2'; // Versioning the cache
-
             async function fetchMenuData() {
                 const container = document.getElementById('menuContent');
                 const loading = document.getElementById('menuLoading');
                 const error = document.getElementById('menuError');
                 
-                // 1. Check Cache
-                const todayStr = new Date().toDateString();
-                try {
-                    const cached = JSON.parse(localStorage.getItem(MENU_CACHE_KEY));
-                    if (cached && cached.date === todayStr && cached.html) {
-                        // Use cache immediately
-                        processMenuHtml(cached.html);
-                        loading.classList.add('hidden');
-                        return;
-                    }
-                } catch(e) { console.log('Cache parse error'); }
-
-                // Don't refetch if we already have DOM content (and no cache hit previously handled it)
+                // Don't refetch if we already have data
                 if(container.children.length > 0) return;
 
                 loading.classList.remove('hidden');
                 error.classList.add('hidden');
 
-                // 2. Race Proxies
-                // We create a promise for each proxy fetch
-                const promises = MENU_CONFIG.PROXIES.map(proxy => 
-                    new Promise(async (resolve, reject) => {
-                        try {
-                            const res = await fetch(proxy.get(MENU_CONFIG.URL)); 
-                            if (!res.ok) throw new Error('Status ' + res.status);
-                            const text = await proxy.parse(res);
-                            if (text && text.length > 500) resolve(text);
-                            else reject('Empty/Short content');
-                        } catch (e) {
-                            reject(e);
-                        }
-                    })
-                );
+                let html = null;
+                for (const proxy of MENU_CONFIG.PROXIES) {
+                    try {
+                        const res = await fetch(proxy.get(MENU_CONFIG.URL));
+                        if (!res.ok) continue;
+                        const text = await proxy.parse(res);
+                        if (text && text.length > 500) { html = text; break; }
+                    } catch (e) { console.log('Proxy failed'); }
+                }
 
-                try {
-                    // Promise.any waits for the first fulfilled promise
-                    const html = await Promise.any(promises);
-                    
-                    // 3. Save to Cache
-                    localStorage.setItem(MENU_CACHE_KEY, JSON.stringify({
-                        date: todayStr,
-                        html: html
-                    }));
-
-                    processMenuHtml(html);
-                } catch (aggregateError) {
-                    console.error("All proxies failed", aggregateError);
+                if (!html) {
                     loading.classList.add('hidden');
                     error.classList.remove('hidden');
+                    return;
                 }
-                
+
+                processMenuHtml(html);
                 loading.classList.add('hidden');
             }
 
-            function processMenuHtml(htmlContent) {
+            function processMenuHtml(html) {
                 const parser = new DOMParser();
-                const doc = parser.parseFromString(htmlContent, 'text/html');
+                const doc = parser.parseFromString(html, 'text/html');
                 const text = doc.body.innerText || "";
                 const lines = text.split('\n').map(l => l.trim()).filter(l => l);
 
