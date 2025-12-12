@@ -227,7 +227,7 @@
 
     <footer class="w-full max-w-6xl mx-auto px-4 py-6 text-center">
         <div class="text-[10px] font-bold text-slate-300 dark:text-slate-700 tracking-widest uppercase">
-            AYBU Medicine Schedule • v2.2
+            AYBU Medicine Schedule • v2.3
         </div>
     </footer>
 
@@ -254,7 +254,6 @@
                 LAB_EXCLUDES: ["inkılab", "history"]
             };
             
-            // New: Subtle colors for standard lessons
             const SUBJECT_PALETTE = [
                 { border: 'border-l-sky-500 dark:border-l-sky-400', icon: 'text-sky-500 dark:text-sky-400' },
                 { border: 'border-l-emerald-500 dark:border-l-emerald-400', icon: 'text-emerald-500 dark:text-emerald-400' },
@@ -322,7 +321,8 @@
                     installTitle: "Install App 🚀",
                     installIOS: "1. Tap the Share icon <i class='fas fa-share-square mx-1'></i><br>2. Scroll down & tap 'Add to Home Screen'",
                     installAndroid: "1. Tap menu icon <i class='fas fa-ellipsis-v mx-1'></i><br>2. Tap 'Add to Home Screen' or 'Install App'",
-                    installClose: "Got it"
+                    installClose: "Got it",
+                    minLeft: "m left", startsIn: "Starts in"
                 },
                 TR: {
                     title: "Dönem I", subtitle: "AYBÜ Tıp Fakültesi",
@@ -336,7 +336,8 @@
                     installTitle: "Uygulamayı Yükle 🚀",
                     installIOS: "1. Paylaş simgesine dokunun <i class='fas fa-share-square mx-1'></i><br>2. Aşağı inip 'Ana Ekrana Ekle'yi seçin",
                     installAndroid: "1. Menü simgesine dokunun <i class='fas fa-ellipsis-v mx-1'></i><br>2. 'Ana Ekrana Ekle' veya 'Yükle'yi seçin",
-                    installClose: "Tamam"
+                    installClose: "Tamam",
+                    minLeft: "dk kaldı", startsIn: "Başlıyor:"
                 }
             };
 
@@ -361,6 +362,13 @@
                 }
 
                 setInterval(updateDayProgress, 30000); 
+                // Auto refresh view every minute to update "X min left"
+                setInterval(() => {
+                    if(viewMode === 'day' && document.getElementById('datePicker').value === DateUtils.getTodayString()) {
+                        refreshView();
+                    }
+                }, 60000);
+                
                 initApp();
                 checkInstallBanner();
             });
@@ -1000,7 +1008,6 @@
                             else if(cls.type === 'freelance') cardClass = "bg-slate-50 dark:bg-slate-900 border-slate-100 dark:border-slate-800 opacity-60";
                             else if(cls.type === 'lunch') cardClass = "bg-amber-50 dark:bg-amber-900/10 border-amber-100 dark:border-amber-900/30 border-dashed opacity-80";
                             else {
-                                // Apply colorful border to normal classes
                                 const theme = getSubjectTheme(cls.lines[0]);
                                 cardClass = `bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 border-l-4 ${theme.border}`;
                             }
@@ -1030,10 +1037,25 @@
 
                 classes.forEach((cls, index) => {
                     let isNow = false;
+                    let isUpcoming = false;
+                    let timeBadge = '';
+
+                    const [h, m] = cls.time.split(':').map(Number);
+                    const startMins = h * 60 + m;
+                    const endMins = startMins + 59; // Assumption: 1 hour blocks
+
                     if (isToday) {
-                         const [h, m] = cls.time.split(':').map(Number);
-                         const startMins = h * 60 + m;
-                         isNow = currentMinutes >= startMins && currentMinutes < (startMins + 59);
+                         if (currentMinutes >= startMins && currentMinutes < endMins) {
+                            isNow = true;
+                            const diff = endMins - currentMinutes;
+                            timeBadge = `<span class="opacity-80 font-normal ml-1 border-l border-white/30 pl-1">${diff} ${t.minLeft}</span>`;
+                         } else if (currentMinutes < startMins && (startMins - currentMinutes) <= 60 && !isUpcoming) {
+                            // Find the first upcoming class within 60 mins
+                            // Simple check: is this upcoming?
+                             const diff = startMins - currentMinutes;
+                             isUpcoming = true; // Use this to style if needed, or just add badge
+                             timeBadge = `<span class="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[9px] font-bold px-1.5 py-0.5 rounded ml-2">${t.startsIn} ${diff}m</span>`;
+                         }
                     }
 
                     const isLunch = cls.type === 'lunch';
@@ -1072,7 +1094,6 @@
                         iconClass = "text-violet-500 dark:text-violet-400"; icon = "fa-stethoscope"; 
                         cardBg = "bg-violet-50/50 dark:bg-violet-900/10 border-violet-200 dark:border-violet-900/30 shadow-md border-l-4 border-l-violet-500 dark:border-l-violet-600";
                     } else {
-                        // Standard lesson - Apply hashed color
                         const theme = getSubjectTheme(cls.lines[0]);
                         cardBg = `bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm border-l-4 ${theme.border}`;
                         iconClass = theme.icon;
@@ -1080,7 +1101,12 @@
 
                     if (cls.isLab) badgeHtml = `<span class="bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-300 text-[10px] font-bold px-2 py-0.5 rounded border border-rose-200 dark:border-rose-800 ml-2">${t.badgeLab}</span>`;
                     else if (cls.isClinical) badgeHtml = `<span class="bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-300 text-[10px] font-bold px-2 py-0.5 rounded border border-violet-200 dark:border-violet-800 ml-2">${t.badgeClinical}</span>`;
-                    if (isNow) badgeHtml += `<span class="bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-full animate-pulse shadow-sm shadow-blue-200 dark:shadow-none ml-2">${t.now}</span>`;
+                    
+                    if (isNow) {
+                        badgeHtml += `<span class="bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-full animate-pulse shadow-sm shadow-blue-200 dark:shadow-none ml-2 inline-flex items-center">${t.now} ${timeBadge}</span>`;
+                    } else if (isUpcoming && timeBadge) {
+                        badgeHtml += timeBadge;
+                    }
                     
                     let linesHtml = '';
                     cls.lines.forEach((line, idx) => {
