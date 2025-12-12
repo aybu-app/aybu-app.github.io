@@ -51,7 +51,7 @@
         .content-optimized { content-visibility: auto; contain-intrinsic-size: 100px; }
         
         /* Modern Scrollbar */
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .dark ::-webkit-scrollbar-thumb { background: #334155; }
@@ -69,23 +69,37 @@
         }
         
         .glass-header {
-            background: rgba(255, 255, 255, 0.85);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
         }
         .dark .glass-header {
-            background: rgba(2, 6, 23, 0.85);
+            background: rgba(2, 6, 23, 0.95);
         }
 
-        .btn-press { transition: transform 0.1s; active: scale(0.95); }
+        .btn-press { transition: transform 0.1s; cursor: pointer; }
         .btn-press:active { transform: scale(0.95); }
 
         #searchContainer { transition: all 0.3s ease-in-out; max-height: 0; overflow: hidden; opacity: 0; }
         #searchContainer.open { max-height: 80px; opacity: 1; padding-top: 8px; padding-bottom: 8px; }
 
-        /* Active State for Bottom Nav */
+        /* Active State for Nav */
         .nav-btn-active { color: #4f46e5; }
         .dark .nav-btn-active { color: #818cf8; }
+        
+        /* Date Picker Reset */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            background: transparent;
+            bottom: 0;
+            color: transparent;
+            cursor: pointer;
+            height: auto;
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: auto;
+        }
     </style>
     <script>
         (function() {
@@ -99,11 +113,11 @@
         })();
     </script>
 </head>
-<body class="bg-gray-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 min-h-screen pb-24 flex flex-col">
+<body class="bg-gray-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 min-h-screen pb-24 md:pb-0 flex flex-col">
 
     <!-- Install Banner -->
     <div id="installBanner" class="hidden bg-indigo-600 text-white px-4 py-3 shadow-md relative z-50">
-        <div class="max-w-md mx-auto flex items-center justify-between">
+        <div class="max-w-4xl mx-auto flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <i class="fas fa-arrow-down-to-bracket text-indigo-200"></i>
                 <div>
@@ -115,40 +129,50 @@
         </div>
     </div>
 
-    <!-- Top Bar: Logo & Lang Only -->
-    <div class="pt-safe-top bg-gray-50 dark:bg-slate-950 px-5 pt-6 pb-2">
-        <div class="max-w-3xl mx-auto flex items-center justify-between">
+    <!-- Mobile Top Bar: Logo & Lang (Scrolls away) -->
+    <div class="md:hidden pt-safe-top bg-gray-50 dark:bg-slate-950 px-5 pt-6 pb-2">
+        <div class="flex items-center justify-between">
             <!-- Brand -->
             <div class="flex items-center gap-3">
-                <div id="phase-icon" class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black text-sm shadow-lg shadow-indigo-500/30">
+                <div id="phase-icon-mobile" class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black text-sm shadow-lg shadow-indigo-500/30">
                     D1
                 </div>
                 <div>
-                    <h1 id="txt-title" class="font-bold text-xl text-slate-900 dark:text-white leading-none">Phase I</h1>
-                    <p id="txt-subtitle" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">AYBU Medicine</p>
+                    <h1 id="txt-title-mobile" class="font-bold text-xl text-slate-900 dark:text-white leading-none">Phase I</h1>
+                    <p id="txt-subtitle-mobile" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">AYBU Medicine</p>
                 </div>
             </div>
             
-            <!-- Language Toggle (Kept Top Right) -->
-            <button id="langToggleBtn" class="btn-press flex bg-white dark:bg-slate-900 p-1 rounded-full border border-gray-200 dark:border-slate-800 shadow-sm">
-                <div id="lang-tr" class="w-8 h-6 flex items-center justify-center rounded-full text-[10px] font-bold text-slate-400 transition-all">TR</div>
-                <div id="lang-en" class="w-8 h-6 flex items-center justify-center rounded-full text-[10px] font-bold bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm transition-all">EN</div>
+            <!-- Language Toggle Mobile -->
+            <button id="langToggleBtnMobile" class="btn-press flex bg-white dark:bg-slate-900 p-1 rounded-full border border-gray-200 dark:border-slate-800 shadow-sm">
+                <div class="lang-tr-indicator w-8 h-6 flex items-center justify-center rounded-full text-[10px] font-bold text-slate-400 transition-all">TR</div>
+                <div class="lang-en-indicator w-8 h-6 flex items-center justify-center rounded-full text-[10px] font-bold bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm transition-all">EN</div>
             </button>
         </div>
     </div>
 
-    <!-- Sticky Date Header -->
+    <!-- Sticky Header (Contains Date Controls + Desktop Actions) -->
     <header class="sticky top-0 z-40 glass-header border-b border-gray-100 dark:border-slate-800/50 shadow-sm transition-all duration-300">
-        <div class="max-w-3xl mx-auto px-4 py-3">
-            <!-- Date Controls -->
-            <div id="dateControls" class="flex items-center justify-between gap-3">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            
+            <!-- Desktop Brand (Hidden on Mobile) -->
+            <div class="hidden md:flex items-center gap-3 min-w-[200px]">
+                <div class="w-9 h-9 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-black text-xs shadow-md shadow-indigo-500/30">D1</div>
+                <div>
+                    <h1 class="font-bold text-lg text-slate-900 dark:text-white leading-none">Phase I</h1>
+                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">AYBU Medicine</p>
+                </div>
+            </div>
+
+            <!-- Date Controls (Centered on Desktop) -->
+            <div id="dateControls" class="flex items-center justify-between gap-3 w-full md:w-auto md:min-w-[320px]">
                 <button aria-label="Previous Day" id="prevDayBtn" class="btn-press w-10 h-10 flex flex-none items-center justify-center rounded-full bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-500 border border-gray-200 dark:border-slate-800 shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                     <i class="fas fa-chevron-left"></i>
                 </button>
                 
                 <div class="relative flex-1 group mx-1">
                     <input aria-label="Date Picker" type="date" id="datePicker" class="opacity-0 absolute inset-0 w-full h-full z-20 cursor-pointer">
-                    <div id="dateDisplay" class="h-11 flex items-center justify-center gap-3 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-full shadow-sm group-hover:border-indigo-400 dark:group-hover:border-indigo-500 transition-all cursor-pointer px-4">
+                    <div id="dateDisplay" class="h-11 flex items-center justify-center gap-3 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-full shadow-sm group-hover:border-indigo-400 dark:group-hover:border-indigo-500 transition-all cursor-pointer px-4 select-none">
                         <!-- Date injected by JS -->
                     </div>
                 </div>
@@ -158,13 +182,45 @@
                 </button>
             </div>
 
-            <!-- Search Area (Expands) -->
-            <div id="searchContainer" class="w-full">
+            <!-- Desktop Actions (Hidden on Mobile) -->
+            <div class="hidden md:flex items-center gap-2 justify-end min-w-[200px]">
+                 <button id="searchBtnDesktop" class="btn-press w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 text-slate-500 transition-colors" title="Search">
+                    <i class="fas fa-search"></i>
+                 </button>
+                 <button id="openMenuBtnDesktop" class="btn-press w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 text-slate-500 transition-colors" title="Dining Menu">
+                    <i class="fas fa-utensils"></i>
+                 </button>
+                 <button id="viewToggleBtnDesktop" class="btn-press w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 text-slate-500 transition-colors" title="Switch View">
+                    <i class="fas fa-columns"></i>
+                 </button>
+                 <div class="h-6 w-px bg-gray-200 dark:bg-slate-700 mx-1"></div>
+                 <button id="langToggleBtnDesktop" class="btn-press flex bg-white dark:bg-slate-900 p-1 rounded-md border border-gray-200 dark:border-slate-800 shadow-sm">
+                    <div class="lang-tr-indicator w-6 h-5 flex items-center justify-center rounded text-[9px] font-bold text-slate-400 transition-all">TR</div>
+                    <div class="lang-en-indicator w-6 h-5 flex items-center justify-center rounded text-[9px] font-bold bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm transition-all">EN</div>
+                </button>
+                 <button id="themeToggleBtnDesktop" class="btn-press w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 text-slate-500 transition-colors ml-1" title="Toggle Theme">
+                    <i id="darkModeIconDesktop" class="fas fa-circle-half-stroke"></i>
+                 </button>
+            </div>
+
+            <!-- Search Expandable Area -->
+            <div id="searchContainer" class="w-full md:hidden">
                 <div class="relative">
                     <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
                     <input type="text" id="searchInput" placeholder="Search..." 
                            class="w-full pl-10 pr-10 py-3 bg-gray-100 dark:bg-slate-900 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-medium text-slate-800 dark:text-white placeholder:text-slate-400">
                     <button aria-label="Close Search" id="closeSearchBtn" class="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center bg-gray-200 dark:bg-slate-800 rounded-full text-xs text-slate-500">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+             <!-- Desktop Search Expandable (Overlay style could be better but sticking to flow) -->
+            <div id="searchContainerDesktop" class="hidden w-full order-last">
+                 <div class="relative max-w-lg mx-auto mt-2">
+                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="searchInputDesktop" placeholder="Search schedule..." 
+                           class="w-full pl-10 pr-10 py-3 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-medium">
+                    <button aria-label="Close Search" id="closeSearchBtnDesktop" class="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full text-xs text-slate-500 transition-colors">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
@@ -179,10 +235,11 @@
         </div>
     </header>
 
-    <main class="w-full max-w-3xl mx-auto px-4 py-6 flex-1">
+    <main class="w-full max-w-4xl mx-auto px-4 py-6 flex-1 md:px-6">
         <!-- Views -->
         <div id="scheduleContainer" class="hidden space-y-4 content-optimized min-h-[50vh]"></div>
-        <div id="weekContainer" class="hidden grid grid-cols-1 gap-4"></div>
+        <!-- Week View: Grid on desktop, stack on mobile -->
+        <div id="weekContainer" class="hidden grid grid-cols-1 md:grid-cols-5 gap-4"></div>
         <div id="searchResultsContainer" class="hidden space-y-4 pb-20"></div>
 
         <!-- Empty States -->
@@ -199,7 +256,7 @@
         </div>
 
         <!-- Loader -->
-        <div id="loadingState" class="mt-8 px-2">
+        <div id="loadingState" class="mt-8 px-2 max-w-2xl mx-auto">
             <div class="space-y-6 animate-pulse">
                 <div class="flex gap-4">
                     <div class="w-16 h-4 bg-gray-200 dark:bg-slate-800 rounded mt-2"></div>
@@ -218,38 +275,33 @@
         </div>
     </main>
 
-    <!-- FAB for "Today" - Floats above Bottom Nav -->
-    <button aria-label="Go to Today" id="todayBtn" class="hidden fixed bottom-24 right-5 bg-indigo-600 text-white w-14 h-14 rounded-2xl shadow-xl shadow-indigo-500/30 flex items-center justify-center z-40 btn-press transition-transform hover:-translate-y-1">
+    <!-- FAB for "Today" - Mobile: above nav, Desktop: bottom right -->
+    <button aria-label="Go to Today" id="todayBtn" class="hidden fixed bottom-24 right-5 md:bottom-10 md:right-10 bg-indigo-600 hover:bg-indigo-700 text-white w-14 h-14 rounded-2xl shadow-xl shadow-indigo-500/30 flex items-center justify-center z-40 btn-press transition-transform hover:-translate-y-1">
         <i class="fas fa-calendar-day text-xl"></i>
     </button>
     
-    <!-- Bottom Navigation Bar -->
-    <nav class="fixed bottom-0 left-0 w-full glass-nav z-50 pb-safe-bottom">
+    <!-- Mobile Bottom Navigation Bar (Hidden on Desktop) -->
+    <nav class="md:hidden fixed bottom-0 left-0 w-full glass-nav z-50 pb-safe-bottom">
         <div class="max-w-md mx-auto flex items-center justify-around h-16 px-2">
             
-            <!-- Search Button -->
-            <button id="searchBtn" class="flex flex-col items-center justify-center w-16 h-full text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors btn-press gap-1">
+            <button id="searchBtnMobile" class="flex flex-col items-center justify-center w-16 h-full text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors btn-press gap-1">
                 <i class="fas fa-search text-lg mb-0.5"></i>
                 <span class="text-[10px] font-bold">Search</span>
             </button>
 
-            <!-- Menu Button -->
-            <button id="openMenuBtn" class="flex flex-col items-center justify-center w-16 h-full text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors btn-press gap-1">
+            <button id="openMenuBtnMobile" class="flex flex-col items-center justify-center w-16 h-full text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors btn-press gap-1">
                 <i class="fas fa-utensils text-lg mb-0.5"></i>
                 <span class="text-[10px] font-bold">Food</span>
             </button>
             
-            <!-- View Switcher -->
-            <button id="viewToggleBtn" class="flex flex-col items-center justify-center w-16 h-full text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors btn-press gap-1">
+            <button id="viewToggleBtnMobile" class="flex flex-col items-center justify-center w-16 h-full text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors btn-press gap-1">
                 <i class="fas fa-columns text-lg mb-0.5"></i>
                 <span class="text-[10px] font-bold">View</span>
             </button>
 
-            <!-- Theme Toggle -->
-            <button id="themeToggleBtn" class="flex flex-col items-center justify-center w-16 h-full text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors btn-press gap-1 relative">
-                <i id="darkModeIcon" class="fas fa-circle-half-stroke text-lg mb-0.5"></i>
+            <button id="themeToggleBtnMobile" class="flex flex-col items-center justify-center w-16 h-full text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors btn-press gap-1 relative">
+                <i id="darkModeIconMobile" class="fas fa-circle-half-stroke text-lg mb-0.5"></i>
                 <span class="text-[10px] font-bold">Theme</span>
-                <span id="themeTooltip" class="absolute -top-8 bg-slate-800 text-white text-[9px] px-2 py-1 rounded opacity-0 pointer-events-none transition-opacity">Auto</span>
             </button>
 
         </div>
@@ -287,7 +339,7 @@
                     <h3 class="text-lg font-bold text-slate-900 dark:text-white">Dining Menu</h3>
                     <p id="menuDateDisplay" class="text-xs text-slate-400 font-medium mt-0.5">Today</p>
                 </div>
-                <button id="closeMenuBtn" class="w-8 h-8 flex items-center justify-center bg-gray-100 dark:bg-slate-800 rounded-full text-slate-500"><i class="fas fa-times"></i></button>
+                <button id="closeMenuBtn" class="w-8 h-8 flex items-center justify-center bg-gray-100 dark:bg-slate-800 rounded-full text-slate-500 hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"><i class="fas fa-times"></i></button>
             </div>
             <div class="flex-1 overflow-y-auto p-5" id="menuContainer">
                 <div id="menuLoading" class="py-20 text-center">
@@ -441,6 +493,16 @@
                 initApp();
                 checkInstallBanner();
             });
+
+            // Helper to bind events to one or more elements safely
+            function bindClick(id, handler) {
+                const el = document.getElementById(id);
+                if(el) el.onclick = handler;
+            }
+            function bindInput(id, handler) {
+                const el = document.getElementById(id);
+                if(el) el.addEventListener('input', handler);
+            }
             
             // --- MENU SYSTEM INTEGRATION ---
             const MENU_CONFIG = {
@@ -454,24 +516,26 @@
 
             function initMenuSystem() {
                 const modal = document.getElementById('menuModal');
-                const btn = document.getElementById('openMenuBtn');
                 const closeBtn = document.getElementById('closeMenuBtn');
                 
-                if(!btn || !modal) return;
-
-                btn.onclick = () => {
+                // Bind both mobile and desktop triggers
+                const openHandler = () => {
+                    if(!modal) return;
                     modal.classList.remove('hidden');
                     document.body.style.overflow = 'hidden'; 
                     fetchMenuData(); 
                 };
+                
+                bindClick('openMenuBtnMobile', openHandler);
+                bindClick('openMenuBtnDesktop', openHandler);
 
                 const closeMenu = () => {
                     modal.classList.add('hidden');
                     document.body.style.overflow = '';
                 };
 
-                closeBtn.onclick = closeMenu;
-                modal.onclick = (e) => { if(e.target === modal) closeMenu(); };
+                if(closeBtn) closeBtn.onclick = closeMenu;
+                if(modal) modal.onclick = (e) => { if(e.target === modal) closeMenu(); };
             }
 
             const MENU_CACHE_KEY = 'aybu_menu_cache_v2'; 
@@ -635,24 +699,46 @@
             }
 
             function setupEventListeners() {
-                document.getElementById('installBanner').onclick = openInstallModal;
-                document.getElementById('closeInstallBtn').onclick = (e) => { e.stopPropagation(); closeInstallBanner(); };
-                document.getElementById('langToggleBtn').onclick = toggleLanguage;
-                document.getElementById('themeToggleBtn').onclick = toggleDarkMode;
-                document.getElementById('viewToggleBtn').onclick = toggleViewMode;
-                document.getElementById('searchBtn').onclick = toggleSearch;
-                document.getElementById('prevDayBtn').onclick = () => changeDay(-1);
-                document.getElementById('nextDayBtn').onclick = () => changeDay(1);
-                document.getElementById('datePicker').addEventListener('change', (e) => {
+                bindClick('installBanner', openInstallModal);
+                bindClick('closeInstallBtn', (e) => { e.stopPropagation(); closeInstallBanner(); });
+                
+                bindClick('langToggleBtnMobile', toggleLanguage);
+                bindClick('langToggleBtnDesktop', toggleLanguage);
+                
+                bindClick('themeToggleBtnMobile', toggleDarkMode);
+                bindClick('themeToggleBtnDesktop', toggleDarkMode);
+                
+                bindClick('viewToggleBtnMobile', toggleViewMode);
+                bindClick('viewToggleBtnDesktop', toggleViewMode);
+                
+                bindClick('searchBtnMobile', toggleSearch);
+                bindClick('searchBtnDesktop', toggleSearch);
+                
+                bindClick('prevDayBtn', () => changeDay(-1));
+                bindClick('nextDayBtn', () => changeDay(1));
+                
+                const picker = document.getElementById('datePicker');
+                if(picker) picker.addEventListener('change', (e) => {
                     const d = DateUtils.parse(e.target.value);
                     updateDateDisplay(d);
-                    document.getElementById('searchContainer').classList.contains('open') ? toggleSearch() : refreshView();
+                    const container = document.getElementById('searchContainer');
+                    const desktopContainer = document.getElementById('searchContainerDesktop');
+                    if(container.classList.contains('open') || (desktopContainer && !desktopContainer.classList.contains('hidden'))) {
+                         toggleSearch();
+                    } else {
+                         refreshView();
+                    }
                 });
-                document.getElementById('searchInput').addEventListener('input', (e) => handleGlobalSearch(e.target.value));
-                document.getElementById('closeSearchBtn').onclick = toggleSearch;
-                document.getElementById('closeInstallModalBtn').onclick = closeInstallModal;
-                document.getElementById('closeInstallModalBtn2').onclick = closeInstallModal;
-                document.getElementById('todayBtn').onclick = goToToday;
+                
+                bindInput('searchInput', (e) => handleGlobalSearch(e.target.value));
+                bindInput('searchInputDesktop', (e) => handleGlobalSearch(e.target.value));
+                
+                bindClick('closeSearchBtn', toggleSearch);
+                bindClick('closeSearchBtnDesktop', toggleSearch);
+                
+                bindClick('closeInstallModalBtn', closeInstallModal);
+                bindClick('closeInstallModalBtn2', closeInstallModal);
+                bindClick('todayBtn', goToToday);
             }
 
             // --- THEME & NAV LOGIC ---
@@ -681,11 +767,14 @@
             }
 
             function updateThemeIcon(state) {
-                const icon = document.getElementById('darkModeIcon');
-                if(!icon) return;
-                if (state === 'light') icon.className = 'fas fa-sun text-amber-500 text-lg mb-0.5';
-                else if (state === 'dark') icon.className = 'fas fa-moon text-indigo-400 text-lg mb-0.5';
-                else icon.className = 'fas fa-circle-half-stroke text-slate-400 dark:text-slate-500 text-lg mb-0.5';
+                // Update both Mobile and Desktop icons
+                ['darkModeIconMobile', 'darkModeIconDesktop'].forEach(id => {
+                    const icon = document.getElementById(id);
+                    if(!icon) return;
+                    if (state === 'light') icon.className = 'fas fa-sun text-amber-500 text-lg mb-0.5';
+                    else if (state === 'dark') icon.className = 'fas fa-moon text-indigo-400 text-lg mb-0.5';
+                    else icon.className = 'fas fa-circle-half-stroke text-slate-400 dark:text-slate-500 text-lg mb-0.5';
+                });
             }
 
             function initLang() {
@@ -715,21 +804,24 @@
             function toggleViewMode() {
                 if (viewMode === 'search') { viewMode = 'day'; toggleSearch(); return; }
                 viewMode = viewMode === 'day' ? 'week' : 'day';
-                // Update icon in bottom nav
-                const btn = document.getElementById('viewToggleBtn');
-                if(btn) {
-                    const icon = btn.querySelector('i');
-                    const text = btn.querySelector('span');
-                    if(viewMode === 'week') {
-                        icon.className = 'fas fa-calendar-day text-lg mb-0.5';
-                        text.textContent = 'Day View';
-                        btn.classList.add('nav-btn-active');
-                    } else {
-                        icon.className = 'fas fa-columns text-lg mb-0.5';
-                        text.textContent = 'Week View';
-                        btn.classList.remove('nav-btn-active');
+                
+                // Update icon in bottom nav and desktop header
+                ['viewToggleBtnMobile', 'viewToggleBtnDesktop'].forEach(id => {
+                    const btn = document.getElementById(id);
+                    if(btn) {
+                        const icon = btn.querySelector('i');
+                        const text = btn.querySelector('span'); // Only exists in mobile
+                        if(viewMode === 'week') {
+                            if(icon) icon.className = 'fas fa-calendar-day text-lg mb-0.5';
+                            if(text) text.textContent = 'Day View';
+                            btn.classList.add('nav-btn-active');
+                        } else {
+                            if(icon) icon.className = 'fas fa-columns text-lg mb-0.5';
+                            if(text) text.textContent = 'Week View';
+                            btn.classList.remove('nav-btn-active');
+                        }
                     }
-                }
+                });
                 refreshView();
             }
 
@@ -763,29 +855,61 @@
             }
 
             function toggleSearch() {
-                const container = document.getElementById('searchContainer');
-                const input = document.getElementById('searchInput');
-                const btn = document.getElementById('searchBtn');
-
-                container.classList.toggle('open');
+                const mobileContainer = document.getElementById('searchContainer');
+                const desktopContainer = document.getElementById('searchContainerDesktop');
+                const mobileInput = document.getElementById('searchInput');
+                const desktopInput = document.getElementById('searchInputDesktop');
                 
-                if(container.classList.contains('open')) {
-                    input.focus();
-                    viewMode = 'search'; 
+                // Toggle state
+                const isOpening = !mobileContainer.classList.contains('open') && desktopContainer.classList.contains('hidden');
+
+                if(isOpening) {
+                    // Open
+                    mobileContainer.classList.add('open');
+                    desktopContainer.classList.remove('hidden');
+                    
+                    viewMode = 'search';
                     document.getElementById('scheduleContainer').classList.add('hidden');
                     document.getElementById('weekContainer').classList.add('hidden');
                     document.getElementById('emptyState').classList.add('hidden');
-                    btn.classList.add('nav-btn-active');
-                    handleGlobalSearch(input.value);
+                    
+                    ['searchBtnMobile', 'searchBtnDesktop'].forEach(id => {
+                        const btn = document.getElementById(id);
+                        if(btn) btn.classList.add('nav-btn-active', 'text-indigo-600');
+                    });
+                    
+                    // Focus correct input based on visibility
+                    setTimeout(() => {
+                        if(window.getComputedStyle(desktopContainer).display !== 'none') {
+                             desktopInput.focus();
+                             handleGlobalSearch(desktopInput.value);
+                        } else {
+                             mobileInput.focus();
+                             handleGlobalSearch(mobileInput.value);
+                        }
+                    }, 50);
+
                 } else {
-                    input.value = '';
-                    viewMode = 'day'; 
+                    // Close
+                    mobileContainer.classList.remove('open');
+                    desktopContainer.classList.add('hidden');
+                    
+                    mobileInput.value = '';
+                    desktopInput.value = '';
+                    viewMode = 'day';
+                    
                     document.getElementById('searchResultsContainer').innerHTML = '';
                     document.getElementById('searchResultsContainer').classList.add('hidden');
                     document.getElementById('noSearchResults').classList.add('hidden');
-                    btn.classList.remove('nav-btn-active');
-                    refreshView(); 
-                    input.blur();
+                    
+                    ['searchBtnMobile', 'searchBtnDesktop'].forEach(id => {
+                        const btn = document.getElementById(id);
+                        if(btn) btn.classList.remove('nav-btn-active', 'text-indigo-600');
+                    });
+                    
+                    refreshView();
+                    mobileInput.blur();
+                    desktopInput.blur();
                 }
             }
 
@@ -926,7 +1050,7 @@
 
                             matches.forEach(item => {
                                 const card = document.createElement('div');
-                                card.className = "bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm cursor-pointer mb-3";
+                                card.className = "bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm cursor-pointer mb-3 hover:border-indigo-200 dark:hover:border-indigo-800 transition-colors";
                                 card.onclick = () => jumpToDate(day.date);
                                 
                                 let highlightClass = "text-slate-900 dark:text-white";
@@ -1073,14 +1197,15 @@
             function setLanguage(lang, shouldProcess = true) {
                 currentLang = lang;
                 localStorage.setItem(CONFIG.STORAGE_KEYS.LANG, lang);
-                const trBtn = document.getElementById('lang-tr');
-                const enBtn = document.getElementById('lang-en');
-                const active = "w-8 h-6 flex items-center justify-center rounded-full text-[10px] font-bold bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm transition-all";
-                const inactive = "w-8 h-6 flex items-center justify-center rounded-full text-[10px] font-bold text-slate-400 transition-all";
                 
-                if (lang === 'EN') { enBtn.className = active; trBtn.className = inactive; } 
-                else { trBtn.className = active; enBtn.className = inactive; }
-
+                // Update indicators in both mobile and desktop toggles
+                document.querySelectorAll('.lang-tr-indicator').forEach(el => {
+                    el.className = `w-8 h-6 md:w-6 md:h-5 flex items-center justify-center rounded-full md:rounded text-[10px] md:text-[9px] font-bold transition-all ${lang === 'TR' ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm' : 'text-slate-400'}`;
+                });
+                document.querySelectorAll('.lang-en-indicator').forEach(el => {
+                    el.className = `w-8 h-6 md:w-6 md:h-5 flex items-center justify-center rounded-full md:rounded text-[10px] md:text-[9px] font-bold transition-all ${lang === 'EN' ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm' : 'text-slate-400'}`;
+                });
+                
                 const t = TRANSLATIONS[lang];
                 ['txt-title', 'txt-subtitle', 'txt-loading', 'txt-install-banner-title', 'txt-install-banner-desc', 'txt-install-title', 'txt-install-close'].forEach(id => {
                     const el = document.getElementById(id);
@@ -1090,7 +1215,14 @@
                         else if (t[id.replace('txt-','')]) el.textContent = t[id.replace('txt-','')];
                     }
                 });
-                document.getElementById('phase-icon').textContent = t.logoText;
+                
+                // Update specific duplicates
+                const titleMob = document.getElementById('txt-title-mobile');
+                const subMob = document.getElementById('txt-subtitle-mobile');
+                if(titleMob) titleMob.textContent = t.title;
+                if(subMob) subMob.textContent = t.subtitle;
+
+                document.getElementById('phase-icon-mobile').textContent = t.logoText;
                 document.getElementById('txt-install-ios').innerHTML = t.installIOS;
                 document.getElementById('txt-install-android').innerHTML = t.installAndroid;
                 
@@ -1115,7 +1247,7 @@
                 
                 document.getElementById('dateDisplay').innerHTML = `
                     <i class="fas fa-calendar text-slate-400 text-xs mr-1"></i>
-                    <div class="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center">${label}${datePart}</div>
+                    <div class="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center whitespace-nowrap">${label}${datePart}</div>
                     <i class="fas fa-chevron-down text-slate-300 text-[10px] ml-1 group-hover:text-indigo-500 transition-colors"></i>
                 `;
             }
@@ -1339,7 +1471,7 @@
                         </div>
                         
                         <!-- Content Card -->
-                        <div class="flex-1 p-4 rounded-2xl border ${cardBg} shadow-sm relative overflow-hidden transition-transform active:scale-[0.99]">
+                        <div class="flex-1 p-4 rounded-2xl border ${cardBg} shadow-sm relative overflow-hidden transition-transform active:scale-[0.99] hover:border-indigo-200 dark:hover:border-indigo-800">
                             <div class="absolute left-0 top-4 bottom-4 w-1 rounded-r ${accentColor}"></div>
                             <div class="pl-3">
                                 <div class="flex flex-wrap items-center mb-1">
