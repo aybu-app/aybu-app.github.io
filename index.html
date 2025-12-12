@@ -2,7 +2,7 @@
 <html lang="en" class="transition-colors duration-300">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="description" content="AYBU Medicine Phase I Schedule - Offline Capable">
     <title>AYBU Schedule</title>
     
@@ -71,6 +71,9 @@
         .btn-press:active { transform: scale(0.92); }
         #searchContainer { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); max-height: 0; overflow: hidden; opacity: 0; }
         #searchContainer.open { max-height: 80px; opacity: 1; margin-top: 0.5rem; }
+        
+        /* Safe area padding for iPhones with notches */
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
     </style>
     <script>
         (function() {
@@ -122,29 +125,33 @@
                         </div>
                     </div>
 
-                    <!-- Action Buttons -->
+                    <!-- Desktop Actions & Mobile Lang -->
                     <div class="flex items-center gap-1 md:gap-2 shrink-0">
+                        <!-- Language Toggle (Visible on both) -->
                         <button id="langToggleBtn" class="flex items-center bg-slate-100 dark:bg-slate-800 p-0.5 md:p-1 rounded-lg cursor-pointer select-none border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <div id="lang-tr" class="px-1.5 md:px-2.5 py-1 rounded-md text-[10px] font-bold text-slate-400 dark:text-slate-500 transition-all">TR</div>
                             <div id="lang-en" class="px-1.5 md:px-2.5 py-1 rounded-md text-[10px] font-bold bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 shadow-sm transition-all">EN</div>
                         </button>
                         
-                        <button aria-label="Toggle Theme" id="themeToggleBtn" class="btn-press w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 relative group">
-                            <i id="darkModeIcon" class="fas fa-circle-half-stroke text-xs"></i>
-                            <span id="themeTooltip" class="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[9px] px-2 py-1 rounded opacity-0 transition-opacity duration-300 pointer-events-none whitespace-nowrap z-50 shadow-sm">Auto</span>
-                        </button>
+                        <!-- Desktop Only Buttons -->
+                        <div class="hidden md:flex items-center gap-2">
+                            <button aria-label="Toggle Theme" id="themeToggleBtn" class="btn-press w-9 h-9 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 relative group">
+                                <i id="darkModeIcon" class="fas fa-circle-half-stroke text-xs"></i>
+                                <span id="themeTooltip" class="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[9px] px-2 py-1 rounded opacity-0 transition-opacity duration-300 pointer-events-none whitespace-nowrap z-50 shadow-sm">Auto</span>
+                            </button>
 
-                        <button aria-label="Cafeteria Menu" id="openMenuBtn" class="btn-press w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700">
-                            <i class="fas fa-utensils text-xs"></i>
-                        </button>
+                            <button aria-label="Cafeteria Menu" id="openMenuBtn" class="btn-press w-9 h-9 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700">
+                                <i class="fas fa-utensils text-xs"></i>
+                            </button>
 
-                        <button aria-label="Switch View" id="viewToggleBtn" class="btn-press w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700" title="Switch View">
-                            <i class="fas fa-columns text-xs"></i>
-                        </button>
-                        
-                         <button aria-label="Search" id="searchBtn" class="btn-press w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700">
-                            <i class="fas fa-search text-xs"></i>
-                         </button>
+                            <button aria-label="Switch View" id="viewToggleBtn" class="btn-press w-9 h-9 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700" title="Switch View">
+                                <i class="fas fa-columns text-xs"></i>
+                            </button>
+                            
+                             <button aria-label="Search" id="searchBtn" class="btn-press w-9 h-9 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700">
+                                <i class="fas fa-search text-xs"></i>
+                             </button>
+                         </div>
                     </div>
                 </div>
 
@@ -232,13 +239,33 @@
         </div>
     </div>
 
-    <footer class="w-full max-w-6xl mx-auto px-4 py-6 text-center">
+    <!-- Bottom Navigation Bar (Mobile Only) -->
+    <nav class="md:hidden fixed bottom-0 left-0 w-full bg-white/96 dark:bg-slate-900/96 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 z-50 flex justify-around items-center px-2 py-3 pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <button id="mobileSearchBtn" class="flex flex-col items-center gap-1 p-2 w-16 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors active:scale-95">
+            <i class="fas fa-search text-xl mb-0.5"></i>
+            <span class="text-[10px] font-bold tracking-wide">Search</span>
+        </button>
+        <button id="mobileMenuBtn" class="flex flex-col items-center gap-1 p-2 w-16 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors active:scale-95">
+            <i class="fas fa-utensils text-xl mb-0.5"></i>
+            <span class="text-[10px] font-bold tracking-wide">Menu</span>
+        </button>
+        <button id="mobileViewBtn" class="flex flex-col items-center gap-1 p-2 w-16 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors active:scale-95">
+            <i class="fas fa-columns text-xl mb-0.5"></i>
+            <span class="text-[10px] font-bold tracking-wide">View</span>
+        </button>
+        <button id="mobileThemeBtn" class="flex flex-col items-center gap-1 p-2 w-16 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors active:scale-95">
+            <i class="fas fa-circle-half-stroke text-xl mb-0.5"></i>
+            <span class="text-[10px] font-bold tracking-wide">Theme</span>
+        </button>
+    </nav>
+
+    <footer class="w-full max-w-6xl mx-auto px-4 py-6 text-center mb-16 md:mb-0">
         <div class="text-[10px] font-bold text-slate-300 dark:text-slate-700 tracking-widest uppercase">
-            AYBU Medicine Schedule • v2.3
+            AYBU Medicine Schedule • v2.4
         </div>
     </footer>
 
-    <button aria-label="Go to Today" id="todayBtn" class="hidden fixed bottom-8 right-6 bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 w-14 h-14 rounded-2xl shadow-2xl shadow-blue-900/20 border border-blue-50 dark:border-slate-600 flex items-center justify-center z-40 btn-press transition-all hover:bg-blue-50 dark:hover:bg-slate-600 group md:bottom-10 md:right-10" title="Go to Today">
+    <button aria-label="Go to Today" id="todayBtn" class="fixed bottom-24 right-6 md:bottom-10 md:right-10 bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 w-14 h-14 rounded-2xl shadow-2xl shadow-blue-900/20 border border-blue-50 dark:border-slate-600 flex items-center justify-center z-40 btn-press transition-all duration-500 ease-in-out hover:bg-blue-50 dark:hover:bg-slate-600 group opacity-0 translate-y-10 pointer-events-none" title="Go to Today">
         <i class="fas fa-calendar-day text-xl group-hover:scale-110 transition-transform"></i>
     </button>
 
@@ -393,53 +420,51 @@
             function initMenuSystem() {
                 const modal = document.getElementById('menuModal');
                 const btn = document.getElementById('openMenuBtn');
+                const mobileBtn = document.getElementById('mobileMenuBtn'); // Add mobile button
                 const closeBtn = document.getElementById('closeMenuBtn');
                 
-                if(!btn || !modal) return;
-
-                btn.onclick = () => {
+                if(!modal) return;
+                
+                const openMenu = () => {
                     modal.classList.remove('hidden');
-                    document.body.style.overflow = 'hidden'; // Prevent background scrolling
-                    fetchMenuData(); // Trigger fetch on open
+                    document.body.style.overflow = 'hidden'; 
+                    fetchMenuData(); 
                 };
+
+                if(btn) btn.onclick = openMenu;
+                if(mobileBtn) mobileBtn.onclick = openMenu; // Bind mobile button
 
                 const closeMenu = () => {
                     modal.classList.add('hidden');
                     document.body.style.overflow = '';
                 };
 
-                closeBtn.onclick = closeMenu;
-                // Close when clicking outside content
+                if(closeBtn) closeBtn.onclick = closeMenu;
                 modal.onclick = (e) => { if(e.target === modal) closeMenu(); };
             }
 
-            const MENU_CACHE_KEY = 'aybu_menu_cache_v2'; // Versioning the cache
+            const MENU_CACHE_KEY = 'aybu_menu_cache_v2'; 
 
             async function fetchMenuData() {
                 const container = document.getElementById('menuContent');
                 const loading = document.getElementById('menuLoading');
                 const error = document.getElementById('menuError');
                 
-                // 1. Check Cache
                 const todayStr = new Date().toDateString();
                 try {
                     const cached = JSON.parse(localStorage.getItem(MENU_CACHE_KEY));
                     if (cached && cached.date === todayStr && cached.html) {
-                        // Use cache immediately
                         processMenuHtml(cached.html);
                         loading.classList.add('hidden');
                         return;
                     }
                 } catch(e) { console.log('Cache parse error'); }
 
-                // Don't refetch if we already have DOM content (and no cache hit previously handled it)
                 if(container.children.length > 0) return;
 
                 loading.classList.remove('hidden');
                 error.classList.add('hidden');
 
-                // 2. Race Proxies
-                // We create a promise for each proxy fetch
                 const promises = MENU_CONFIG.PROXIES.map(proxy => 
                     new Promise(async (resolve, reject) => {
                         try {
@@ -455,15 +480,11 @@
                 );
 
                 try {
-                    // Promise.any waits for the first fulfilled promise
                     const html = await Promise.any(promises);
-                    
-                    // 3. Save to Cache
                     localStorage.setItem(MENU_CACHE_KEY, JSON.stringify({
                         date: todayStr,
                         html: html
                     }));
-
                     processMenuHtml(html);
                 } catch (aggregateError) {
                     console.error("All proxies failed", aggregateError);
@@ -498,7 +519,6 @@
                 let capturing = false;
                 let items = [];
 
-                // Regex for date range DD.MM.YYYY
                 const dateRegex = /(\d{2}\.\d{2}\.\d{4})\s*-\s*(\d{2}\.\d{2}\.\d{4})/;
 
                 for (const line of lines) {
@@ -550,7 +570,6 @@
                         cal = calMatch[0];
                     }
 
-                    // Icon Logic
                     let icon = 'fa-circle';
                     let color = 'text-slate-300 dark:text-slate-600';
                     const l = text.toLowerCase();
@@ -589,15 +608,26 @@
                 container.classList.remove('hidden');
             }
 
-            // Call this at the end of your main init function
-            // initMenuSystem(); // Already called in DOMContentLoaded
             function setupEventListeners() {
                 document.getElementById('installBanner').onclick = openInstallModal;
                 document.getElementById('closeInstallBtn').onclick = (e) => { e.stopPropagation(); closeInstallBanner(); };
+                
+                // Header Buttons
                 document.getElementById('langToggleBtn').onclick = toggleLanguage;
-                document.getElementById('themeToggleBtn').onclick = toggleDarkMode;
-                document.getElementById('viewToggleBtn').onclick = toggleViewMode;
-                document.getElementById('searchBtn').onclick = toggleSearch;
+                
+                const themeBtn = document.getElementById('themeToggleBtn');
+                if(themeBtn) themeBtn.onclick = toggleDarkMode;
+                const viewBtn = document.getElementById('viewToggleBtn');
+                if(viewBtn) viewBtn.onclick = toggleViewMode;
+                const searchBtn = document.getElementById('searchBtn');
+                if(searchBtn) searchBtn.onclick = toggleSearch;
+
+                // Mobile Bottom Nav Buttons
+                document.getElementById('mobileThemeBtn').onclick = toggleDarkMode;
+                document.getElementById('mobileViewBtn').onclick = toggleViewMode;
+                document.getElementById('mobileSearchBtn').onclick = toggleSearch;
+                // Note: Mobile Menu Btn handled in initMenuSystem
+                
                 document.getElementById('prevDayBtn').onclick = () => changeDay(-1);
                 document.getElementById('nextDayBtn').onclick = () => changeDay(1);
                 document.getElementById('datePicker').addEventListener('change', (e) => {
@@ -639,13 +669,25 @@
             }
 
             function updateThemeIcon(state, showFeedback = false) {
+                // Update Desktop Icon
                 const icon = document.getElementById('darkModeIcon');
                 const tooltip = document.getElementById('themeTooltip');
-                if(!icon) return;
+                
+                // Update Mobile Icon
+                const mobileIcon = document.querySelector('#mobileThemeBtn i');
+
                 let label = 'Auto';
-                if (state === 'light') { icon.className = 'fas fa-sun text-yellow-500 text-xs'; label = 'Light'; } 
-                else if (state === 'dark') { icon.className = 'fas fa-moon text-blue-400 text-xs'; label = 'Dark'; } 
-                else { icon.className = 'fas fa-circle-half-stroke text-slate-400 dark:text-slate-500 text-xs'; label = 'Auto'; }
+                let iconClass = 'fas fa-circle-half-stroke';
+                let colorClass = 'text-slate-400 dark:text-slate-500';
+
+                if (state === 'light') { 
+                    iconClass = 'fas fa-sun'; colorClass = 'text-yellow-500'; label = 'Light'; 
+                } else if (state === 'dark') { 
+                    iconClass = 'fas fa-moon'; colorClass = 'text-blue-400'; label = 'Dark'; 
+                } 
+
+                if(icon) icon.className = `${iconClass} ${colorClass} text-xs`;
+                if(mobileIcon) mobileIcon.className = `${iconClass} text-xl mb-0.5`;
 
                 if(tooltip) {
                     tooltip.textContent = label;
@@ -684,7 +726,17 @@
             function toggleViewMode() {
                 if (viewMode === 'search') { viewMode = 'day'; toggleSearch(); return; }
                 viewMode = viewMode === 'day' ? 'week' : 'day';
-                document.getElementById('viewToggleBtn').querySelector('i').className = viewMode === 'day' ? 'fas fa-columns text-xs' : 'fas fa-calendar-day text-xs';
+                
+                const iconClass = viewMode === 'day' ? 'fas fa-columns' : 'fas fa-calendar-day';
+                
+                // Update Desktop Button
+                const dBtn = document.getElementById('viewToggleBtn');
+                if(dBtn) dBtn.querySelector('i').className = `${iconClass} text-xs`;
+
+                // Update Mobile Button
+                const mBtn = document.getElementById('mobileViewBtn');
+                if(mBtn) mBtn.querySelector('i').className = `${iconClass} text-xl mb-0.5`;
+
                 refreshView();
             }
 
@@ -692,6 +744,8 @@
                 const pickerVal = document.getElementById('datePicker').value;
                 if(!pickerVal || !workbookData) return;
                 
+                checkTodayFabVisibility(); // Check if FAB should be shown
+
                 document.getElementById('searchResultsContainer').classList.add('hidden');
                 document.getElementById('noSearchResults').classList.add('hidden');
                 document.getElementById('dateControls').classList.remove('hidden'); 
@@ -706,6 +760,20 @@
                     document.getElementById('weekContainer').classList.remove('hidden');
                     document.getElementById('emptyState').classList.add('hidden');
                     renderWeekView(pickerVal);
+                }
+            }
+
+            function checkTodayFabVisibility() {
+                const pickerVal = document.getElementById('datePicker').value;
+                const todayStr = DateUtils.getTodayString();
+                const btn = document.getElementById('todayBtn');
+                
+                if (pickerVal === todayStr) {
+                    // Hide FAB if viewing today
+                    btn.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none');
+                } else {
+                    // Show FAB if viewing another day
+                    btn.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
                 }
             }
 
@@ -921,7 +989,6 @@
                         cachedData = JSON.parse(stored);
                         workbookData = cachedData;
                         refreshView();
-                        document.getElementById('todayBtn').classList.remove('hidden');
                         setLoading(false); 
                         setTimeout(() => buildSearchIndexes(), 50);
                     }
@@ -972,7 +1039,6 @@
                 setLoading(false);
                 buildSearchIndexes();
                 refreshView();
-                document.getElementById('todayBtn').classList.remove('hidden');
             }
 
             function updateDayProgress() {
