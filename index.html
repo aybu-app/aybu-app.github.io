@@ -122,7 +122,7 @@
                 </div>
             </div>
             <div class="flex items-center gap-3">
-                <span class="hidden md:inline-block text-xs font-bold bg-white/20 px-3 py-1.5 rounded-lg hover:bg-white/30 transition-colors">Install</span>
+                <span id="txt-install-action" class="hidden md:inline-block text-xs font-bold bg-white/20 px-3 py-1.5 rounded-lg hover:bg-white/30 transition-colors">Install</span>
                 <button aria-label="Close" id="closeInstallBtn" class="text-white/60 hover:text-white p-2 -mr-2 hover:bg-white/10 rounded-full transition-colors">
                     <i class="fas fa-times text-sm"></i>
                 </button>
@@ -264,7 +264,7 @@
                 <div class="text-3xl text-green-500"><i class="fab fa-android"></i></div>
                 <div><h4 class="font-bold text-slate-700 dark:text-slate-200 text-sm mb-1">Android (Chrome)</h4><p id="txt-install-android" class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">1. Tap Menu <i class='fas fa-ellipsis-v mx-1'></i><br>2. 'Install App'</p></div>
             </div>
-            <button id="closeInstallModalBtn2" class="mt-6 w-full bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl active:scale-95 transition-all shadow-lg" id="txt-install-close">Got it</button>
+            <button id="txt-install-close" class="mt-6 w-full bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl active:scale-95 transition-all shadow-lg">Got it</button>
         </div>
     </div>
 
@@ -401,7 +401,10 @@
                     menuTitle: "Dining Menu", menuFetching: "Fetching...", menuOffline: "Menu unavailable offline.", menuOpen: "Open Website",
                     searchPlaceholder: "Search entire semester...",
                     noResultsTitle: "No matching classes", noResultsDesc: "Try searching for a subject name or room.",
-                    dayProgress: "Day Progress"
+                    dayProgress: "Day Progress",
+                    installAction: "Install",
+                    themeAuto: "Auto", themeLight: "Light", themeDark: "Dark",
+                    tooltipToday: "Go to Today", tooltipView: "Switch View"
                 },
                 TR: {
                     title: "Dönem I", subtitle: "AYBÜ Tıp Fakültesi",
@@ -422,7 +425,10 @@
                     menuTitle: "Yemek Listesi", menuFetching: "Yükleniyor...", menuOffline: "Menü çevrimdışı kullanılamaz.", menuOpen: "Siteyi Aç",
                     searchPlaceholder: "Tüm dönemde ara...",
                     noResultsTitle: "Eşleşen ders yok", noResultsDesc: "Ders adı veya sınıf aramayı deneyin.",
-                    dayProgress: "Gün İlerlemesi"
+                    dayProgress: "Gün İlerlemesi",
+                    installAction: "Yükle",
+                    themeAuto: "Otomatik", themeLight: "Açık", themeDark: "Koyu",
+                    tooltipToday: "Bugüne Git", tooltipView: "Görünümü Değiştir"
                 }
             };
 
@@ -698,7 +704,7 @@
                 document.getElementById('searchInput').addEventListener('input', (e) => handleGlobalSearch(e.target.value));
                 document.getElementById('closeSearchBtn').onclick = toggleSearch;
                 document.getElementById('closeInstallModalBtn').onclick = closeInstallModal;
-                document.getElementById('closeInstallModalBtn2').onclick = closeInstallModal;
+                document.getElementById('txt-install-close').onclick = closeInstallModal;
                 document.getElementById('todayBtn').onclick = goToToday;
             }
 
@@ -736,21 +742,21 @@
                 // Update Mobile Icon
                 const mobileIcon = document.querySelector('#mobileThemeBtn i');
 
-                let label = 'Auto';
+                let labelKey = 'themeAuto';
                 let iconClass = 'fas fa-circle-half-stroke';
                 let colorClass = 'text-slate-400 dark:text-slate-500';
 
                 if (state === 'light') { 
-                    iconClass = 'fas fa-sun'; colorClass = 'text-yellow-500'; label = 'Light'; 
+                    iconClass = 'fas fa-sun'; colorClass = 'text-yellow-500'; labelKey = 'themeLight'; 
                 } else if (state === 'dark') { 
-                    iconClass = 'fas fa-moon'; colorClass = 'text-blue-400'; label = 'Dark'; 
+                    iconClass = 'fas fa-moon'; colorClass = 'text-blue-400'; labelKey = 'themeDark'; 
                 } 
 
                 if(icon) icon.className = `${iconClass} ${colorClass} text-xs`;
                 if(mobileIcon) mobileIcon.className = `${iconClass} text-xl mb-0.5`;
 
                 if(tooltip) {
-                    tooltip.textContent = label;
+                    tooltip.textContent = TRANSLATIONS[currentLang][labelKey];
                     if (showFeedback) {
                         tooltip.classList.remove('opacity-0'); tooltip.classList.add('opacity-100');
                         clearTimeout(themeTooltipTimeout);
@@ -1218,7 +1224,7 @@
                  'txt-btn-theme', 'txt-btn-menu', 'txt-btn-view', 'txt-btn-search',
                  'txt-mobile-search', 'txt-mobile-menu', 'txt-mobile-view', 'txt-mobile-theme',
                  'txt-menu-title', 'txt-menu-fetching', 'txt-menu-offline', 'txt-menu-open',
-                 'txt-no-results-title', 'txt-no-results-desc', 'txt-day-progress'].forEach(id => {
+                 'txt-no-results-title', 'txt-no-results-desc', 'txt-day-progress', 'txt-install-action'].forEach(id => {
                     const el = document.getElementById(id);
                     const key = id.replace('txt-','').replace(/-([a-z])/g, (g) => g[1].toUpperCase());
                     if(el) {
@@ -1230,7 +1236,12 @@
                 document.getElementById('txt-install-ios').innerHTML = t.installIOS;
                 document.getElementById('txt-install-android').innerHTML = t.installAndroid;
                 document.getElementById('searchInput').placeholder = t.searchPlaceholder;
+                document.getElementById('todayBtn').title = t.tooltipToday;
+                document.getElementById('viewToggleBtn').title = t.tooltipView;
                 
+                const currentTheme = localStorage.getItem(CONFIG.STORAGE_KEYS.THEME);
+                updateThemeIcon(currentTheme || 'auto', false);
+
                 const pickerDate = document.getElementById('datePicker').value;
                 if(pickerDate) updateDateDisplay(DateUtils.parse(pickerDate));
                 if (shouldProcess && workbookData) refreshView();
