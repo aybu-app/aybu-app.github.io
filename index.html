@@ -13,9 +13,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="AYBU Sched">
-    <!-- This tag is critical for a good iOS Home Screen icon -->
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/833/833593.png">
     
+    <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -41,7 +41,10 @@
             }
         }
     </script>
-    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    
+    <!-- Defer heavy libraries to unblock rendering -->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js" defer></script>
+    
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -208,7 +211,8 @@
              <p class="text-slate-400 dark:text-slate-500 text-sm">Try searching for a subject name or room.</p>
         </div>
 
-        <div id="loadingState" class="hidden w-full max-w-3xl mx-auto mt-8 px-2">
+        <!-- VISIBLE BY DEFAULT FOR PERCEIVED PERFORMANCE -->
+        <div id="loadingState" class="w-full max-w-3xl mx-auto mt-8 px-2">
             <div class="space-y-8 animate-pulse">
                 <div class="flex flex-row md:grid md:grid-cols-[100px_60px_1fr] md:gap-2"><div class="flex flex-col items-end pr-3 pt-4"><div class="h-4 w-12 bg-slate-200 dark:bg-slate-700 rounded"></div></div><div class="flex flex-col items-center"><div class="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-full border-4 border-slate-50 dark:border-slate-900"></div><div class="h-full w-0.5 bg-slate-200 dark:bg-slate-700 my-2"></div></div><div class="flex-1 pl-3"><div class="h-28 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700"></div></div></div>
                 <div class="flex flex-row md:grid md:grid-cols-[100px_60px_1fr] md:gap-2"><div class="flex flex-col items-end pr-3 pt-4"><div class="h-4 w-12 bg-slate-200 dark:bg-slate-700 rounded"></div></div><div class="flex flex-col items-center"><div class="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-full border-4 border-slate-50 dark:border-slate-900"></div><div class="h-full w-0.5 bg-slate-200 dark:bg-slate-700 my-2"></div></div><div class="flex-1 pl-3"><div class="h-28 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700"></div></div></div>
@@ -447,7 +451,6 @@
             if (!window.matchMedia('(display-mode: standalone)').matches && !localStorage.getItem('installBannerDismissed')) {
                 const banner = document.getElementById('installBanner');
                 banner.classList.remove('hidden');
-                // Removed setTimeout to keep banner visible until dismissed
             }
         }
         
@@ -682,28 +685,42 @@
             refreshView();
         }
 
-        // UPDATED INIT APP (Stale-While-Revalidate)
+        // UPDATED INIT APP (Stale-While-Revalidate with Optimistic UI)
         async function initApp() {
             setLoading(true);
             let cachedData = null;
 
-            // 1. Load Cache Immediately
+            // 1. Fast Path: Load from LocalStorage
             try {
                 const stored = localStorage.getItem(CONFIG.STORAGE_KEYS.DATA);
                 if(stored) {
                     cachedData = JSON.parse(stored);
                     workbookData = cachedData;
-                    completeInit(); 
-                    // Do NOT return here. Continue to fetch updates.
+                    
+                    // Render View Immediately (optimistic update)
+                    refreshView(); 
+                    document.getElementById('todayBtn').classList.remove('hidden');
+                    setLoading(false); // Hide spinner, show content
+                    
+                    // Defer heavy indexing to next tick
+                    setTimeout(() => buildSearchIndexes(), 50);
                 }
             } catch(e) { console.error("Cache load error:", e); }
 
-            // 2. Fetch Latest Data
+            // 2. Slow Path: Network & Parsing (background)
             try {
                 const response = await fetch(CONFIG.SCHEDULE_FILENAME + '?v=' + new Date().getTime());
                 if (!response.ok) throw new Error("Auto-fetch failed");
                 
                 const arrayBuffer = await response.arrayBuffer();
+                
+                // Wait for XLSX to load if it was deferred
+                const waitForXLSX = () => new Promise(resolve => {
+                    if (window.XLSX) resolve();
+                    else document.querySelector('script[src*="xlsx"]').addEventListener('load', resolve);
+                });
+                await waitForXLSX();
+
                 const workbook = XLSX.read(arrayBuffer, { type: 'array', cellDates: true });
                 const sheet = workbook.Sheets[workbook.SheetNames[0]];
                 let rawData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
@@ -713,7 +730,6 @@
                     return cell;
                 }));
 
-                // 3. Compare & Update
                 const freshString = JSON.stringify(freshData);
                 const cachedString = cachedData ? JSON.stringify(cachedData) : "";
 
@@ -721,15 +737,15 @@
                     console.log("App Updated: New schedule data found.");
                     workbookData = freshData;
                     localStorage.setItem(CONFIG.STORAGE_KEYS.DATA, freshString);
-                    // Re-init with new data
-                    completeInit();
+                    completeInit(); // Re-render with new data
                 } else {
                     console.log("App Up-to-date.");
-                    if(!cachedData) completeInit(); // If no cache was there, init now
+                    if(!cachedData) completeInit(); // If first run, render now
                 }
 
             } catch (err) {
                 console.warn("Fetch failed (Demo Mode):", err);
+                // Only use mock data if we have NOTHING (no cache, no network)
                 if(!workbookData) {
                     workbookData = generateMockData();
                     completeInit();
@@ -1183,3 +1199,5 @@
     </script>
 </body>
 </html>
+
+
