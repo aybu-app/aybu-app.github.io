@@ -838,17 +838,16 @@
                 for(let offset = 1; offset <= 4; offset++) {
                     const checkRow = workbookData[dateRowIndex + offset];
                     if(checkRow) {
-                        // FIX: Changed "targetColIndex - 1" to "targetColIndex" to include the column itself
                         for (let c = targetColIndex; c >= 0; c--) {
-                            const val = String(checkRow[c] || "");
-                            if (val.length >= 4 && (val.includes(':') || val.includes('.')) && /\d/.test(val)) { 
-                                timeColIndex = c; break; 
+                            const val = String(checkRow[c] || "").trim();
+                            if (val.match(/^\d{1,2}[:.]\d{2}/)) { 
+                                timeColIndex = c; 
+                                break; 
                             }
                         }
                     }
                     if (timeColIndex !== -1) break;
                 }
-                // FIX: If dynamic search fails, default to 1 for Turkish (Column B), not 0.
                 if (timeColIndex === -1) timeColIndex = isEnglish ? 9 : 1; 
 
                 let r = dateRowIndex + 1;
