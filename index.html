@@ -106,42 +106,49 @@
         </div>
     </div>
 
-    <header class="sticky top-0 z-40 px-4 md:px-8 pt-3 pb-2 shadow-sm transition-all duration-300 bg-white/96 dark:bg-slate-900/96 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-700/80">
+    <header class="sticky top-0 z-40 px-3 md:px-8 pt-3 pb-2 shadow-sm transition-all duration-300 bg-white/96 dark:bg-slate-900/96 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-700/80">
         <div class="max-w-6xl mx-auto flex flex-col gap-3">
             
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                <div class="flex items-center justify-between md:justify-start gap-4 w-full md:w-auto">
-                    <div class="flex items-center gap-3 cursor-default">
-                        <div id="phase-icon" class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white font-extrabold text-sm shadow-lg shadow-blue-200/50 transform transition-transform hover:rotate-3">
+                <div class="flex items-center justify-between md:justify-start gap-2 md:gap-4 w-full md:w-auto">
+                    <!-- Logo / Title Section -->
+                    <div class="flex items-center gap-2 md:gap-3 cursor-default min-w-0">
+                        <div id="phase-icon" class="w-9 h-9 md:w-10 md:h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white font-extrabold text-sm shadow-lg shadow-blue-200/50 transform transition-transform hover:rotate-3 shrink-0">
                             D1
                         </div>
-                        <div class="min-w-[100px] md:min-w-[160px]">
-                            <h1 id="txt-title" class="font-extrabold text-sm md:text-base leading-tight text-slate-900 dark:text-white tracking-tight">Phase I</h1>
+                        <div class="min-w-0 md:min-w-[160px]">
+                            <h1 id="txt-title" class="font-extrabold text-sm md:text-base leading-tight text-slate-900 dark:text-white tracking-tight truncate">Phase I</h1>
                             <p id="txt-subtitle" class="text-[10px] md:text-xs text-slate-500 dark:text-slate-400 font-bold tracking-wide uppercase truncate">AYBU Medicine</p>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-2">
-                        <button id="langToggleBtn" class="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-lg cursor-pointer select-none border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <div id="lang-tr" class="px-2.5 py-1 rounded-md text-[10px] font-bold text-slate-400 dark:text-slate-500 transition-all">TR</div>
-                            <div id="lang-en" class="px-2.5 py-1 rounded-md text-[10px] font-bold bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 shadow-sm transition-all">EN</div>
+                    <!-- Action Buttons -->
+                    <div class="flex items-center gap-1 md:gap-2 shrink-0">
+                        <button id="langToggleBtn" class="flex items-center bg-slate-100 dark:bg-slate-800 p-0.5 md:p-1 rounded-lg cursor-pointer select-none border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <div id="lang-tr" class="px-1.5 md:px-2.5 py-1 rounded-md text-[10px] font-bold text-slate-400 dark:text-slate-500 transition-all">TR</div>
+                            <div id="lang-en" class="px-1.5 md:px-2.5 py-1 rounded-md text-[10px] font-bold bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 shadow-sm transition-all">EN</div>
                         </button>
                         
-                        <button aria-label="Toggle Theme" id="themeToggleBtn" class="btn-press w-9 h-9 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 relative group">
+                        <button aria-label="Toggle Theme" id="themeToggleBtn" class="btn-press w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 relative group">
                             <i id="darkModeIcon" class="fas fa-circle-half-stroke text-xs"></i>
                             <span id="themeTooltip" class="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[9px] px-2 py-1 rounded opacity-0 transition-opacity duration-300 pointer-events-none whitespace-nowrap z-50 shadow-sm">Auto</span>
                         </button>
 
-                        <button aria-label="Switch View" id="viewToggleBtn" class="btn-press w-9 h-9 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700" title="Switch View">
+                        <button aria-label="Cafeteria Menu" id="openMenuBtn" class="btn-press w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700">
+                            <i class="fas fa-utensils text-xs"></i>
+                        </button>
+
+                        <button aria-label="Switch View" id="viewToggleBtn" class="btn-press w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700" title="Switch View">
                             <i class="fas fa-columns text-xs"></i>
                         </button>
                         
-                         <button aria-label="Search" id="searchBtn" class="btn-press w-9 h-9 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700">
+                         <button aria-label="Search" id="searchBtn" class="btn-press w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700">
                             <i class="fas fa-search text-xs"></i>
                          </button>
                     </div>
                 </div>
 
+                <!-- Date Controls -->
                 <div id="dateControls" class="flex items-center justify-between gap-2 bg-slate-100/80 dark:bg-slate-800/80 p-1.5 rounded-2xl backdrop-blur-sm border border-white/50 dark:border-slate-700/50 shadow-sm w-full md:w-auto md:min-w-[320px]">
                     <button aria-label="Previous Day" id="prevDayBtn" class="btn-press w-10 h-10 flex flex-none items-center justify-center rounded-xl bg-white dark:bg-slate-700 text-slate-400 dark:text-slate-300 shadow-sm hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                         <i class="fas fa-chevron-left text-xs"></i>
@@ -360,6 +367,7 @@
                 if ('serviceWorker' in navigator) {
                    navigator.serviceWorker.register('sw.js').catch(err => console.log('SW fail', err));
                 }
+                initMenuSystem();
 
                 setInterval(updateDayProgress, 30000); 
                 // Auto refresh view every minute to update "X min left"
@@ -372,7 +380,217 @@
                 initApp();
                 checkInstallBanner();
             });
+            // --- MENU SYSTEM INTEGRATION ---
+            const MENU_CONFIG = {
+                URL: 'https://aybu.edu.tr/sks/tr/sayfa/6265/',
+                PROXIES: [
+                    { get: (u) => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`, parse: async (r) => (await r.json()).contents },
+                    { get: (u) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`, parse: (r) => r.text() },
+                    { get: (u) => `https://corsproxy.io/?${encodeURIComponent(u)}`, parse: (r) => r.text() }
+                ]
+            };
 
+            function initMenuSystem() {
+                const modal = document.getElementById('menuModal');
+                const btn = document.getElementById('openMenuBtn');
+                const closeBtn = document.getElementById('closeMenuBtn');
+                
+                if(!btn || !modal) return;
+
+                btn.onclick = () => {
+                    modal.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+                    fetchMenuData(); // Trigger fetch on open
+                };
+
+                const closeMenu = () => {
+                    modal.classList.add('hidden');
+                    document.body.style.overflow = '';
+                };
+
+                closeBtn.onclick = closeMenu;
+                // Close when clicking outside content
+                modal.onclick = (e) => { if(e.target === modal) closeMenu(); };
+            }
+
+            const MENU_CACHE_KEY = 'aybu_menu_cache_v2'; // Versioning the cache
+
+            async function fetchMenuData() {
+                const container = document.getElementById('menuContent');
+                const loading = document.getElementById('menuLoading');
+                const error = document.getElementById('menuError');
+                
+                // 1. Check Cache
+                const todayStr = new Date().toDateString();
+                try {
+                    const cached = JSON.parse(localStorage.getItem(MENU_CACHE_KEY));
+                    if (cached && cached.date === todayStr && cached.html) {
+                        // Use cache immediately
+                        processMenuHtml(cached.html);
+                        loading.classList.add('hidden');
+                        return;
+                    }
+                } catch(e) { console.log('Cache parse error'); }
+
+                // Don't refetch if we already have DOM content (and no cache hit previously handled it)
+                if(container.children.length > 0) return;
+
+                loading.classList.remove('hidden');
+                error.classList.add('hidden');
+
+                // 2. Race Proxies
+                // We create a promise for each proxy fetch
+                const promises = MENU_CONFIG.PROXIES.map(proxy => 
+                    new Promise(async (resolve, reject) => {
+                        try {
+                            const res = await fetch(proxy.get(MENU_CONFIG.URL)); 
+                            if (!res.ok) throw new Error('Status ' + res.status);
+                            const text = await proxy.parse(res);
+                            if (text && text.length > 500) resolve(text);
+                            else reject('Empty/Short content');
+                        } catch (e) {
+                            reject(e);
+                        }
+                    })
+                );
+
+                try {
+                    // Promise.any waits for the first fulfilled promise
+                    const html = await Promise.any(promises);
+                    
+                    // 3. Save to Cache
+                    localStorage.setItem(MENU_CACHE_KEY, JSON.stringify({
+                        date: todayStr,
+                        html: html
+                    }));
+
+                    processMenuHtml(html);
+                } catch (aggregateError) {
+                    console.error("All proxies failed", aggregateError);
+                    loading.classList.add('hidden');
+                    error.classList.remove('hidden');
+                }
+                
+                loading.classList.add('hidden');
+            }
+
+            function processMenuHtml(htmlContent) {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(htmlContent, 'text/html');
+                const text = doc.body.innerText || "";
+                const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+
+                const today = new Date();
+                const dateDisplay = document.getElementById('menuDateDisplay');
+                if(dateDisplay) {
+                     dateDisplay.textContent = today.toLocaleDateString(currentLang==='TR'?'tr-TR':'en-US', { weekday:'long', day:'numeric', month:'long' });
+                }
+
+                if(today.getDay() === 0 || today.getDay() === 6) {
+                    renderMenuMessage("Weekend Mode", "No service today.", "fa-couch", "text-amber-400");
+                    return;
+                }
+
+                const daysMap = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"];
+                const todayName = daysMap[today.getDay() - 1];
+
+                let foundWeek = false;
+                let capturing = false;
+                let items = [];
+
+                // Regex for date range DD.MM.YYYY
+                const dateRegex = /(\d{2}\.\d{2}\.\d{4})\s*-\s*(\d{2}\.\d{2}\.\d{4})/;
+
+                for (const line of lines) {
+                    const match = line.match(dateRegex);
+                    if (match) {
+                        const [d1, m1, y1] = match[1].split('.');
+                        const [d2, m2, y2] = match[2].split('.');
+                        const start = new Date(`${y1}-${m1}-${d1}`);
+                        const end = new Date(`${y2}-${m2}-${d2}`);
+                        end.setHours(23,59,59);
+                        
+                        if (today >= start && today <= end) foundWeek = true;
+                        else foundWeek = false;
+                        
+                        capturing = false;
+                        continue;
+                    }
+
+                    if (foundWeek) {
+                        if (daysMap.includes(line)) {
+                            capturing = (line === todayName);
+                            continue;
+                        }
+                        if (capturing) {
+                            if (line.includes("HIZLI ERİŞİM") || line.includes("İLETİŞİM") || line.includes("Kalite")) break;
+                            items.push(line);
+                        }
+                    }
+                }
+
+                renderMenuItems(items);
+            }
+
+            function renderMenuItems(items) {
+                const container = document.getElementById('menuContent');
+                container.innerHTML = '';
+                
+                if (!items || items.length === 0) {
+                    renderMenuMessage("Menu Not Found", "Could not parse today's menu.", "fa-search", "text-slate-300");
+                    return;
+                }
+
+                items.forEach((item, idx) => {
+                    let text = item;
+                    let cal = '';
+                    const calMatch = item.match(/(\d+)\s*kkal/);
+                    if (calMatch) {
+                        text = item.replace(calMatch[0], '').trim();
+                        cal = calMatch[0];
+                    }
+
+                    // Icon Logic
+                    let icon = 'fa-circle';
+                    let color = 'text-slate-300 dark:text-slate-600';
+                    const l = text.toLowerCase();
+                    if(l.includes('çorba')) { icon = 'fa-mug-hot'; color = 'text-amber-500'; }
+                    else if(l.includes('pilav') || l.includes('makarna')) { icon = 'fa-bowl-rice'; color = 'text-yellow-500'; }
+                    else if(l.includes('tavuk') || l.includes('et') || l.includes('köfte') || l.includes('kebab')) { icon = 'fa-drumstick-bite'; color = 'text-rose-500'; }
+                    else if(l.includes('tatlı') || l.includes('baklava') || l.includes('puding') || l.includes('helva')) { icon = 'fa-cookie'; color = 'text-pink-500'; }
+                    else if(l.includes('salata') || l.includes('meyve') || l.includes('cacık')) { icon = 'fa-leaf'; color = 'text-green-500'; }
+                    else if(l.includes('yoğurt') || l.includes('ayran')) { icon = 'fa-bottle-water'; color = 'text-blue-400'; }
+
+                    const div = document.createElement('div');
+                    div.className = "bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl flex items-center gap-4 animate-fade-in-up border border-slate-100 dark:border-slate-700/50";
+                    div.style.animationDelay = `${idx * 0.05}s`;
+                    div.innerHTML = `
+                        <div class="w-10 h-10 rounded-full bg-white dark:bg-slate-700 flex items-center justify-center shrink-0 shadow-sm">
+                            <i class="fas ${icon} ${color}"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-bold text-slate-700 dark:text-slate-200 text-sm leading-tight">${text}</div>
+                        </div>
+                        ${cal ? `<span class="bg-white dark:bg-slate-700 text-slate-400 dark:text-slate-400 text-[10px] font-bold px-2 py-1 rounded-lg border border-slate-100 dark:border-slate-600">${cal}</span>` : ''}
+                    `;
+                    container.appendChild(div);
+                });
+                container.classList.remove('hidden');
+            }
+
+            function renderMenuMessage(title, sub, icon, iconColor) {
+                const container = document.getElementById('menuContent');
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-8 text-center bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700/50 border-dashed">
+                        <i class="fas ${icon} ${iconColor} text-3xl mb-3"></i>
+                        <h3 class="font-bold text-slate-700 dark:text-slate-200">${title}</h3>
+                        <p class="text-xs text-slate-400">${sub}</p>
+                    </div>`;
+                container.classList.remove('hidden');
+            }
+
+            // Call this at the end of your main init function
+            // initMenuSystem(); // Already called in DOMContentLoaded
             function setupEventListeners() {
                 document.getElementById('installBanner').onclick = openInstallModal;
                 document.getElementById('closeInstallBtn').onclick = (e) => { e.stopPropagation(); closeInstallBanner(); };
@@ -823,8 +1041,8 @@
                 localStorage.setItem(CONFIG.STORAGE_KEYS.LANG, lang);
                 const trBtn = document.getElementById('lang-tr');
                 const enBtn = document.getElementById('lang-en');
-                const active = "px-2.5 py-1 rounded-md text-[10px] font-bold bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm transition-all";
-                const inactive = "px-2.5 py-1 rounded-md text-[10px] font-bold text-slate-400 dark:text-slate-500 transition-all hover:text-slate-600 dark:hover:text-slate-300";
+                const active = "px-1.5 md:px-2.5 py-1 rounded-md text-[10px] font-bold bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm transition-all";
+                const inactive = "px-1.5 md:px-2.5 py-1 rounded-md text-[10px] font-bold text-slate-400 dark:text-slate-500 transition-all hover:text-slate-600 dark:hover:text-slate-300";
                 
                 if (lang === 'EN') { enBtn.className = active; trBtn.className = inactive; } 
                 else { trBtn.className = active.replace('text-blue-600', 'text-red-600 dark:text-red-400'); enBtn.className = inactive; }
@@ -1207,5 +1425,34 @@
             function setLoading(isLoading) { document.getElementById('loadingState').classList.toggle('hidden', !isLoading); }
         })();
     </script>
+    <div id="menuModal" class="hidden fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 transition-opacity duration-300">
+    <div class="bg-white dark:bg-slate-900 rounded-[2rem] max-w-sm w-full h-[80vh] flex flex-col shadow-2xl animate-modal-pop relative border border-white/20 dark:border-slate-700 overflow-hidden">
+        
+        <div class="p-6 pb-2 shrink-0 flex justify-between items-center z-10 bg-white dark:bg-slate-900">
+            <div>
+                <h3 class="text-xl font-black text-slate-800 dark:text-white tracking-tight">Dining Menu</h3>
+                <p id="menuDateDisplay" class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Today</p>
+            </div>
+            <button id="closeMenuBtn" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                <i class="fas fa-times text-sm"></i>
+            </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-6 pt-2 space-y-4 content-optimized" id="menuContainer">
+            <div id="menuLoading" class="flex flex-col items-center justify-center py-12">
+                <div class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Fetching...</p>
+            </div>
+            
+            <div id="menuContent" class="hidden space-y-3 pb-4"></div>
+
+            <div id="menuError" class="hidden flex flex-col items-center justify-center py-8 text-center bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700/50 p-6">
+                <div class="text-3xl text-slate-300 mb-3"><i class="fas fa-wifi"></i></div>
+                <p class="text-xs text-slate-400 mb-4 font-medium">Menu unavailable offline.</p>
+                <a href="https://aybu.edu.tr/sks/tr/sayfa/6265/" target="_blank" class="text-blue-500 hover:underline text-xs font-bold">Open Website &rarr;</a>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>
