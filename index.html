@@ -241,7 +241,7 @@
 
     <!-- Footer -->
     <footer class="w-full text-center py-6">
-        <div class="text-[10px] font-bold text-slate-300 dark:text-slate-700 uppercase tracking-widest">AYBU Medicine • v2.4 Fixed</div>
+        <div class="text-[10px] font-bold text-slate-300 dark:text-slate-700 uppercase tracking-widest">AYBU Medicine • v2.5 UI</div>
     </footer>
 
     <!-- Floating Today Button -->
@@ -634,8 +634,13 @@
                     theme = { bg: 'bg-amber-50/50 dark:bg-amber-900/10', border: 'border-amber-100 dark:border-amber-900/30 border-dashed', text: 'text-amber-800 dark:text-amber-500' };
                     icon = 'fa-utensils'; iconColor = 'text-amber-400';
                 } else if (cls.type === 'freelance') {
-                    theme.border = 'border-dashed border-slate-200';
-                    icon = 'fa-user-graduate';
+                    // NEW: Distinct Freelance Styling
+                    theme = {
+                         bg: 'bg-slate-50 dark:bg-slate-900/40 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] dark:bg-[radial-gradient(#334155_1px,transparent_1px)] [background-size:12px_12px]',
+                         border: 'border-2 border-dashed border-slate-300 dark:border-slate-600',
+                         text: 'text-slate-500 dark:text-slate-400 italic'
+                    };
+                    icon = 'fa-laptop'; iconColor = 'text-slate-400';
                 } else if (cls.isLab) {
                     theme = { bg: 'bg-rose-50/80 dark:bg-rose-900/10', border: 'border-rose-100 dark:border-rose-900/30', text: 'text-slate-800 dark:text-slate-100' };
                     icon = 'fa-flask'; iconColor = 'text-rose-500';
@@ -718,7 +723,7 @@
             try {
                 const [h, m] = startTimeStr.split(':').map(Number);
                 const now = new Date();
-                const endMins = (h * 60) + m + 50; // Assume 50 min classes
+                const endMins = (h * 60) + m + 50; // Strict 50 min duration
                 const curMins = (now.getHours() * 60) + now.getMinutes();
                 return Math.max(0, endMins - curMins);
             } catch { return 0; }
@@ -738,6 +743,8 @@
                 const now = new Date();
                 const cur = (now.getHours() * 60) + now.getMinutes();
                 const start = (h * 60) + m;
+                // STRICT 50 minute logic: If lesson starts 10:30, it is NOW until 11:20.
+                // 11:20 - 11:30 is Break (not NOW).
                 return cur >= start && cur < (start + 50);
             } catch { return false; }
         }
