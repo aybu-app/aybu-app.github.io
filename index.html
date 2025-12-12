@@ -1204,11 +1204,23 @@
                     const val = row[i];
                     if (!val) continue;
                     if (typeof val === 'string' && val.length > 5) {
+                        // Date check (YYYY-MM-DD)
                         if(val[4] === '-' && val.length === 10) return true; 
+                        
                         const s = val.toLocaleLowerCase('tr-TR').trim();
+                        
+                        // Week/Hafta headers
                         if (s === 'week' || s === 'hafta') return true;
-                        // FIX: Only treat as barrier if short (Header) to avoid matching long lesson titles
-                        if ((s.startsWith('committee') || s.startsWith('komite') || s.startsWith('phase') || s.startsWith('dönem')) && s.length < 40) return true;
+                        
+                        // Committee/Phase headers
+                        if (s.startsWith('committee') || s.startsWith('komite') || s.startsWith('phase') || s.startsWith('dönem')) {
+                            // FIX: Stricter barrier detection.
+                            // 1. Length must be short (e.g. "Committee 1" is short, "Committee 1 Assessment Hour" is long)
+                            // 2. Should not contain lesson-specific keywords
+                            if (s.length < 30 && !s.includes('saati') && !s.includes('değerlendirme') && !s.includes('introduction')) {
+                                return true;
+                            }
+                        }
                     }
                 }
                 return false;
