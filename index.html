@@ -838,7 +838,8 @@
                 for(let offset = 1; offset <= 4; offset++) {
                     const checkRow = workbookData[dateRowIndex + offset];
                     if(checkRow) {
-                        for (let c = targetColIndex - 1; c >= 0; c--) {
+                        // FIX: Changed "targetColIndex - 1" to "targetColIndex" to include the column itself
+                        for (let c = targetColIndex; c >= 0; c--) {
                             const val = String(checkRow[c] || "");
                             if (val.length >= 4 && (val.includes(':') || val.includes('.')) && /\d/.test(val)) { 
                                 timeColIndex = c; break; 
@@ -847,7 +848,8 @@
                     }
                     if (timeColIndex !== -1) break;
                 }
-                if (timeColIndex === -1) timeColIndex = isEnglish ? 9 : 0; 
+                // FIX: If dynamic search fails, default to 1 for Turkish (Column B), not 0.
+                if (timeColIndex === -1) timeColIndex = isEnglish ? 9 : 1; 
 
                 let r = dateRowIndex + 1;
                 const maxRows = Math.min(workbookData.length, dateRowIndex + 60);
