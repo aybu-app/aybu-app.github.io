@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en" class="transition-colors duration-300">
+<html lang="en" class="transition-colors duration-300 antialiased selection:bg-indigo-500 selection:text-white">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="description" content="AYBU Medicine Phase I Schedule - Offline Capable">
     <title>AYBU Schedule</title>
     
@@ -24,20 +24,18 @@
             darkMode: 'class',
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        indigo: { 400: '#818cf8', 500: '#6366f1', 600: '#4f46e5' },
+                        slate: { 850: '#151f32', 900: '#0f172a', 950: '#020617' }
+                    },
                     animation: {
-                        'fade-in-up': 'fadeInUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards',
-                        'modal-pop': 'modalFadeIn 0.3s ease-out forwards',
+                        'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'pop': 'popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
                     },
                     keyframes: {
-                        fadeInUp: {
-                            'from': { opacity: '0', transform: 'translateY(10px)' },
-                            'to': { opacity: '1', transform: 'translateY(0)' }
-                        },
-                        modalFadeIn: {
-                            'from': { opacity: '0', transform: 'scale(0.95)' },
-                            'to': { opacity: '1', transform: 'scale(1)' }
-                        }
+                        slideUp: { 'from': { opacity: '0', transform: 'translateY(20px)' }, 'to': { opacity: '1', transform: 'translateY(0)' } },
+                        popIn: { 'from': { opacity: '0', transform: 'scale(0.9)' }, 'to': { opacity: '1', transform: 'scale(1)' } }
                     }
                 }
             }
@@ -46,31 +44,48 @@
     
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js" defer></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
         body { -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
         .content-optimized { content-visibility: auto; contain-intrinsic-size: 100px; }
-        .glow-border { position: relative; z-index: 1; transition: transform 0.3s ease; }
-        .glow-border::before {
-            content: ""; position: absolute; inset: -2px; border-radius: 20px;
-            background: linear-gradient(135deg, #60a5fa, #8b5cf6, #3b82f6);
-            background-size: 200% 200%; animation: gradientMove 3s ease infinite;
-            z-index: -1; opacity: 0.7; pointer-events: none;
+        
+        /* Modern Scrollbar */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .dark ::-webkit-scrollbar-thumb { background: #334155; }
+
+        /* Custom Styles */
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-top: 1px solid rgba(0,0,0,0.05);
         }
-        @keyframes gradientMove { 0% { background-position: 0% 50% } 50% { background-position: 100% 50% } 100% { background-position: 0% 50% } }
-        .time-connector { position: absolute; z-index: 0; background-color: #e2e8f0; } 
-        .dark .time-connector { background-color: #334155; }
-        .mobile-connector { left: 23px; top: 45px; bottom: -20px; width: 2px; }
-        .desktop-connector { display: none; }
-        .last-item .time-connector { display: none; }
-        @media (min-width: 768px) {
-            .desktop-connector { left: 50%; transform: translateX(-50%); top: 3rem; bottom: -2rem; width: 2px; display: block; }
+        .dark .glass-nav {
+            background: rgba(15, 23, 42, 0.9);
+            border-top: 1px solid rgba(255,255,255,0.05);
         }
-        .btn-press { transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1); touch-action: manipulation; }
-        .btn-press:active { transform: scale(0.92); }
-        #searchContainer { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); max-height: 0; overflow: hidden; opacity: 0; }
-        #searchContainer.open { max-height: 80px; opacity: 1; margin-top: 0.5rem; }
+        
+        .glass-header {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .dark .glass-header {
+            background: rgba(2, 6, 23, 0.85);
+        }
+
+        .btn-press { transition: transform 0.1s; active: scale(0.95); }
+        .btn-press:active { transform: scale(0.95); }
+
+        #searchContainer { transition: all 0.3s ease-in-out; max-height: 0; overflow: hidden; opacity: 0; }
+        #searchContainer.open { max-height: 80px; opacity: 1; padding-top: 8px; padding-bottom: 8px; }
+
+        /* Active State for Bottom Nav */
+        .nav-btn-active { color: #4f46e5; }
+        .dark .nav-btn-active { color: #818cf8; }
     </style>
     <script>
         (function() {
@@ -84,164 +99,211 @@
         })();
     </script>
 </head>
-<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen pb-32 transition-colors duration-300 flex flex-col">
+<body class="bg-gray-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 min-h-screen pb-24 flex flex-col">
 
-    <div id="installBanner" class="hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-[length:200%_auto] animate-[gradientMove_5s_ease_infinite] text-white px-4 py-3 shadow-lg relative z-50 cursor-pointer border-b border-white/10">
-        <div class="max-w-6xl mx-auto flex items-center justify-between">
+    <!-- Install Banner -->
+    <div id="installBanner" class="hidden bg-indigo-600 text-white px-4 py-3 shadow-md relative z-50">
+        <div class="max-w-md mx-auto flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm shadow-inner border border-white/10 animate-[bounce_2s_infinite]">
-                    <i class="fas fa-download text-white text-sm"></i>
-                </div>
-                <div class="flex flex-col">
-                    <span id="txt-install-banner-title" class="font-bold text-sm tracking-wide leading-tight">Install App</span>
-                    <span id="txt-install-banner-desc" class="text-[11px] text-indigo-100/90 font-medium leading-tight">Get offline access & faster loading</span>
+                <i class="fas fa-arrow-down-to-bracket text-indigo-200"></i>
+                <div>
+                    <div id="txt-install-banner-title" class="font-bold text-sm">Install App</div>
+                    <div id="txt-install-banner-desc" class="text-xs text-indigo-100 opacity-80">Add to home screen</div>
                 </div>
             </div>
-            <div class="flex items-center gap-3">
-                <span class="hidden md:inline-block text-xs font-bold bg-white/20 px-3 py-1.5 rounded-lg hover:bg-white/30 transition-colors">Install</span>
-                <button aria-label="Close" id="closeInstallBtn" class="text-white/60 hover:text-white p-2 -mr-2 hover:bg-white/10 rounded-full transition-colors">
-                    <i class="fas fa-times text-sm"></i>
-                </button>
-            </div>
+            <button id="closeInstallBtn" class="p-2 opacity-70 hover:opacity-100"><i class="fas fa-times"></i></button>
         </div>
     </div>
 
-    <header class="sticky top-0 z-40 px-3 md:px-8 pt-3 pb-2 shadow-sm transition-all duration-300 bg-white/96 dark:bg-slate-900/96 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-700/80">
-        <div class="max-w-6xl mx-auto flex flex-col gap-3">
-            
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                <div class="flex items-center justify-between md:justify-start gap-2 md:gap-4 w-full md:w-auto">
-                    <!-- Logo / Title Section -->
-                    <div class="flex items-center gap-2 md:gap-3 cursor-default min-w-0">
-                        <div id="phase-icon" class="w-9 h-9 md:w-10 md:h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white font-extrabold text-sm shadow-lg shadow-blue-200/50 transform transition-transform hover:rotate-3 shrink-0">
-                            D1
-                        </div>
-                        <div class="min-w-0 md:min-w-[160px]">
-                            <h1 id="txt-title" class="font-extrabold text-sm md:text-base leading-tight text-slate-900 dark:text-white tracking-tight truncate">Phase I</h1>
-                            <p id="txt-subtitle" class="text-[10px] md:text-xs text-slate-500 dark:text-slate-400 font-bold tracking-wide uppercase truncate">AYBU Medicine</p>
-                        </div>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="flex items-center gap-1 md:gap-2 shrink-0">
-                        <button id="langToggleBtn" class="flex items-center bg-slate-100 dark:bg-slate-800 p-0.5 md:p-1 rounded-lg cursor-pointer select-none border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <div id="lang-tr" class="px-1.5 md:px-2.5 py-1 rounded-md text-[10px] font-bold text-slate-400 dark:text-slate-500 transition-all">TR</div>
-                            <div id="lang-en" class="px-1.5 md:px-2.5 py-1 rounded-md text-[10px] font-bold bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 shadow-sm transition-all">EN</div>
-                        </button>
-                        
-                        <button aria-label="Toggle Theme" id="themeToggleBtn" class="btn-press w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 relative group">
-                            <i id="darkModeIcon" class="fas fa-circle-half-stroke text-xs"></i>
-                            <span id="themeTooltip" class="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[9px] px-2 py-1 rounded opacity-0 transition-opacity duration-300 pointer-events-none whitespace-nowrap z-50 shadow-sm">Auto</span>
-                        </button>
-
-                        <button aria-label="Cafeteria Menu" id="openMenuBtn" class="btn-press w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700">
-                            <i class="fas fa-utensils text-xs"></i>
-                        </button>
-
-                        <button aria-label="Switch View" id="viewToggleBtn" class="btn-press w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700" title="Switch View">
-                            <i class="fas fa-columns text-xs"></i>
-                        </button>
-                        
-                         <button aria-label="Search" id="searchBtn" class="btn-press w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700">
-                            <i class="fas fa-search text-xs"></i>
-                         </button>
-                    </div>
+    <!-- Top Bar: Logo & Lang Only -->
+    <div class="pt-safe-top bg-gray-50 dark:bg-slate-950 px-5 pt-6 pb-2">
+        <div class="max-w-3xl mx-auto flex items-center justify-between">
+            <!-- Brand -->
+            <div class="flex items-center gap-3">
+                <div id="phase-icon" class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black text-sm shadow-lg shadow-indigo-500/30">
+                    D1
                 </div>
-
-                <!-- Date Controls -->
-                <div id="dateControls" class="flex items-center justify-between gap-2 bg-slate-100/80 dark:bg-slate-800/80 p-1.5 rounded-2xl backdrop-blur-sm border border-white/50 dark:border-slate-700/50 shadow-sm w-full md:w-auto md:min-w-[320px]">
-                    <button aria-label="Previous Day" id="prevDayBtn" class="btn-press w-10 h-10 flex flex-none items-center justify-center rounded-xl bg-white dark:bg-slate-700 text-slate-400 dark:text-slate-300 shadow-sm hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                        <i class="fas fa-chevron-left text-xs"></i>
-                    </button>
-                    
-                    <div class="relative flex-1 group h-10">
-                        <input aria-label="Date Picker" type="date" id="datePicker" class="opacity-0 absolute inset-0 w-full h-full z-20 cursor-pointer">
-                        <div class="flex items-center justify-center gap-3 w-full h-full bg-white dark:bg-slate-700 border border-slate-200/60 dark:border-slate-600 rounded-xl shadow-sm group-hover:border-blue-300 dark:group-hover:border-blue-500 transition-all px-2 cursor-pointer">
-                            <div id="dateDisplay" class="flex-1 text-center select-none"></div>
-                        </div>
-                    </div>
-
-                     <button aria-label="Next Day" id="nextDayBtn" class="btn-press w-10 h-10 flex flex-none items-center justify-center rounded-xl bg-white dark:bg-slate-700 text-slate-400 dark:text-slate-300 shadow-sm hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                        <i class="fas fa-chevron-right text-xs"></i>
-                    </button>
+                <div>
+                    <h1 id="txt-title" class="font-bold text-xl text-slate-900 dark:text-white leading-none">Phase I</h1>
+                    <p id="txt-subtitle" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">AYBU Medicine</p>
                 </div>
             </div>
+            
+            <!-- Language Toggle (Kept Top Right) -->
+            <button id="langToggleBtn" class="btn-press flex bg-white dark:bg-slate-900 p-1 rounded-full border border-gray-200 dark:border-slate-800 shadow-sm">
+                <div id="lang-tr" class="w-8 h-6 flex items-center justify-center rounded-full text-[10px] font-bold text-slate-400 transition-all">TR</div>
+                <div id="lang-en" class="w-8 h-6 flex items-center justify-center rounded-full text-[10px] font-bold bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm transition-all">EN</div>
+            </button>
+        </div>
+    </div>
 
+    <!-- Sticky Date Header -->
+    <header class="sticky top-0 z-40 glass-header border-b border-gray-100 dark:border-slate-800/50 shadow-sm transition-all duration-300">
+        <div class="max-w-3xl mx-auto px-4 py-3">
+            <!-- Date Controls -->
+            <div id="dateControls" class="flex items-center justify-between gap-3">
+                <button aria-label="Previous Day" id="prevDayBtn" class="btn-press w-10 h-10 flex flex-none items-center justify-center rounded-full bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-500 border border-gray-200 dark:border-slate-800 shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                
+                <div class="relative flex-1 group mx-1">
+                    <input aria-label="Date Picker" type="date" id="datePicker" class="opacity-0 absolute inset-0 w-full h-full z-20 cursor-pointer">
+                    <div id="dateDisplay" class="h-11 flex items-center justify-center gap-3 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-full shadow-sm group-hover:border-indigo-400 dark:group-hover:border-indigo-500 transition-all cursor-pointer px-4">
+                        <!-- Date injected by JS -->
+                    </div>
+                </div>
+
+                 <button aria-label="Next Day" id="nextDayBtn" class="btn-press w-10 h-10 flex flex-none items-center justify-center rounded-full bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-500 border border-gray-200 dark:border-slate-800 shadow-sm hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+
+            <!-- Search Area (Expands) -->
             <div id="searchContainer" class="w-full">
                 <div class="relative">
                     <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" id="searchInput" placeholder="Search entire semester..." 
-                           class="w-full pl-10 pr-10 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 focus:border-blue-300 dark:focus:border-blue-500 outline-none transition-all text-sm font-medium placeholder:text-slate-400 dark:text-slate-200">
-                    <button aria-label="Close Search" id="closeSearchBtn" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1">
+                    <input type="text" id="searchInput" placeholder="Search..." 
+                           class="w-full pl-10 pr-10 py-3 bg-gray-100 dark:bg-slate-900 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-medium text-slate-800 dark:text-white placeholder:text-slate-400">
+                    <button aria-label="Close Search" id="closeSearchBtn" class="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center bg-gray-200 dark:bg-slate-800 rounded-full text-xs text-slate-500">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
             </div>
         </div>
         
-        <div class="h-[3px] w-full bg-slate-100 dark:bg-slate-800 absolute bottom-0 left-0 group overflow-visible">
-            <div id="dayProgressBar" class="h-full bg-gradient-to-r from-cyan-500 to-blue-600 w-0 transition-[width] duration-1000 ease-linear rounded-r-sm relative">
-             <div id="progressBead" class="hidden absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 bg-white dark:bg-slate-700 border-2 border-blue-600 dark:border-blue-400 rounded-full shadow-md z-10"></div>
-            </div>
-            <div class="absolute top-2 left-1/2 -translate-x-1/2 bg-slate-800/90 text-white text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-0 backdrop-blur-sm shadow-sm">
-                Day Progress
+        <!-- Subtle Progress Bar -->
+        <div class="h-[2px] w-full bg-gray-100 dark:bg-slate-900 overflow-hidden">
+            <div id="dayProgressBar" class="h-full bg-indigo-500 w-0 transition-[width] duration-1000 ease-linear shadow-[0_0_10px_rgba(99,102,241,0.5)]">
+             <div id="progressBead" class="hidden"></div>
             </div>
         </div>
     </header>
 
-    <main class="w-full max-w-6xl mx-auto p-4 md:p-8 flex-1">
-        <div id="scheduleContainer" class="hidden mt-4 relative pl-1 pb-10 md:pl-0 md:pb-0 content-optimized"></div>
-        <div id="weekContainer" class="hidden mt-4 grid grid-cols-1 md:grid-cols-5 gap-4"></div>
-        <div id="searchResultsContainer" class="hidden mt-4 space-y-4"></div>
+    <main class="w-full max-w-3xl mx-auto px-4 py-6 flex-1">
+        <!-- Views -->
+        <div id="scheduleContainer" class="hidden space-y-4 content-optimized min-h-[50vh]"></div>
+        <div id="weekContainer" class="hidden grid grid-cols-1 gap-4"></div>
+        <div id="searchResultsContainer" class="hidden space-y-4 pb-20"></div>
 
-        <div id="emptyState" class="hidden text-center py-24 px-6 animate-fade-in-up">
-            <div id="emptyIcon" class="text-6xl text-slate-200 dark:text-slate-700 mb-5 transform transition-transform hover:scale-110 duration-300 inline-block"><i class="fas fa-calendar-check"></i></div>
-            <h3 id="txt-empty-title" class="text-2xl font-bold text-slate-700 dark:text-slate-300">No Classes Found</h3>
-            <p id="txt-empty-desc" class="text-slate-400 dark:text-slate-500 text-base max-w-[280px] mx-auto leading-relaxed font-medium">Check the date or switch language.</p>
+        <!-- Empty States -->
+        <div id="emptyState" class="hidden flex flex-col items-center justify-center py-20 text-center animate-slide-up">
+            <div id="emptyIcon" class="text-5xl text-gray-200 dark:text-slate-800 mb-4"></div>
+            <h3 id="txt-empty-title" class="text-lg font-bold text-slate-700 dark:text-slate-300"></h3>
+            <p id="txt-empty-desc" class="text-slate-400 dark:text-slate-500 text-sm mt-1 max-w-xs mx-auto"></p>
         </div>
 
-        <div id="noSearchResults" class="hidden text-center py-16 px-6 animate-fade-in-up">
-             <div class="text-4xl text-slate-200 dark:text-slate-700 mb-4 inline-block"><i class="fas fa-search"></i></div>
-             <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300">No matching classes</h3>
-             <p class="text-slate-400 dark:text-slate-500 text-sm">Try searching for a subject name or room.</p>
+        <div id="noSearchResults" class="hidden flex flex-col items-center justify-center py-20 text-center animate-slide-up">
+             <div class="text-4xl text-gray-200 dark:text-slate-800 mb-4"><i class="fas fa-search"></i></div>
+             <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300">No results found</h3>
+             <p class="text-slate-400 dark:text-slate-500 text-sm">Try a different keyword.</p>
         </div>
 
-        <div id="loadingState" class="w-full max-w-3xl mx-auto mt-8 px-2">
-            <div class="space-y-8 animate-pulse">
-                <div class="flex flex-row md:grid md:grid-cols-[100px_60px_1fr] md:gap-2"><div class="flex flex-col items-end pr-3 pt-4"><div class="h-4 w-12 bg-slate-200 dark:bg-slate-700 rounded"></div></div><div class="flex flex-col items-center"><div class="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-full border-4 border-slate-50 dark:border-slate-900"></div><div class="h-full w-0.5 bg-slate-200 dark:bg-slate-700 my-2"></div></div><div class="flex-1 pl-3"><div class="h-28 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700"></div></div></div>
-                <div class="flex flex-row md:grid md:grid-cols-[100px_60px_1fr] md:gap-2"><div class="flex flex-col items-end pr-3 pt-4"><div class="h-4 w-12 bg-slate-200 dark:bg-slate-700 rounded"></div></div><div class="flex flex-col items-center"><div class="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-full border-4 border-slate-50 dark:border-slate-900"></div><div class="h-full w-0.5 bg-slate-200 dark:bg-slate-700 my-2"></div></div><div class="flex-1 pl-3"><div class="h-28 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700"></div></div></div>
-                <div class="flex flex-row md:grid md:grid-cols-[100px_60px_1fr] md:gap-2"><div class="flex flex-col items-end pr-3 pt-4"><div class="h-4 w-12 bg-slate-200 dark:bg-slate-700 rounded"></div></div><div class="flex flex-col items-center"><div class="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-full border-4 border-slate-50 dark:border-slate-900"></div></div><div class="flex-1 pl-3"><div class="h-28 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700"></div></div></div>
+        <!-- Loader -->
+        <div id="loadingState" class="mt-8 px-2">
+            <div class="space-y-6 animate-pulse">
+                <div class="flex gap-4">
+                    <div class="w-16 h-4 bg-gray-200 dark:bg-slate-800 rounded mt-2"></div>
+                    <div class="flex-1 h-24 bg-gray-100 dark:bg-slate-900 rounded-2xl"></div>
+                </div>
+                <div class="flex gap-4">
+                    <div class="w-16 h-4 bg-gray-200 dark:bg-slate-800 rounded mt-2"></div>
+                    <div class="flex-1 h-24 bg-gray-100 dark:bg-slate-900 rounded-2xl"></div>
+                </div>
+                <div class="flex gap-4">
+                    <div class="w-16 h-4 bg-gray-200 dark:bg-slate-800 rounded mt-2"></div>
+                    <div class="flex-1 h-24 bg-gray-100 dark:bg-slate-900 rounded-2xl"></div>
+                </div>
             </div>
-            <p id="txt-loading" class="text-center text-slate-400 dark:text-slate-500 text-xs mt-8 font-bold tracking-widest uppercase">Loading Schedule...</p>
+            <p id="txt-loading" class="text-center text-slate-300 dark:text-slate-700 text-[10px] mt-8 font-bold tracking-widest uppercase">Syncing Schedule...</p>
         </div>
     </main>
+
+    <!-- FAB for "Today" - Floats above Bottom Nav -->
+    <button aria-label="Go to Today" id="todayBtn" class="hidden fixed bottom-24 right-5 bg-indigo-600 text-white w-14 h-14 rounded-2xl shadow-xl shadow-indigo-500/30 flex items-center justify-center z-40 btn-press transition-transform hover:-translate-y-1">
+        <i class="fas fa-calendar-day text-xl"></i>
+    </button>
     
-    <div id="installModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 transition-opacity duration-300">
-        <div class="bg-white dark:bg-slate-800 rounded-[2rem] max-w-sm w-full p-6 shadow-2xl animate-modal-pop relative border border-white/20 dark:border-slate-700">
-            <button aria-label="Close Modal" id="closeInstallModalBtn" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"><i class="fas fa-times text-xl"></i></button>
-            <h3 id="txt-install-title" class="text-xl font-bold text-slate-800 dark:text-white mb-6 text-center">Install App 🚀</h3>
-            <div class="flex items-start gap-4 mb-4 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-100 dark:border-slate-700 hover:border-blue-100 transition-colors">
-                <div class="text-3xl text-slate-800 dark:text-slate-200"><i class="fab fa-apple"></i></div>
-                <div><h4 class="font-bold text-slate-700 dark:text-slate-200 text-sm mb-1">iOS (Safari)</h4><p id="txt-install-ios" class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">1. Tap Share <i class='fas fa-share-square mx-1'></i><br>2. 'Add to Home Screen'</p></div>
+    <!-- Bottom Navigation Bar -->
+    <nav class="fixed bottom-0 left-0 w-full glass-nav z-50 pb-safe-bottom">
+        <div class="max-w-md mx-auto flex items-center justify-around h-16 px-2">
+            
+            <!-- Search Button -->
+            <button id="searchBtn" class="flex flex-col items-center justify-center w-16 h-full text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors btn-press gap-1">
+                <i class="fas fa-search text-lg mb-0.5"></i>
+                <span class="text-[10px] font-bold">Search</span>
+            </button>
+
+            <!-- Menu Button -->
+            <button id="openMenuBtn" class="flex flex-col items-center justify-center w-16 h-full text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors btn-press gap-1">
+                <i class="fas fa-utensils text-lg mb-0.5"></i>
+                <span class="text-[10px] font-bold">Food</span>
+            </button>
+            
+            <!-- View Switcher -->
+            <button id="viewToggleBtn" class="flex flex-col items-center justify-center w-16 h-full text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors btn-press gap-1">
+                <i class="fas fa-columns text-lg mb-0.5"></i>
+                <span class="text-[10px] font-bold">View</span>
+            </button>
+
+            <!-- Theme Toggle -->
+            <button id="themeToggleBtn" class="flex flex-col items-center justify-center w-16 h-full text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors btn-press gap-1 relative">
+                <i id="darkModeIcon" class="fas fa-circle-half-stroke text-lg mb-0.5"></i>
+                <span class="text-[10px] font-bold">Theme</span>
+                <span id="themeTooltip" class="absolute -top-8 bg-slate-800 text-white text-[9px] px-2 py-1 rounded opacity-0 pointer-events-none transition-opacity">Auto</span>
+            </button>
+
+        </div>
+    </nav>
+
+    <!-- Modals -->
+    <div id="installModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-6 transition-opacity duration-300">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-sm w-full p-6 shadow-2xl animate-pop relative border border-white/10">
+            <button aria-label="Close Modal" id="closeInstallModalBtn" class="absolute top-4 right-4 text-slate-400 p-2"><i class="fas fa-times text-lg"></i></button>
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                    <i class="fas fa-mobile-screen-button"></i>
+                </div>
+                <h3 id="txt-install-title" class="text-xl font-bold text-slate-900 dark:text-white mb-1">Install App</h3>
+                <p class="text-slate-500 dark:text-slate-400 text-sm">Experience the full potential.</p>
             </div>
-            <div class="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-100 dark:border-slate-700 hover:border-green-100 transition-colors">
-                <div class="text-3xl text-green-500"><i class="fab fa-android"></i></div>
-                <div><h4 class="font-bold text-slate-700 dark:text-slate-200 text-sm mb-1">Android (Chrome)</h4><p id="txt-install-android" class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">1. Tap Menu <i class='fas fa-ellipsis-v mx-1'></i><br>2. 'Install App'</p></div>
+            <div class="space-y-3">
+                <div class="bg-gray-50 dark:bg-slate-800 p-4 rounded-xl flex items-center gap-4">
+                    <i class="fab fa-apple text-2xl text-slate-800 dark:text-white"></i>
+                    <div><div class="font-bold text-xs uppercase text-slate-500">iOS</div><p id="txt-install-ios" class="text-xs text-slate-600 dark:text-slate-300 leading-snug">Share <i class='fas fa-share-square'></i> -> Add to Home Screen</p></div>
+                </div>
+                <div class="bg-gray-50 dark:bg-slate-800 p-4 rounded-xl flex items-center gap-4">
+                    <i class="fab fa-android text-2xl text-green-500"></i>
+                    <div><div class="font-bold text-xs uppercase text-slate-500">Android</div><p id="txt-install-android" class="text-xs text-slate-600 dark:text-slate-300 leading-snug">Menu <i class='fas fa-ellipsis-v'></i> -> Install App</p></div>
+                </div>
             </div>
-            <button id="closeInstallModalBtn2" class="mt-6 w-full bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl active:scale-95 transition-all shadow-lg" id="txt-install-close">Got it</button>
+            <button id="closeInstallModalBtn2" class="mt-6 w-full bg-slate-900 dark:bg-indigo-600 text-white font-bold py-3.5 rounded-xl">Close</button>
         </div>
     </div>
 
-    <footer class="w-full max-w-6xl mx-auto px-4 py-6 text-center">
-        <div class="text-[10px] font-bold text-slate-300 dark:text-slate-700 tracking-widest uppercase">
-            AYBU Medicine Schedule • v2.3
+    <div id="menuModal" class="hidden fixed inset-0 z-[70] flex items-end md:items-center justify-center bg-black/60 backdrop-blur-sm sm:p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-t-3xl md:rounded-3xl w-full max-w-md h-[85vh] flex flex-col shadow-2xl animate-slide-up relative border border-white/10">
+            <div class="p-5 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white">Dining Menu</h3>
+                    <p id="menuDateDisplay" class="text-xs text-slate-400 font-medium mt-0.5">Today</p>
+                </div>
+                <button id="closeMenuBtn" class="w-8 h-8 flex items-center justify-center bg-gray-100 dark:bg-slate-800 rounded-full text-slate-500"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-5" id="menuContainer">
+                <div id="menuLoading" class="py-20 text-center">
+                    <div class="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Loading...</p>
+                </div>
+                <div id="menuContent" class="hidden space-y-3 pb-8"></div>
+                <div id="menuError" class="hidden text-center py-10">
+                    <i class="fas fa-wifi text-4xl text-slate-200 dark:text-slate-700 mb-3"></i>
+                    <p class="text-xs text-slate-400">Menu offline.</p>
+                </div>
+            </div>
         </div>
-    </footer>
+    </div>
 
-    <button aria-label="Go to Today" id="todayBtn" class="hidden fixed bottom-8 right-6 bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 w-14 h-14 rounded-2xl shadow-2xl shadow-blue-900/20 border border-blue-50 dark:border-slate-600 flex items-center justify-center z-40 btn-press transition-all hover:bg-blue-50 dark:hover:bg-slate-600 group md:bottom-10 md:right-10" title="Go to Today">
-        <i class="fas fa-calendar-day text-xl group-hover:scale-110 transition-transform"></i>
-    </button>
-
+    <!-- Logic Script -->
     <script>
         (function() {
             "use strict";
@@ -262,11 +324,11 @@
             };
             
             const SUBJECT_PALETTE = [
-                { border: 'border-l-sky-500 dark:border-l-sky-400', icon: 'text-sky-500 dark:text-sky-400' },
-                { border: 'border-l-emerald-500 dark:border-l-emerald-400', icon: 'text-emerald-500 dark:text-emerald-400' },
-                { border: 'border-l-indigo-500 dark:border-l-indigo-400', icon: 'text-indigo-500 dark:text-indigo-400' },
-                { border: 'border-l-teal-500 dark:border-l-teal-400', icon: 'text-teal-500 dark:text-teal-400' },
-                { border: 'border-l-fuchsia-500 dark:border-l-fuchsia-400', icon: 'text-fuchsia-500 dark:text-fuchsia-400' },
+                { border: 'border-l-sky-500', icon: 'text-sky-500' },
+                { border: 'border-l-emerald-500', icon: 'text-emerald-500' },
+                { border: 'border-l-indigo-500', icon: 'text-indigo-500' },
+                { border: 'border-l-rose-500', icon: 'text-rose-500' },
+                { border: 'border-l-amber-500', icon: 'text-amber-500' },
             ];
 
             // --- 2. UTILITIES ---
@@ -325,11 +387,11 @@
                     eidTitle: "Eid Mubarak!", logoText: "P1", badgeLab: "LAB", badgeClinical: "SKILLS", 
                     fetchError: "Could not auto-load 'schedule.xlsx'.",
                     installBannerTitle: "Install App", installBannerDesc: "Get offline access & faster loading",
-                    installTitle: "Install App 🚀",
-                    installIOS: "1. Tap the Share icon <i class='fas fa-share-square mx-1'></i><br>2. Scroll down & tap 'Add to Home Screen'",
-                    installAndroid: "1. Tap menu icon <i class='fas fa-ellipsis-v mx-1'></i><br>2. Tap 'Add to Home Screen' or 'Install App'",
+                    installTitle: "Install App",
+                    installIOS: "Tap Share <i class='fas fa-share-square'></i> then 'Add to Home Screen'",
+                    installAndroid: "Tap Menu <i class='fas fa-ellipsis-v'></i> then 'Install App'",
                     installClose: "Got it",
-                    minLeft: "m left", startsIn: "Starts in"
+                    minLeft: "m left", startsIn: "In"
                 },
                 TR: {
                     title: "Dönem I", subtitle: "AYBÜ Tıp Fakültesi",
@@ -340,9 +402,9 @@
                     eidTitle: "İyi Bayramlar!", logoText: "D1", badgeLab: "LAB", badgeClinical: "BECERİ", 
                     fetchError: "'schedule.xlsx' bulunamadı.",
                     installBannerTitle: "Uygulamayı Yükle", installBannerDesc: "Çevrimdışı erişim ve hızlı yükleme",
-                    installTitle: "Uygulamayı Yükle 🚀",
-                    installIOS: "1. Paylaş simgesine dokunun <i class='fas fa-share-square mx-1'></i><br>2. Aşağı inip 'Ana Ekrana Ekle'yi seçin",
-                    installAndroid: "1. Menü simgesine dokunun <i class='fas fa-ellipsis-v mx-1'></i><br>2. 'Ana Ekrana Ekle' veya 'Yükle'yi seçin",
+                    installTitle: "Uygulamayı Yükle",
+                    installIOS: "Paylaş'a basın <i class='fas fa-share-square'></i> ve 'Ana Ekrana Ekle'yi seçin",
+                    installAndroid: "Menü'ye basın <i class='fas fa-ellipsis-v'></i> ve 'Uygulamayı Yükle'yi seçin",
                     installClose: "Tamam",
                     minLeft: "dk kaldı", startsIn: "Başlıyor:"
                 }
@@ -370,7 +432,6 @@
                 initMenuSystem();
 
                 setInterval(updateDayProgress, 30000); 
-                // Auto refresh view every minute to update "X min left"
                 setInterval(() => {
                     if(viewMode === 'day' && document.getElementById('datePicker').value === DateUtils.getTodayString()) {
                         refreshView();
@@ -380,6 +441,7 @@
                 initApp();
                 checkInstallBanner();
             });
+            
             // --- MENU SYSTEM INTEGRATION ---
             const MENU_CONFIG = {
                 URL: 'https://aybu.edu.tr/sks/tr/sayfa/6265/',
@@ -399,8 +461,8 @@
 
                 btn.onclick = () => {
                     modal.classList.remove('hidden');
-                    document.body.style.overflow = 'hidden'; // Prevent background scrolling
-                    fetchMenuData(); // Trigger fetch on open
+                    document.body.style.overflow = 'hidden'; 
+                    fetchMenuData(); 
                 };
 
                 const closeMenu = () => {
@@ -409,37 +471,31 @@
                 };
 
                 closeBtn.onclick = closeMenu;
-                // Close when clicking outside content
                 modal.onclick = (e) => { if(e.target === modal) closeMenu(); };
             }
 
-            const MENU_CACHE_KEY = 'aybu_menu_cache_v2'; // Versioning the cache
+            const MENU_CACHE_KEY = 'aybu_menu_cache_v2'; 
 
             async function fetchMenuData() {
                 const container = document.getElementById('menuContent');
                 const loading = document.getElementById('menuLoading');
                 const error = document.getElementById('menuError');
                 
-                // 1. Check Cache
                 const todayStr = new Date().toDateString();
                 try {
                     const cached = JSON.parse(localStorage.getItem(MENU_CACHE_KEY));
                     if (cached && cached.date === todayStr && cached.html) {
-                        // Use cache immediately
                         processMenuHtml(cached.html);
                         loading.classList.add('hidden');
                         return;
                     }
                 } catch(e) { console.log('Cache parse error'); }
 
-                // Don't refetch if we already have DOM content (and no cache hit previously handled it)
                 if(container.children.length > 0) return;
 
                 loading.classList.remove('hidden');
                 error.classList.add('hidden');
 
-                // 2. Race Proxies
-                // We create a promise for each proxy fetch
                 const promises = MENU_CONFIG.PROXIES.map(proxy => 
                     new Promise(async (resolve, reject) => {
                         try {
@@ -455,15 +511,11 @@
                 );
 
                 try {
-                    // Promise.any waits for the first fulfilled promise
                     const html = await Promise.any(promises);
-                    
-                    // 3. Save to Cache
                     localStorage.setItem(MENU_CACHE_KEY, JSON.stringify({
                         date: todayStr,
                         html: html
                     }));
-
                     processMenuHtml(html);
                 } catch (aggregateError) {
                     console.error("All proxies failed", aggregateError);
@@ -487,7 +539,7 @@
                 }
 
                 if(today.getDay() === 0 || today.getDay() === 6) {
-                    renderMenuMessage("Weekend Mode", "No service today.", "fa-couch", "text-amber-400");
+                    renderMenuMessage("Weekend Mode", "No service today.", "fa-couch");
                     return;
                 }
 
@@ -497,8 +549,6 @@
                 let foundWeek = false;
                 let capturing = false;
                 let items = [];
-
-                // Regex for date range DD.MM.YYYY
                 const dateRegex = /(\d{2}\.\d{2}\.\d{4})\s*-\s*(\d{2}\.\d{2}\.\d{4})/;
 
                 for (const line of lines) {
@@ -509,14 +559,11 @@
                         const start = new Date(`${y1}-${m1}-${d1}`);
                         const end = new Date(`${y2}-${m2}-${d2}`);
                         end.setHours(23,59,59);
-                        
                         if (today >= start && today <= end) foundWeek = true;
                         else foundWeek = false;
-                        
                         capturing = false;
                         continue;
                     }
-
                     if (foundWeek) {
                         if (daysMap.includes(line)) {
                             capturing = (line === todayName);
@@ -528,7 +575,6 @@
                         }
                     }
                 }
-
                 renderMenuItems(items);
             }
 
@@ -537,7 +583,7 @@
                 container.innerHTML = '';
                 
                 if (!items || items.length === 0) {
-                    renderMenuMessage("Menu Not Found", "Could not parse today's menu.", "fa-search", "text-slate-300");
+                    renderMenuMessage("Menu Not Found", "Could not parse today's menu.", "fa-search");
                     return;
                 }
 
@@ -550,7 +596,6 @@
                         cal = calMatch[0];
                     }
 
-                    // Icon Logic
                     let icon = 'fa-circle';
                     let color = 'text-slate-300 dark:text-slate-600';
                     const l = text.toLowerCase();
@@ -558,39 +603,37 @@
                     else if(l.includes('pilav') || l.includes('makarna')) { icon = 'fa-bowl-rice'; color = 'text-yellow-500'; }
                     else if(l.includes('tavuk') || l.includes('et') || l.includes('köfte') || l.includes('kebab')) { icon = 'fa-drumstick-bite'; color = 'text-rose-500'; }
                     else if(l.includes('tatlı') || l.includes('baklava') || l.includes('puding') || l.includes('helva')) { icon = 'fa-cookie'; color = 'text-pink-500'; }
-                    else if(l.includes('salata') || l.includes('meyve') || l.includes('cacık')) { icon = 'fa-leaf'; color = 'text-green-500'; }
+                    else if(l.includes('salata') || l.includes('meyve') || l.includes('cacık')) { icon = 'fa-leaf'; color = 'text-emerald-500'; }
                     else if(l.includes('yoğurt') || l.includes('ayran')) { icon = 'fa-bottle-water'; color = 'text-blue-400'; }
 
                     const div = document.createElement('div');
-                    div.className = "bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl flex items-center gap-4 animate-fade-in-up border border-slate-100 dark:border-slate-700/50";
+                    div.className = "bg-white dark:bg-slate-800 p-4 rounded-2xl flex items-center gap-4 animate-slide-up border border-gray-100 dark:border-slate-700/50 shadow-sm";
                     div.style.animationDelay = `${idx * 0.05}s`;
                     div.innerHTML = `
-                        <div class="w-10 h-10 rounded-full bg-white dark:bg-slate-700 flex items-center justify-center shrink-0 shadow-sm">
+                        <div class="w-10 h-10 rounded-xl bg-gray-50 dark:bg-slate-700 flex items-center justify-center shrink-0">
                             <i class="fas ${icon} ${color}"></i>
                         </div>
                         <div class="flex-1">
                             <div class="font-bold text-slate-700 dark:text-slate-200 text-sm leading-tight">${text}</div>
                         </div>
-                        ${cal ? `<span class="bg-white dark:bg-slate-700 text-slate-400 dark:text-slate-400 text-[10px] font-bold px-2 py-1 rounded-lg border border-slate-100 dark:border-slate-600">${cal}</span>` : ''}
+                        ${cal ? `<span class="bg-gray-50 dark:bg-slate-700 text-slate-400 dark:text-slate-400 text-[10px] font-bold px-2 py-1 rounded-lg border border-gray-100 dark:border-slate-600">${cal}</span>` : ''}
                     `;
                     container.appendChild(div);
                 });
                 container.classList.remove('hidden');
             }
 
-            function renderMenuMessage(title, sub, icon, iconColor) {
+            function renderMenuMessage(title, sub, icon) {
                 const container = document.getElementById('menuContent');
                 container.innerHTML = `
-                    <div class="flex flex-col items-center justify-center py-8 text-center bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700/50 border-dashed">
-                        <i class="fas ${icon} ${iconColor} text-3xl mb-3"></i>
-                        <h3 class="font-bold text-slate-700 dark:text-slate-200">${title}</h3>
-                        <p class="text-xs text-slate-400">${sub}</p>
+                    <div class="flex flex-col items-center justify-center py-10 text-center bg-gray-50 dark:bg-slate-800/30 rounded-2xl border border-gray-100 dark:border-slate-800 border-dashed">
+                        ${icon ? `<i class="fas ${icon} text-3xl mb-3 text-slate-300"></i>` : ''}
+                        <h3 class="font-bold text-slate-700 dark:text-slate-200 text-sm">${title}</h3>
+                        <p class="text-xs text-slate-400 mt-1">${sub}</p>
                     </div>`;
                 container.classList.remove('hidden');
             }
 
-            // Call this at the end of your main init function
-            // initMenuSystem(); // Already called in DOMContentLoaded
             function setupEventListeners() {
                 document.getElementById('installBanner').onclick = openInstallModal;
                 document.getElementById('closeInstallBtn').onclick = (e) => { e.stopPropagation(); closeInstallBanner(); };
@@ -613,14 +656,13 @@
             }
 
             // --- THEME & NAV LOGIC ---
-            let themeTooltipTimeout;
             function initTheme() {
                 const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
                 const apply = () => {
                     const saved = localStorage.getItem(CONFIG.STORAGE_KEYS.THEME);
                     const isDark = saved === 'dark' || (!saved && mediaQuery.matches);
                     document.documentElement.classList.toggle('dark', isDark);
-                    updateThemeIcon(saved, false); 
+                    updateThemeIcon(saved); 
                 };
                 apply();
                 mediaQuery.addEventListener('change', () => !localStorage.getItem(CONFIG.STORAGE_KEYS.THEME) && apply());
@@ -635,26 +677,15 @@
                 const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
                 const isDark = next === 'dark' || (!next && mediaQuery.matches);
                 document.documentElement.classList.toggle('dark', isDark);
-                updateThemeIcon(next, true);
+                updateThemeIcon(next);
             }
 
-            function updateThemeIcon(state, showFeedback = false) {
+            function updateThemeIcon(state) {
                 const icon = document.getElementById('darkModeIcon');
-                const tooltip = document.getElementById('themeTooltip');
                 if(!icon) return;
-                let label = 'Auto';
-                if (state === 'light') { icon.className = 'fas fa-sun text-yellow-500 text-xs'; label = 'Light'; } 
-                else if (state === 'dark') { icon.className = 'fas fa-moon text-blue-400 text-xs'; label = 'Dark'; } 
-                else { icon.className = 'fas fa-circle-half-stroke text-slate-400 dark:text-slate-500 text-xs'; label = 'Auto'; }
-
-                if(tooltip) {
-                    tooltip.textContent = label;
-                    if (showFeedback) {
-                        tooltip.classList.remove('opacity-0'); tooltip.classList.add('opacity-100');
-                        clearTimeout(themeTooltipTimeout);
-                        themeTooltipTimeout = setTimeout(() => { tooltip.classList.remove('opacity-100'); tooltip.classList.add('opacity-0'); }, 1500);
-                    } else { tooltip.classList.remove('opacity-100'); tooltip.classList.add('opacity-0'); }
-                }
+                if (state === 'light') icon.className = 'fas fa-sun text-amber-500 text-lg mb-0.5';
+                else if (state === 'dark') icon.className = 'fas fa-moon text-indigo-400 text-lg mb-0.5';
+                else icon.className = 'fas fa-circle-half-stroke text-slate-400 dark:text-slate-500 text-lg mb-0.5';
             }
 
             function initLang() {
@@ -684,7 +715,21 @@
             function toggleViewMode() {
                 if (viewMode === 'search') { viewMode = 'day'; toggleSearch(); return; }
                 viewMode = viewMode === 'day' ? 'week' : 'day';
-                document.getElementById('viewToggleBtn').querySelector('i').className = viewMode === 'day' ? 'fas fa-columns text-xs' : 'fas fa-calendar-day text-xs';
+                // Update icon in bottom nav
+                const btn = document.getElementById('viewToggleBtn');
+                if(btn) {
+                    const icon = btn.querySelector('i');
+                    const text = btn.querySelector('span');
+                    if(viewMode === 'week') {
+                        icon.className = 'fas fa-calendar-day text-lg mb-0.5';
+                        text.textContent = 'Day View';
+                        btn.classList.add('nav-btn-active');
+                    } else {
+                        icon.className = 'fas fa-columns text-lg mb-0.5';
+                        text.textContent = 'Week View';
+                        btn.classList.remove('nav-btn-active');
+                    }
+                }
                 refreshView();
             }
 
@@ -694,7 +739,15 @@
                 
                 document.getElementById('searchResultsContainer').classList.add('hidden');
                 document.getElementById('noSearchResults').classList.add('hidden');
-                document.getElementById('dateControls').classList.remove('hidden'); 
+
+                // Toggle "Go to Today" button
+                const todayStr = DateUtils.getTodayString();
+                const todayBtn = document.getElementById('todayBtn');
+                if (pickerVal === todayStr) {
+                    todayBtn.classList.add('hidden');
+                } else {
+                    todayBtn.classList.remove('hidden');
+                }
 
                 if (viewMode === 'day') {
                     document.getElementById('scheduleContainer').classList.remove('hidden');
@@ -712,6 +765,8 @@
             function toggleSearch() {
                 const container = document.getElementById('searchContainer');
                 const input = document.getElementById('searchInput');
+                const btn = document.getElementById('searchBtn');
+
                 container.classList.toggle('open');
                 
                 if(container.classList.contains('open')) {
@@ -720,7 +775,7 @@
                     document.getElementById('scheduleContainer').classList.add('hidden');
                     document.getElementById('weekContainer').classList.add('hidden');
                     document.getElementById('emptyState').classList.add('hidden');
-                    document.getElementById('dateControls').classList.add('hidden'); 
+                    btn.classList.add('nav-btn-active');
                     handleGlobalSearch(input.value);
                 } else {
                     input.value = '';
@@ -728,6 +783,7 @@
                     document.getElementById('searchResultsContainer').innerHTML = '';
                     document.getElementById('searchResultsContainer').classList.add('hidden');
                     document.getElementById('noSearchResults').classList.add('hidden');
+                    btn.classList.remove('nav-btn-active');
                     refreshView(); 
                     input.blur();
                 }
@@ -862,33 +918,31 @@
                         if (matches.length > 0) {
                             const dateObj = DateUtils.parse(day.date);
                             const dateHeader = document.createElement('div');
-                            dateHeader.className = "flex items-center gap-2 mt-6 mb-2 px-2";
+                            dateHeader.className = "sticky top-16 bg-gray-50/95 dark:bg-slate-950/95 backdrop-blur z-10 py-2 border-b border-gray-100 dark:border-slate-800 mb-2";
                             dateHeader.innerHTML = `
-                                <div class="h-px bg-slate-200 dark:bg-slate-700 flex-1"></div>
-                                <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">${dateObj.toLocaleDateString(currentLang==='TR'?'tr-TR':'en-US', { weekday:'short', month:'short', day:'numeric' })}</span>
-                                <div class="h-px bg-slate-200 dark:bg-slate-700 flex-1"></div>
+                                <span class="text-xs font-bold text-slate-500 uppercase tracking-widest pl-1">${dateObj.toLocaleDateString(currentLang==='TR'?'tr-TR':'en-US', { weekday:'short', month:'short', day:'numeric' })}</span>
                             `;
                             fragment.appendChild(dateHeader);
 
                             matches.forEach(item => {
                                 const card = document.createElement('div');
-                                card.className = "bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm cursor-pointer hover:border-blue-300 dark:hover:border-blue-500 transition-all active:scale-[0.98]";
+                                card.className = "bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm cursor-pointer mb-3";
                                 card.onclick = () => jumpToDate(day.date);
                                 
-                                let highlightClass = "text-slate-800 dark:text-slate-200";
+                                let highlightClass = "text-slate-900 dark:text-white";
                                 if(item.isLab) highlightClass = "text-rose-600 dark:text-rose-400";
-                                if(item.isClinical) highlightClass = "text-violet-600 dark:text-violet-400";
+                                if(item.isClinical) highlightClass = "text-indigo-600 dark:text-indigo-400";
 
                                 const line0 = highlightMatch(item.lines[0], term);
                                 const line1 = item.lines.length > 1 ? highlightMatch(item.lines[1], term) : '';
 
                                 card.innerHTML = `
-                                    <div class="flex justify-between items-start">
+                                    <div class="flex justify-between items-start gap-3">
                                         <div class="flex-1">
                                             <div class="font-bold text-sm ${highlightClass}">${line0}</div>
                                             ${item.lines.length > 1 ? `<div class="text-xs text-slate-500 mt-1">${line1}</div>` : ''}
                                         </div>
-                                        <span class="font-mono text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 px-2 py-1 rounded-lg ml-3">${item.time}</span>
+                                        <span class="font-mono text-[10px] font-bold bg-gray-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2 py-1 rounded-lg">${item.time}</span>
                                     </div>
                                 `;
                                 fragment.appendChild(card);
@@ -959,11 +1013,6 @@
                     if(!workbookData) {
                         workbookData = generateMockData();
                         completeInit();
-                        const toast = document.createElement('div');
-                        toast.className = "fixed bottom-24 left-1/2 -translate-x-1/2 bg-amber-100 text-amber-800 px-4 py-2 rounded-full shadow-lg text-xs font-bold z-50 animate-fade-in-up border border-amber-200 pointer-events-none";
-                        toast.innerHTML = "<i class='fas fa-info-circle mr-2'></i>Demo Mode: Using Mock Data";
-                        document.body.appendChild(toast);
-                        setTimeout(() => toast.remove(), 4000);
                     }
                 }
             }
@@ -972,7 +1021,7 @@
                 setLoading(false);
                 buildSearchIndexes();
                 refreshView();
-                document.getElementById('todayBtn').classList.remove('hidden');
+                // Removed explicit remove('hidden') here as refreshView handles it
             }
 
             function updateDayProgress() {
@@ -988,12 +1037,7 @@
                 else percent = (current / total) * 100;
                 
                 const bar = document.getElementById('dayProgressBar');
-                const bead = document.getElementById('progressBead');
-                if(bar) {
-                    bar.classList.remove('animate-pulse');
-                    bar.style.width = `${percent}%`;
-                    if(bead) bead.classList.remove('hidden');
-                }
+                if(bar) bar.style.width = `${percent}%`;
             }
 
             function goToToday() {
@@ -1002,11 +1046,6 @@
                 document.getElementById('datePicker').value = todayStr;
                 updateDateDisplay(new Date());
                 if(viewMode === 'search') toggleSearch();
-                
-                const container = document.getElementById('scheduleContainer');
-                container.classList.remove('animate-fade-in-up');
-                void container.offsetWidth;
-                container.classList.add('animate-fade-in-up');
                 refreshView();
             }
 
@@ -1028,11 +1067,6 @@
                 
                 picker.value = DateUtils.normalize(currentDate);
                 updateDateDisplay(currentDate);
-                
-                const container = document.getElementById('scheduleContainer');
-                container.classList.remove('animate-fade-in-up');
-                void container.offsetWidth; 
-                container.classList.add('animate-fade-in-up'); 
                 refreshView();
             }
 
@@ -1041,11 +1075,11 @@
                 localStorage.setItem(CONFIG.STORAGE_KEYS.LANG, lang);
                 const trBtn = document.getElementById('lang-tr');
                 const enBtn = document.getElementById('lang-en');
-                const active = "px-1.5 md:px-2.5 py-1 rounded-md text-[10px] font-bold bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm transition-all";
-                const inactive = "px-1.5 md:px-2.5 py-1 rounded-md text-[10px] font-bold text-slate-400 dark:text-slate-500 transition-all hover:text-slate-600 dark:hover:text-slate-300";
+                const active = "w-8 h-6 flex items-center justify-center rounded-full text-[10px] font-bold bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm transition-all";
+                const inactive = "w-8 h-6 flex items-center justify-center rounded-full text-[10px] font-bold text-slate-400 transition-all";
                 
                 if (lang === 'EN') { enBtn.className = active; trBtn.className = inactive; } 
-                else { trBtn.className = active.replace('text-blue-600', 'text-red-600 dark:text-red-400'); enBtn.className = inactive; }
+                else { trBtn.className = active; enBtn.className = inactive; }
 
                 const t = TRANSLATIONS[lang];
                 ['txt-title', 'txt-subtitle', 'txt-loading', 'txt-install-banner-title', 'txt-install-banner-desc', 'txt-install-title', 'txt-install-close'].forEach(id => {
@@ -1072,19 +1106,18 @@
                 
                 const dStr = dateObj.toDateString();
                 const locale = currentLang === 'TR' ? 'tr-TR' : 'en-US';
-                const datePart = dateObj.toLocaleDateString(locale, { weekday: 'short', month: 'short', day: 'numeric' });
+                const datePart = dateObj.toLocaleDateString(locale, { weekday: 'short', month: 'long', day: 'numeric' });
                 
-                let label = null;
-                if (dStr === today.toDateString()) label = TRANSLATIONS[currentLang].today;
-                else if (dStr === tomorrow.toDateString()) label = TRANSLATIONS[currentLang].tomorrow;
-                else if (dStr === yesterday.toDateString()) label = TRANSLATIONS[currentLang].yesterday;
+                let label = '';
+                if (dStr === today.toDateString()) label = `<span class="text-indigo-600 dark:text-indigo-400 mr-2 font-bold">${TRANSLATIONS[currentLang].today}</span>`;
+                else if (dStr === tomorrow.toDateString()) label = `<span class="text-slate-400 mr-2 font-medium">${TRANSLATIONS[currentLang].tomorrow}</span>`;
+                else if (dStr === yesterday.toDateString()) label = `<span class="text-slate-400 mr-2 font-medium">${TRANSLATIONS[currentLang].yesterday}</span>`;
                 
-                const displayEl = document.getElementById('dateDisplay');
-                if (label) {
-                    displayEl.innerHTML = `<div class="flex flex-col items-center leading-none"><span class="text-[9px] text-blue-400 dark:text-blue-300 font-bold uppercase tracking-widest mb-0.5">${label}</span><span class="text-sm font-bold text-slate-800 dark:text-slate-200">${datePart}</span></div>`;
-                } else {
-                    displayEl.innerHTML = `<span class="text-sm font-bold text-slate-700 dark:text-slate-200">${datePart}</span>`;
-                }
+                document.getElementById('dateDisplay').innerHTML = `
+                    <i class="fas fa-calendar text-slate-400 text-xs mr-1"></i>
+                    <div class="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center">${label}${datePart}</div>
+                    <i class="fas fa-chevron-down text-slate-300 text-[10px] ml-1 group-hover:text-indigo-500 transition-colors"></i>
+                `;
             }
 
             function isRowBarrier(row) {
@@ -1147,7 +1180,7 @@
                 const dateObj = DateUtils.parse(targetDateString);
                 const dayOfWeek = dateObj.getDay();
                 if (dayOfWeek === 0 || dayOfWeek === 6) {
-                    showEmptyState(TRANSLATIONS[currentLang].weekendTitle, MESSAGES.WEEKEND[currentLang], '<i class="fas fa-couch text-amber-300"></i>');
+                    showEmptyState(TRANSLATIONS[currentLang].weekendTitle, MESSAGES.WEEKEND[currentLang], '<i class="fas fa-couch text-indigo-400"></i>');
                     return;
                 }
 
@@ -1198,48 +1231,38 @@
                     const dateStr = DateUtils.normalize(currentDay);
                     const classes = getClassesForDate(dateStr);
                     
-                    const col = document.createElement('div');
-                    col.className = "flex flex-col gap-2 min-h-[200px]";
-                    
                     const isToday = dateStr === todayStr;
-                    const headerBg = isToday ? 'bg-blue-600 text-white' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200';
-                    
                     const locale = currentLang === 'TR' ? 'tr-TR' : 'en-US';
-                    const dayName = currentDay.toLocaleDateString(locale, { weekday: 'short' });
+                    const dayName = currentDay.toLocaleDateString(locale, { weekday: 'long' });
                     const dayNum = currentDay.getDate();
+
+                    const dayCard = document.createElement('div');
+                    dayCard.className = `p-4 rounded-2xl border ${isToday ? 'bg-indigo-50 border-indigo-200 dark:bg-indigo-900/10 dark:border-indigo-800' : 'bg-white dark:bg-slate-900 border-gray-100 dark:border-slate-800'} shadow-sm`;
                     
-                    let colContent = `
-                        <div class="p-3 rounded-xl ${headerBg} shadow-sm border border-slate-100 dark:border-slate-700 mb-2 text-center">
-                            <div class="text-xs uppercase font-bold opacity-80">${dayName}</div>
-                            <div class="text-lg font-bold">${dayNum}</div>
-                        </div>
-                    `;
-                    
+                    let contentHtml = `<div class="flex items-baseline justify-between mb-3 border-b border-black/5 dark:border-white/5 pb-2">
+                        <h4 class="font-bold text-slate-800 dark:text-slate-200 ${isToday ? 'text-indigo-600 dark:text-indigo-400' : ''}">${dayName}</h4>
+                        <span class="text-xs text-slate-400 font-mono">${dayNum}</span>
+                    </div>`;
+
                     if(classes.length === 0) {
-                        colContent += `<div class="text-center text-slate-300 dark:text-slate-600 text-xs py-10 font-bold uppercase tracking-wider">Empty</div>`;
+                        contentHtml += `<div class="text-center text-slate-300 text-xs py-4 italic">No classes</div>`;
                     } else {
                         classes.forEach(cls => {
-                            let cardClass = "bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700";
-                            if (['holiday_item', 'new_year_item', 'eid_item'].includes(cls.type)) cardClass = "bg-teal-50 dark:bg-teal-900/20 border-teal-100 dark:border-teal-900/50";
-                            else if(cls.isLab) cardClass = "bg-rose-50 dark:bg-rose-900/20 border-rose-100 dark:border-rose-900/50";
-                            else if(cls.isClinical) cardClass = "bg-violet-50 dark:bg-violet-900/20 border-violet-100 dark:border-violet-900/50";
-                            else if(cls.type === 'freelance') cardClass = "bg-slate-50 dark:bg-slate-900 border-slate-100 dark:border-slate-800 opacity-60";
-                            else if(cls.type === 'lunch') cardClass = "bg-amber-50 dark:bg-amber-900/10 border-amber-100 dark:border-amber-900/30 border-dashed opacity-80";
-                            else {
-                                const theme = getSubjectTheme(cls.lines[0]);
-                                cardClass = `bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 border-l-4 ${theme.border}`;
-                            }
+                            let textClass = "text-slate-700 dark:text-slate-300";
+                            if (cls.type === 'lunch') textClass = "text-amber-500 italic";
+                            else if(cls.isLab) textClass = "text-rose-600 dark:text-rose-400";
+                            else if(cls.isClinical) textClass = "text-indigo-600 dark:text-indigo-400";
 
-                            colContent += `
-                                <div class="p-3 rounded-xl border ${cardClass} shadow-sm text-sm">
-                                    <div class="font-mono text-[10px] font-bold text-slate-400 dark:text-slate-500 mb-1">${cls.time}</div>
-                                    <div class="font-bold text-slate-700 dark:text-slate-200 leading-tight line-clamp-3">${cls.lines[0]}</div>
+                            contentHtml += `
+                                <div class="flex gap-3 text-xs mb-2 last:mb-0">
+                                    <div class="w-10 font-mono text-slate-400 shrink-0">${cls.time}</div>
+                                    <div class="font-medium ${textClass} line-clamp-1">${cls.lines[0]}</div>
                                 </div>
                             `;
                         });
                     }
-                    col.innerHTML = colContent;
-                    fragment.appendChild(col);
+                    dayCard.innerHTML = contentHtml;
+                    fragment.appendChild(dayCard);
                 }
                 container.appendChild(fragment);
             }
@@ -1260,107 +1283,77 @@
 
                     const [h, m] = cls.time.split(':').map(Number);
                     const startMins = h * 60 + m;
-                    const endMins = startMins + 59; // Assumption: 1 hour blocks
+                    const endMins = startMins + 59; 
 
                     if (isToday) {
                          if (currentMinutes >= startMins && currentMinutes < endMins) {
                             isNow = true;
                             const diff = endMins - currentMinutes;
-                            timeBadge = `<span class="opacity-80 font-normal ml-1 border-l border-white/30 pl-1">${diff} ${t.minLeft}</span>`;
+                            timeBadge = `<span class="bg-indigo-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full ml-2 animate-pulse">${t.now} • ${diff}${t.minLeft}</span>`;
                          } else if (currentMinutes < startMins && (startMins - currentMinutes) <= 60 && !isUpcoming) {
-                            // Find the first upcoming class within 60 mins
-                            // Simple check: is this upcoming?
                              const diff = startMins - currentMinutes;
-                             isUpcoming = true; // Use this to style if needed, or just add badge
-                             timeBadge = `<span class="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[9px] font-bold px-1.5 py-0.5 rounded ml-2">${t.startsIn} ${diff}m</span>`;
+                             isUpcoming = true; 
+                             timeBadge = `<span class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 text-[9px] font-bold px-2 py-0.5 rounded-full ml-2">${t.startsIn} ${diff}m</span>`;
                          }
                     }
 
                     const isLunch = cls.type === 'lunch';
-                    const isLast = index === classes.length - 1;
+                    
                     const card = document.createElement('div');
-              
-                    card.className = `relative animate-fade-in-up ${isLast ? 'last-item' : ''} mb-0`;
+                    card.className = `flex gap-4 animate-slide-up relative group`;
                     card.style.animationDelay = `${index * 0.05}s`;
                     
-                    let circleClass = "bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-600";
-                    let iconClass = "text-slate-300 dark:text-slate-500";
-                    let icon = "fa-clock";
-                    let cardBg = "bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 shadow-sm hover:border-blue-200 dark:hover:border-blue-700";
-                    let timeColor = "text-slate-400 dark:text-slate-500"; 
-                    let badgeHtml = '';
-
+                    let cardBg = "bg-white dark:bg-slate-900 border-gray-100 dark:border-slate-800";
+                    let accentColor = "bg-gray-200 dark:bg-slate-700";
+                    let titleColor = "text-slate-800 dark:text-slate-100";
+                    
                     if (isNow) {
-                        circleClass = "bg-blue-600 ring-4 ring-blue-100 dark:ring-blue-900 scale-110 shadow-lg shadow-blue-200/50 dark:shadow-none";
-                        iconClass = "text-white"; 
-                        cardBg = "glow-border shadow-lg transform md:scale-[1.02] border-blue-200 dark:border-blue-800";
-                        timeColor = "text-blue-600 dark:text-blue-400 font-extrabold scale-110 origin-right transition-transform";
+                        cardBg = "bg-white dark:bg-slate-900 border-indigo-200 dark:border-indigo-900 ring-1 ring-indigo-500/20 shadow-lg shadow-indigo-500/5";
+                        accentColor = "bg-indigo-500";
                     } else if (isLunch) {
-                        circleClass = "bg-amber-100 dark:bg-amber-900/30 border-2 border-amber-200 dark:border-amber-800";
-                        iconClass = "text-amber-500 dark:text-amber-400"; icon = "fa-utensils"; 
-                        cardBg = "bg-amber-50/50 dark:bg-amber-900/10 border-amber-100 dark:border-amber-900/30 border-dashed";
-                    } else if (cls.type === 'freelance') {
-                        circleClass = "bg-slate-100 dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-600";
-                        iconClass = "text-slate-400 dark:text-slate-500"; icon = "fa-book-reader"; 
-                        cardBg = "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 border-dashed opacity-80";
+                        cardBg = "bg-orange-50/50 dark:bg-slate-900 border-orange-100 dark:border-slate-800 border-dashed";
+                        titleColor = "text-orange-600 dark:text-orange-500";
+                        accentColor = "bg-orange-300";
                     } else if (cls.isLab) {
-                        circleClass = "bg-rose-100 dark:bg-rose-900/30 border-2 border-rose-200 dark:border-rose-800";
-                        iconClass = "text-rose-500 dark:text-rose-400"; icon = "fa-flask"; 
-                        cardBg = "bg-rose-50/50 dark:bg-rose-900/10 border-rose-200 dark:border-rose-900/30 shadow-md border-l-4 border-l-rose-500 dark:border-l-rose-600";
+                        accentColor = "bg-rose-500";
                     } else if (cls.isClinical) {
-                        circleClass = "bg-violet-100 dark:bg-violet-900/30 border-2 border-violet-200 dark:border-violet-800";
-                        iconClass = "text-violet-500 dark:text-violet-400"; icon = "fa-stethoscope"; 
-                        cardBg = "bg-violet-50/50 dark:bg-violet-900/10 border-violet-200 dark:border-violet-900/30 shadow-md border-l-4 border-l-violet-500 dark:border-l-violet-600";
-                    } else {
-                        const theme = getSubjectTheme(cls.lines[0]);
-                        cardBg = `bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm border-l-4 ${theme.border}`;
-                        iconClass = theme.icon;
+                        accentColor = "bg-indigo-500";
                     }
 
-                    if (cls.isLab) badgeHtml = `<span class="bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-300 text-[10px] font-bold px-2 py-0.5 rounded border border-rose-200 dark:border-rose-800 ml-2">${t.badgeLab}</span>`;
-                    else if (cls.isClinical) badgeHtml = `<span class="bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-300 text-[10px] font-bold px-2 py-0.5 rounded border border-violet-200 dark:border-violet-800 ml-2">${t.badgeClinical}</span>`;
-                    
-                    if (isNow) {
-                        badgeHtml += `<span class="bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-full animate-pulse shadow-sm shadow-blue-200 dark:shadow-none ml-2 inline-flex items-center">${t.now} ${timeBadge}</span>`;
-                    } else if (isUpcoming && timeBadge) {
-                        badgeHtml += timeBadge;
-                    }
-                    
+                    // Content Logic
                     let linesHtml = '';
                     cls.lines.forEach((line, idx) => {
-                        if (isLunch) linesHtml += `<div class="font-bold text-amber-700/80 dark:text-amber-500 text-base leading-tight italic">${line}</div>`;
-                        else if (cls.type === 'freelance') linesHtml += `<div class="font-medium text-slate-500 dark:text-slate-400 italic text-base">${line}</div>`;
+                        if (isLunch) linesHtml += `<div class="font-medium italic">${line}</div>`;
+                        else if (cls.type === 'freelance') linesHtml += `<div class="font-medium text-slate-400 italic">${line}</div>`;
                         else {
-                            if (idx === 0) linesHtml += `<div class="font-bold text-slate-800 dark:text-slate-100 text-lg leading-tight mb-1">${line}</div>`;
-                            else if (idx === 1) linesHtml += `<div class="font-medium text-slate-600 dark:text-slate-400 text-sm leading-snug mb-2">${line}</div>`;
-                            else linesHtml += `<div class="flex items-center gap-2 text-slate-400 dark:text-slate-500 text-xs mt-1"><i class="fas fa-user-circle"></i><span>${line}</span></div>`;
+                            if (idx === 0) linesHtml += `<div class="font-bold text-lg leading-tight mb-1 ${titleColor}">${line}</div>`;
+                            else if (idx === 1) linesHtml += `<div class="text-sm text-slate-500 dark:text-slate-400 leading-snug mb-2">${line}</div>`;
+                            else linesHtml += `<div class="inline-flex items-center gap-1 text-xs text-slate-400 bg-gray-50 dark:bg-slate-800 px-2 py-1 rounded-md mt-1"><i class="fas fa-user-circle"></i><span>${line}</span></div>`;
                         }
                     });
-                    
+
                     card.innerHTML = `
-                        <div class="flex flex-row md:grid md:grid-cols-[100px_60px_1fr] md:gap-2">
-                            <div class="flex flex-col items-end pt-4 pr-3 w-14 shrink-0 md:w-auto md:pt-6 md:pr-2"><span class="text-xs md:text-xl ${timeColor} font-bold tracking-tight font-mono">${cls.time}</span></div>
-                            <div class="relative flex flex-col items-center shrink-0 md:pt-4">
-                                <div class="w-12 h-12 rounded-full flex items-center justify-center z-10 ${circleClass} transition-all duration-300"><i class="fas ${icon} ${iconClass} text-sm"></i></div>
-                                <div class="time-connector mobile-connector md:hidden"></div>
-                                <div class="time-connector desktop-connector hidden md:block"></div>
-                            </div>
-                            <div class="flex-1 min-w-0 pl-3 md:pl-0 pb-8 md:pb-6">
-                                <div class="p-5 rounded-2xl border ${cardBg} transition-all duration-300 h-full flex flex-col justify-center">
-                                    <div class="flex justify-between items-center ${badgeHtml ? 'mb-2' : ''} md:mb-1"><div class="flex items-center">${badgeHtml}</div></div>
-                                    <div>${linesHtml}</div>
+                        <!-- Time Column -->
+                        <div class="w-14 shrink-0 text-right pt-4">
+                            <div class="font-mono font-bold text-sm text-slate-500 dark:text-slate-400">${cls.time}</div>
+                        </div>
+                        
+                        <!-- Content Card -->
+                        <div class="flex-1 p-4 rounded-2xl border ${cardBg} shadow-sm relative overflow-hidden transition-transform active:scale-[0.99]">
+                            <div class="absolute left-0 top-4 bottom-4 w-1 rounded-r ${accentColor}"></div>
+                            <div class="pl-3">
+                                <div class="flex flex-wrap items-center mb-1">
+                                    ${cls.isLab ? `<span class="text-[9px] font-bold text-rose-600 bg-rose-50 dark:bg-rose-900/20 px-1.5 py-0.5 rounded mr-2">LAB</span>` : ''}
+                                    ${cls.isClinical ? `<span class="text-[9px] font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 px-1.5 py-0.5 rounded mr-2">SKILLS</span>` : ''}
+                                    ${timeBadge}
                                 </div>
+                                ${linesHtml}
                             </div>
                         </div>
                     `;
                     fragment.appendChild(card);
                 });
                 container.appendChild(fragment);
-                
-                setTimeout(() => {
-                    const active = container.querySelector('.glow-border');
-                    if (active) active.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
-                }, 600);
             }
 
             // --- 9. MOCK DATA ---
@@ -1407,7 +1400,7 @@
                 try {
                     const escapedTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                     const regex = new RegExp(`(${escapedTerm})`, 'gi');
-                    return text.replace(regex, '<span class="bg-yellow-200 dark:bg-yellow-900/60 text-slate-900 dark:text-yellow-100 rounded px-0.5 box-decoration-clone">$1</span>');
+                    return text.replace(regex, '<span class="bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-200 rounded px-1">$1</span>');
                 } catch(e) { return text; }
             }
 
@@ -1425,34 +1418,5 @@
             function setLoading(isLoading) { document.getElementById('loadingState').classList.toggle('hidden', !isLoading); }
         })();
     </script>
-    <div id="menuModal" class="hidden fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 transition-opacity duration-300">
-    <div class="bg-white dark:bg-slate-900 rounded-[2rem] max-w-sm w-full h-[80vh] flex flex-col shadow-2xl animate-modal-pop relative border border-white/20 dark:border-slate-700 overflow-hidden">
-        
-        <div class="p-6 pb-2 shrink-0 flex justify-between items-center z-10 bg-white dark:bg-slate-900">
-            <div>
-                <h3 class="text-xl font-black text-slate-800 dark:text-white tracking-tight">Dining Menu</h3>
-                <p id="menuDateDisplay" class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Today</p>
-            </div>
-            <button id="closeMenuBtn" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                <i class="fas fa-times text-sm"></i>
-            </button>
-        </div>
-
-        <div class="flex-1 overflow-y-auto p-6 pt-2 space-y-4 content-optimized" id="menuContainer">
-            <div id="menuLoading" class="flex flex-col items-center justify-center py-12">
-                <div class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Fetching...</p>
-            </div>
-            
-            <div id="menuContent" class="hidden space-y-3 pb-4"></div>
-
-            <div id="menuError" class="hidden flex flex-col items-center justify-center py-8 text-center bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700/50 p-6">
-                <div class="text-3xl text-slate-300 mb-3"><i class="fas fa-wifi"></i></div>
-                <p class="text-xs text-slate-400 mb-4 font-medium">Menu unavailable offline.</p>
-                <a href="https://aybu.edu.tr/sks/tr/sayfa/6265/" target="_blank" class="text-blue-500 hover:underline text-xs font-bold">Open Website &rarr;</a>
-            </div>
-        </div>
-    </div>
-</div>
 </body>
 </html>
