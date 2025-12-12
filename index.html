@@ -4,12 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>AYBU Schedule</title>
-    <!-- PWA Meta Tags -->
+    
+    <!-- PWA Meta Tags (Universal) -->
+    <meta name="theme-color" content="#ffffff">
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- iOS Specific Optimizations -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#ffffff">
-    <!-- Re-added Manifest Link -->
-    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-title" content="AYBU Sched">
+    <!-- This tag is critical for a good iOS Home Screen icon -->
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/833/833593.png">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -80,7 +85,6 @@
     <div id="installBanner" class="hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-[length:200%_auto] animate-[gradientMove_5s_ease_infinite] text-white px-4 py-3 shadow-lg relative z-50 cursor-pointer border-b border-white/10" onclick="openInstallModal()">
         <div class="max-w-6xl mx-auto flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <!-- Added animate-bounce for attention -->
                 <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm shadow-inner border border-white/10 animate-[bounce_2s_infinite]">
                     <i class="fas fa-download text-white text-sm"></i>
                 </div>
@@ -1175,19 +1179,7 @@
         function closeInstallModal() { document.getElementById('installModal').classList.add('hidden'); }
         function closeInstallBanner() { document.getElementById('installBanner').classList.add('hidden'); localStorage.setItem('installBannerDismissed', 'true'); }
         function openInstallModal() { document.getElementById('installModal').classList.remove('hidden'); }
-        
-        function setLoading(isLoading) {
-            document.getElementById('loadingState').classList.toggle('hidden', !isLoading);
-            const bar = document.getElementById('dayProgressBar');
-            const bead = document.getElementById('progressBead');
-            if (isLoading) {
-                bar.style.width = '70%'; bar.classList.add('animate-pulse');
-                if(bead) bead.classList.add('hidden');
-            } else {
-                bar.classList.remove('animate-pulse');
-                updateDayProgress();
-            }
-        }
+        function setLoading(isLoading) { document.getElementById('loadingState').classList.toggle('hidden', !isLoading); }
     </script>
 </body>
 </html>
