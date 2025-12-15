@@ -1,16 +1,18 @@
 <!DOCTYPE html>
-<html lang="en" class="transition-colors duration-300">
+<html lang="en" class="transition-colors duration-500 ease-in-out scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="description" content="AYBU Medicine Phase I Schedule - Offline Capable">
     <title>AYBU Schedule</title>
     
+    <!-- Preconnects -->
     <link rel="preconnect" href="https://cdn.tailwindcss.com">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://cdn.sheetjs.com">
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 
+    <!-- PWA Meta -->
     <meta name="theme-color" content="#ffffff">
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -18,6 +20,7 @@
     <meta name="apple-mobile-web-app-title" content="AYBU Sched">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/833/833593.png">
     
+    <!-- Tailwind Setup with Custom Animations -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -26,17 +29,28 @@
                 extend: {
                     fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
                     animation: {
-                        'fade-in-up': 'fadeInUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards',
-                        'modal-pop': 'modalFadeIn 0.3s ease-out forwards',
+                        'fade-in-up': 'fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'modal-pop': 'modalPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'gradient-x': 'gradientMove 15s ease infinite',
+                        'bounce-slight': 'bounceSlight 2s infinite',
+                        'spin-slow': 'spin 3s linear infinite',
                     },
                     keyframes: {
                         fadeInUp: {
-                            'from': { opacity: '0', transform: 'translateY(10px)' },
-                            'to': { opacity: '1', transform: 'translateY(0)' }
+                            '0%': { opacity: '0', transform: 'translateY(20px) scale(0.98)' },
+                            '100%': { opacity: '1', transform: 'translateY(0) scale(1)' }
                         },
-                        modalFadeIn: {
-                            'from': { opacity: '0', transform: 'scale(0.95)' },
-                            'to': { opacity: '1', transform: 'scale(1)' }
+                        modalPop: {
+                            '0%': { opacity: '0', transform: 'scale(0.95) translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'scale(1) translateY(0)' }
+                        },
+                        gradientMove: { 
+                            '0%, 100%': { 'background-position': '0% 50%' },
+                            '50%': { 'background-position': '100% 50%' }
+                        },
+                        bounceSlight: {
+                            '0%, 100%': { transform: 'translateY(-5%)' },
+                            '50%': { transform: 'translateY(0)' }
                         }
                     }
                 }
@@ -44,16 +58,18 @@
         }
     </script>
     
+    <!-- Scripts & Fonts -->
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js" defer></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
-        /* PREVENT DOUBLE TAP ZOOM & SIDE SCROLL */
+        /* CORE UX STYLES */
         html { 
             touch-action: manipulation; 
             overflow-x: hidden;
             width: 100%;
+            -webkit-font-smoothing: antialiased;
         }
         body { 
             -webkit-tap-highlight-color: transparent; 
@@ -64,15 +80,18 @@
         }
         
         .content-optimized { content-visibility: auto; contain-intrinsic-size: 100px; }
-        .glow-border { position: relative; z-index: 1; transition: transform 0.3s ease; }
+        
+        /* Glassy Gradients */
+        .glow-border { position: relative; z-index: 1; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         .glow-border::before {
             content: ""; position: absolute; inset: -2px; border-radius: 20px;
             background: linear-gradient(135deg, #60a5fa, #8b5cf6, #3b82f6);
             background-size: 200% 200%; animation: gradientMove 3s ease infinite;
-            z-index: -1; opacity: 0.7; pointer-events: none;
+            z-index: -1; opacity: 0.7; pointer-events: none; transition: opacity 0.3s ease;
         }
-        @keyframes gradientMove { 0% { background-position: 0% 50% } 50% { background-position: 100% 50% } 100% { background-position: 0% 50% } }
-        .time-connector { position: absolute; z-index: 0; background-color: #e2e8f0; } 
+        
+        /* Time Connectors */
+        .time-connector { position: absolute; z-index: 0; background-color: #e2e8f0; transition: background-color 0.3s; } 
         .dark .time-connector { background-color: #334155; }
         .mobile-connector { left: 23px; top: 45px; bottom: -20px; width: 2px; }
         .desktop-connector { display: none; }
@@ -80,21 +99,34 @@
         @media (min-width: 768px) {
             .desktop-connector { left: 50%; transform: translateX(-50%); top: 3rem; bottom: -2rem; width: 2px; display: block; }
         }
-        .btn-press { transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1); touch-action: manipulation; }
+
+        /* Micro-interactions */
+        .btn-press { transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s, box-shadow 0.2s; touch-action: manipulation; }
         .btn-press:active { transform: scale(0.92); }
-        #searchContainer { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); max-height: 0; overflow: hidden; opacity: 0; }
-        #searchContainer.open { max-height: 80px; opacity: 1; margin-top: 0.5rem; }
+        .btn-press:hover { transform: translateY(-1px); }
         
-        /* Safe area padding for iPhones with notches */
+        /* Search Animation */
+        #searchContainer { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); max-height: 0; overflow: hidden; opacity: 0; transform: translateY(-10px); }
+        #searchContainer.open { max-height: 80px; opacity: 1; margin-top: 0.5rem; transform: translateY(0); }
+        
+        /* Safe area padding */
         .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
         
-        /* Custom Scrollbar for desktop */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         .dark ::-webkit-scrollbar-thumb { background: #475569; }
         .dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        /* Slide Transitions for Days */
+        .slide-fade-wrapper {
+            transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+        }
+        .slide-out-left { opacity: 0; transform: translateX(-20px); }
+        .slide-out-right { opacity: 0; transform: translateX(20px); }
+        .slide-in-reset { opacity: 1; transform: translateX(0); }
     </style>
     <script>
         (function() {
@@ -108,12 +140,13 @@
         })();
     </script>
 </head>
-<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-300 flex flex-col">
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-500 flex flex-col overflow-x-hidden">
 
-    <div id="installBanner" class="hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-[length:200%_auto] animate-[gradientMove_5s_ease_infinite] text-white px-4 py-3 shadow-lg relative z-50 cursor-pointer border-b border-white/10">
+    <!-- Install Banner -->
+    <div id="installBanner" class="hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-[length:200%_auto] animate-gradient-x text-white px-4 py-3 shadow-lg relative z-50 cursor-pointer border-b border-white/10">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm shadow-inner border border-white/10 animate-[bounce_2s_infinite]">
+                <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm shadow-inner border border-white/10 animate-bounce-slight">
                     <i class="fas fa-download text-white text-sm"></i>
                 </div>
                 <div class="flex flex-col">
@@ -130,26 +163,26 @@
         </div>
     </div>
 
-    <header class="sticky top-0 z-40 px-3 md:px-4 lg:px-8 pt-3 pb-2 shadow-sm transition-all duration-300 bg-white/96 dark:bg-slate-900/96 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-700/80">
+    <header class="sticky top-0 z-40 px-3 md:px-4 lg:px-8 pt-3 pb-2 shadow-sm transition-all duration-300 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-700/50 supports-[backdrop-filter]:bg-white/60 supports-[backdrop-filter]:dark:bg-slate-900/60">
         <div class="max-w-7xl mx-auto flex flex-col gap-3">
             
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                 <div class="flex items-center justify-between md:justify-start gap-2 md:gap-3 lg:gap-4 w-full md:w-auto shrink-0">
                     <!-- Logo / Title Section -->
-                    <div class="flex items-center gap-2 md:gap-3 cursor-default min-w-0">
-                        <div id="phase-icon" class="w-9 h-9 md:w-10 md:h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white font-extrabold text-sm shadow-lg shadow-blue-200/50 transform transition-transform hover:rotate-3 shrink-0">
+                    <div class="flex items-center gap-2 md:gap-3 cursor-default min-w-0 group">
+                        <div id="phase-icon" class="w-9 h-9 md:w-10 md:h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white font-extrabold text-sm shadow-lg shadow-blue-500/30 transform transition-transform duration-500 group-hover:rotate-6 shrink-0">
                             D1
                         </div>
                         <div class="min-w-0 md:min-w-[140px] lg:min-w-[160px]">
-                            <h1 id="txt-title" class="font-extrabold text-sm md:text-base leading-tight text-slate-900 dark:text-white tracking-tight truncate">Phase I</h1>
+                            <h1 id="txt-title" class="font-extrabold text-sm md:text-base leading-tight text-slate-900 dark:text-white tracking-tight truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Phase I</h1>
                             <p id="txt-subtitle" class="text-[10px] md:text-xs text-slate-500 dark:text-slate-400 font-bold tracking-wide uppercase truncate">AYBU Medicine</p>
                         </div>
                     </div>
 
                     <!-- Desktop Actions & Mobile Lang -->
                     <div class="flex items-center gap-1 md:gap-2 shrink-0">
-                        <!-- Language Toggle (Visible on both) -->
-                        <button id="langToggleBtn" class="flex items-center bg-slate-100 dark:bg-slate-800 p-0.5 md:p-1 rounded-lg cursor-pointer select-none border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <!-- Language Toggle -->
+                        <button id="langToggleBtn" class="flex items-center bg-slate-100 dark:bg-slate-800 p-0.5 md:p-1 rounded-lg cursor-pointer select-none border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-blue-300 dark:hover:border-blue-700 transition-colors">
                             <div id="lang-tr" class="px-1.5 md:px-2.5 py-1 rounded-md text-[10px] font-bold text-slate-400 dark:text-slate-500 transition-all">TR</div>
                             <div id="lang-en" class="px-1.5 md:px-2.5 py-1 rounded-md text-[10px] font-bold bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 shadow-sm transition-all">EN</div>
                         </button>
@@ -157,7 +190,7 @@
                         <!-- Desktop Only Buttons -->
                         <div class="hidden md:flex items-center gap-2">
                             <button aria-label="Toggle Theme" id="themeToggleBtn" class="btn-press h-9 w-9 lg:w-auto lg:px-3 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 relative group">
-                                <i id="darkModeIcon" class="fas fa-circle-half-stroke text-xs"></i>
+                                <i id="darkModeIcon" class="fas fa-circle-half-stroke text-xs transition-transform duration-500 group-hover:rotate-180"></i>
                                 <span id="txt-btn-theme" class="hidden lg:inline-block ml-2 text-xs font-bold tracking-wide">Theme</span>
                                 <span id="themeTooltip" class="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[9px] px-2 py-1 rounded opacity-0 transition-opacity duration-300 pointer-events-none whitespace-nowrap z-50 shadow-sm">Auto</span>
                             </button>
@@ -181,7 +214,7 @@
                 </div>
 
                 <!-- Date Controls -->
-                <div id="dateControls" class="flex items-center justify-between gap-2 bg-slate-100/80 dark:bg-slate-800/80 p-1.5 rounded-2xl backdrop-blur-sm border border-white/50 dark:border-slate-700/50 shadow-sm w-full md:w-auto md:min-w-[260px] lg:min-w-[320px]">
+                <div id="dateControls" class="flex items-center justify-between gap-2 bg-slate-100/80 dark:bg-slate-800/80 p-1.5 rounded-2xl backdrop-blur-sm border border-white/50 dark:border-slate-700/50 shadow-sm w-full md:w-auto md:min-w-[260px] lg:min-w-[320px] transition-all hover:shadow-md">
                     <button aria-label="Previous Day" id="prevDayBtn" class="btn-press w-10 h-10 flex flex-none items-center justify-center rounded-xl bg-white dark:bg-slate-700 text-slate-400 dark:text-slate-300 shadow-sm hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                         <i class="fas fa-chevron-left text-xs"></i>
                     </button>
@@ -200,11 +233,11 @@
             </div>
 
             <div id="searchContainer" class="w-full">
-                <div class="relative">
-                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                <div class="relative group">
+                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>
                     <input type="text" id="searchInput" placeholder="Search entire semester..." 
                            class="w-full pl-10 pr-10 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 focus:border-blue-300 dark:focus:border-blue-500 outline-none transition-all text-sm font-medium placeholder:text-slate-400 dark:text-slate-200">
-                    <button aria-label="Close Search" id="closeSearchBtn" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1">
+                    <button aria-label="Close Search" id="closeSearchBtn" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rose-500 p-1 transition-colors">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
@@ -212,7 +245,7 @@
         </div>
         
         <div class="h-[3px] w-full bg-slate-100 dark:bg-slate-800 absolute bottom-0 left-0 group overflow-visible">
-            <div id="dayProgressBar" class="h-full bg-gradient-to-r from-cyan-500 to-blue-600 w-0 transition-[width] duration-1000 ease-linear rounded-r-sm relative">
+            <div id="dayProgressBar" class="h-full bg-gradient-to-r from-cyan-500 to-blue-600 w-0 transition-[width] duration-1000 ease-linear rounded-r-sm relative shadow-[0_0_10px_rgba(59,130,246,0.5)]">
              <div id="progressBead" class="hidden absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 bg-white dark:bg-slate-700 border-2 border-blue-600 dark:border-blue-400 rounded-full shadow-md z-10"></div>
             </div>
             <div id="txt-day-progress" class="absolute top-2 left-1/2 -translate-x-1/2 bg-slate-800/90 text-white text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-0 backdrop-blur-sm shadow-sm">
@@ -221,17 +254,17 @@
         </div>
     </header>
 
-    <main class="w-full max-w-7xl mx-auto p-4 md:p-8 flex-1">
-        <!-- Day View Container: Limited width on desktop for better readability -->
+    <main class="w-full max-w-7xl mx-auto p-4 md:p-8 flex-1 slide-fade-wrapper" id="mainContentWrapper">
+        <!-- Day View Container -->
         <div id="scheduleContainer" class="hidden mt-4 relative pl-1 pb-10 md:pl-0 md:pb-0 md:max-w-4xl md:mx-auto content-optimized"></div>
         
-        <!-- Week View Container: Responsive Grid -->
+        <!-- Week View Container -->
         <div id="weekContainer" class="hidden mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4"></div>
         
         <div id="searchResultsContainer" class="hidden mt-4 space-y-4 md:max-w-4xl md:mx-auto"></div>
 
         <div id="emptyState" class="hidden text-center py-24 px-6 animate-fade-in-up">
-            <div id="emptyIcon" class="text-6xl text-slate-200 dark:text-slate-700 mb-5 transform transition-transform hover:scale-110 duration-300 inline-block"><i class="fas fa-calendar-check"></i></div>
+            <div id="emptyIcon" class="text-6xl text-slate-200 dark:text-slate-700 mb-5 transform transition-transform hover:scale-110 duration-500 inline-block drop-shadow-sm"><i class="fas fa-calendar-check"></i></div>
             <h3 id="txt-empty-title" class="text-2xl font-bold text-slate-700 dark:text-slate-300">No Classes Found</h3>
             <p id="txt-empty-desc" class="text-slate-400 dark:text-slate-500 text-base max-w-[280px] mx-auto leading-relaxed font-medium">Check the date or switch language.</p>
         </div>
@@ -242,55 +275,57 @@
              <p id="txt-no-results-desc" class="text-slate-400 dark:text-slate-500 text-sm">Try searching for a subject name or room.</p>
         </div>
 
-        <div id="loadingState" class="w-full max-w-3xl mx-auto mt-8 px-2">
+        <div id="loadingState" class="w-full max-w-3xl mx-auto mt-8 px-2 transition-opacity duration-300">
             <div class="space-y-8 animate-pulse">
-                <div class="flex flex-row md:grid md:grid-cols-[100px_60px_1fr] md:gap-2"><div class="flex flex-col items-end pr-3 pt-4"><div class="h-4 w-12 bg-slate-200 dark:bg-slate-700 rounded"></div></div><div class="flex flex-col items-center"><div class="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-full border-4 border-slate-50 dark:border-slate-900"></div><div class="h-full w-0.5 bg-slate-200 dark:bg-slate-700 my-2"></div></div><div class="flex-1 pl-3"><div class="h-28 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700"></div></div></div>
-                <div class="flex flex-row md:grid md:grid-cols-[100px_60px_1fr] md:gap-2"><div class="flex flex-col items-end pr-3 pt-4"><div class="h-4 w-12 bg-slate-200 dark:bg-slate-700 rounded"></div></div><div class="flex flex-col items-center"><div class="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-full border-4 border-slate-50 dark:border-slate-900"></div><div class="h-full w-0.5 bg-slate-200 dark:bg-slate-700 my-2"></div></div><div class="flex-1 pl-3"><div class="h-28 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700"></div></div></div>
-                <div class="flex flex-row md:grid md:grid-cols-[100px_60px_1fr] md:gap-2"><div class="flex flex-col items-end pr-3 pt-4"><div class="h-4 w-12 bg-slate-200 dark:bg-slate-700 rounded"></div></div><div class="flex flex-col items-center"><div class="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-full border-4 border-slate-50 dark:border-slate-900"></div></div><div class="flex-1 pl-3"><div class="h-28 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700"></div></div></div>
+                <div class="flex flex-row md:grid md:grid-cols-[100px_60px_1fr] md:gap-2"><div class="flex flex-col items-end pr-3 pt-4"><div class="h-4 w-12 bg-slate-200 dark:bg-slate-700 rounded-lg"></div></div><div class="flex flex-col items-center"><div class="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-full border-4 border-slate-50 dark:border-slate-900"></div><div class="h-full w-0.5 bg-slate-200 dark:bg-slate-700 my-2"></div></div><div class="flex-1 pl-3"><div class="h-28 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700"></div></div></div>
+                <div class="flex flex-row md:grid md:grid-cols-[100px_60px_1fr] md:gap-2"><div class="flex flex-col items-end pr-3 pt-4"><div class="h-4 w-12 bg-slate-200 dark:bg-slate-700 rounded-lg"></div></div><div class="flex flex-col items-center"><div class="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-full border-4 border-slate-50 dark:border-slate-900"></div><div class="h-full w-0.5 bg-slate-200 dark:bg-slate-700 my-2"></div></div><div class="flex-1 pl-3"><div class="h-28 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700"></div></div></div>
             </div>
             <p id="txt-loading" class="text-center text-slate-400 dark:text-slate-500 text-xs mt-8 font-bold tracking-widest uppercase">Loading Schedule...</p>
         </div>
     </main>
     
-    <div id="installModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 transition-opacity duration-300">
-        <div class="bg-white dark:bg-slate-800 rounded-[2rem] max-w-sm w-full p-6 shadow-2xl animate-modal-pop relative border border-white/20 dark:border-slate-700">
+    <div id="installModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 transition-opacity duration-500">
+        <div class="bg-white dark:bg-slate-800 rounded-[2rem] max-w-sm w-full p-6 shadow-2xl animate-modal-pop relative border border-white/20 dark:border-slate-700 overflow-hidden">
+            <!-- Decorative circle -->
+            <div class="absolute -top-10 -right-10 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl pointer-events-none"></div>
+            
             <button aria-label="Close Modal" id="closeInstallModalBtn" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"><i class="fas fa-times text-xl"></i></button>
-            <h3 id="txt-install-title" class="text-xl font-bold text-slate-800 dark:text-white mb-6 text-center">Install App 🚀</h3>
-            <div class="flex items-start gap-4 mb-4 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-100 dark:border-slate-700 hover:border-blue-100 transition-colors">
-                <div class="text-3xl text-slate-800 dark:text-slate-200"><i class="fab fa-apple"></i></div>
+            <h3 id="txt-install-title" class="text-xl font-bold text-slate-800 dark:text-white mb-6 text-center relative z-10">Install App 🚀</h3>
+            <div class="flex items-start gap-4 mb-4 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-100 dark:border-slate-700 hover:border-blue-100 transition-colors group cursor-pointer">
+                <div class="text-3xl text-slate-800 dark:text-slate-200 group-hover:scale-110 transition-transform"><i class="fab fa-apple"></i></div>
                 <div><h4 class="font-bold text-slate-700 dark:text-slate-200 text-sm mb-1">iOS (Safari)</h4><p id="txt-install-ios" class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">1. Tap Share <i class='fas fa-share-square mx-1'></i><br>2. 'Add to Home Screen'</p></div>
             </div>
-            <div class="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-100 dark:border-slate-700 hover:border-green-100 transition-colors">
-                <div class="text-3xl text-green-500"><i class="fab fa-android"></i></div>
+            <div class="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-100 dark:border-slate-700 hover:border-green-100 transition-colors group cursor-pointer">
+                <div class="text-3xl text-green-500 group-hover:scale-110 transition-transform"><i class="fab fa-android"></i></div>
                 <div><h4 class="font-bold text-slate-700 dark:text-slate-200 text-sm mb-1">Android (Chrome)</h4><p id="txt-install-android" class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">1. Tap Menu <i class='fas fa-ellipsis-v mx-1'></i><br>2. 'Install App'</p></div>
             </div>
-            <button id="txt-install-close" class="mt-6 w-full bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl active:scale-95 transition-all shadow-lg">Got it</button>
+            <button id="txt-install-close" class="mt-6 w-full bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl active:scale-95 transition-all shadow-lg shadow-blue-900/10">Got it</button>
         </div>
     </div>
 
     <!-- Bottom Navigation Bar (Mobile Only) -->
-    <nav class="md:hidden fixed bottom-0 left-0 w-full bg-white/96 dark:bg-slate-900/96 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 z-50 flex justify-around items-center px-2 py-3 pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-        <button id="mobileSearchBtn" class="flex flex-col items-center gap-1 p-2 w-16 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors active:scale-95">
-            <i class="fas fa-search text-xl mb-0.5"></i>
+    <nav class="md:hidden fixed bottom-0 left-0 w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 z-50 flex justify-around items-center px-2 py-3 pb-safe shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.1)]">
+        <button id="mobileSearchBtn" class="flex flex-col items-center gap-1 p-2 w-16 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors active:scale-95 group">
+            <i class="fas fa-search text-xl mb-0.5 group-hover:-translate-y-1 transition-transform duration-300"></i>
             <span id="txt-mobile-search" class="text-[10px] font-bold tracking-wide">Search</span>
         </button>
-        <button id="mobileMenuBtn" class="flex flex-col items-center gap-1 p-2 w-16 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors active:scale-95">
-            <i class="fas fa-utensils text-xl mb-0.5"></i>
+        <button id="mobileMenuBtn" class="flex flex-col items-center gap-1 p-2 w-16 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors active:scale-95 group">
+            <i class="fas fa-utensils text-xl mb-0.5 group-hover:-translate-y-1 transition-transform duration-300"></i>
             <span id="txt-mobile-menu" class="text-[10px] font-bold tracking-wide">Menu</span>
         </button>
-        <button id="mobileViewBtn" class="flex flex-col items-center gap-1 p-2 w-16 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors active:scale-95">
-            <i class="fas fa-columns text-xl mb-0.5"></i>
+        <button id="mobileViewBtn" class="flex flex-col items-center gap-1 p-2 w-16 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors active:scale-95 group">
+            <i class="fas fa-columns text-xl mb-0.5 group-hover:-translate-y-1 transition-transform duration-300"></i>
             <span id="txt-mobile-view" class="text-[10px] font-bold tracking-wide">View</span>
         </button>
-        <button id="mobileThemeBtn" class="flex flex-col items-center gap-1 p-2 w-16 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors active:scale-95">
-            <i class="fas fa-circle-half-stroke text-xl mb-0.5"></i>
+        <button id="mobileThemeBtn" class="flex flex-col items-center gap-1 p-2 w-16 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors active:scale-95 group">
+            <i class="fas fa-circle-half-stroke text-xl mb-0.5 group-hover:rotate-180 transition-transform duration-500"></i>
             <span id="txt-mobile-theme" class="text-[10px] font-bold tracking-wide">Theme</span>
         </button>
     </nav>
 
-    <footer class="w-full max-w-7xl mx-auto px-4 py-6 text-center pb-24 md:pb-6">
+    <footer class="w-full max-w-7xl mx-auto px-4 py-6 text-center pb-24 md:pb-6 opacity-60 hover:opacity-100 transition-opacity">
         <div class="text-[10px] font-bold text-slate-300 dark:text-slate-700 tracking-widest uppercase">
-            AYBU Medicine Schedule • v2.6
+            AYBU Medicine Schedule • v2.8 Enhanced
         </div>
     </footer>
 
@@ -647,7 +682,7 @@
                     else if(l.includes('yoğurt') || l.includes('ayran')) { icon = 'fa-bottle-water'; color = 'text-blue-400'; }
 
                     const div = document.createElement('div');
-                    div.className = "bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl flex items-center gap-4 animate-fade-in-up border border-slate-100 dark:border-slate-700/50 hover:border-blue-100 dark:hover:border-slate-600 transition-colors";
+                    div.className = "bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl flex items-center gap-4 animate-fade-in-up border border-slate-100 dark:border-slate-700/50 hover:border-blue-100 dark:hover:border-slate-600 transition-all hover:scale-[1.02] duration-300";
                     div.style.animationDelay = `${idx * 0.05}s`;
                     div.innerHTML = `
                         <div class="w-10 h-10 rounded-full bg-white dark:bg-slate-700 flex items-center justify-center shrink-0 shadow-sm">
@@ -666,7 +701,7 @@
             function renderMenuMessage(title, sub, icon, iconColor) {
                 const container = document.getElementById('menuContent');
                 container.innerHTML = `
-                    <div class="flex flex-col items-center justify-center py-8 text-center bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700/50 border-dashed col-span-full">
+                    <div class="flex flex-col items-center justify-center py-8 text-center bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700/50 border-dashed col-span-full animate-fade-in-up">
                         <i class="fas ${icon} ${iconColor} text-3xl mb-3"></i>
                         <h3 class="font-bold text-slate-700 dark:text-slate-200">${title}</h3>
                         <p class="text-xs text-slate-400">${sub}</p>
@@ -752,8 +787,8 @@
                     iconClass = 'fas fa-moon'; colorClass = 'text-blue-400'; labelKey = 'themeDark'; 
                 } 
 
-                if(icon) icon.className = `${iconClass} ${colorClass} text-xs`;
-                if(mobileIcon) mobileIcon.className = `${iconClass} text-xl mb-0.5`;
+                if(icon) icon.className = `${iconClass} ${colorClass} text-xs transition-transform duration-500`;
+                if(mobileIcon) mobileIcon.className = `${iconClass} text-xl mb-0.5 transition-transform duration-500`;
 
                 if(tooltip) {
                     tooltip.textContent = TRANSLATIONS[currentLang][labelKey];
@@ -791,22 +826,28 @@
 
             function toggleViewMode() {
                 if (viewMode === 'search') { viewMode = 'day'; toggleSearch(); return; }
-                viewMode = viewMode === 'day' ? 'week' : 'day';
                 
-                const iconClass = viewMode === 'day' ? 'fas fa-columns' : 'fas fa-calendar-day';
+                // Simple transition for view mode
+                const wrapper = document.getElementById('mainContentWrapper');
+                wrapper.classList.add('opacity-0', 'scale-95');
                 
-                // Update Desktop Button
-                const dBtn = document.getElementById('viewToggleBtn');
-                if(dBtn) dBtn.querySelector('i').className = `${iconClass} text-xs`;
+                setTimeout(() => {
+                    viewMode = viewMode === 'day' ? 'week' : 'day';
+                    const iconClass = viewMode === 'day' ? 'fas fa-columns' : 'fas fa-calendar-day';
+                    
+                    const dBtn = document.getElementById('viewToggleBtn');
+                    if(dBtn) dBtn.querySelector('i').className = `${iconClass} text-xs`;
 
-                // Update Mobile Button
-                const mBtn = document.getElementById('mobileViewBtn');
-                if(mBtn) mBtn.querySelector('i').className = `${iconClass} text-xl mb-0.5`;
+                    const mBtn = document.getElementById('mobileViewBtn');
+                    if(mBtn) mBtn.querySelector('i').className = `${iconClass} text-xl mb-0.5`;
 
-                const pickerVal = document.getElementById('datePicker').value;
-                if(pickerVal) updateDateDisplay(DateUtils.parse(pickerVal));
+                    const pickerVal = document.getElementById('datePicker').value;
+                    if(pickerVal) updateDateDisplay(DateUtils.parse(pickerVal));
 
-                refreshView();
+                    refreshView();
+                    
+                    wrapper.classList.remove('opacity-0', 'scale-95');
+                }, 200);
             }
 
             function refreshView() {
@@ -1035,7 +1076,7 @@
                                 if (!dateObj) continue; // Skip invalid dates
 
                                 const dateHeader = document.createElement('div');
-                                dateHeader.className = "flex items-center gap-2 mt-6 mb-2 px-2";
+                                dateHeader.className = "flex items-center gap-2 mt-6 mb-2 px-2 animate-fade-in-up";
                                 dateHeader.innerHTML = `
                                     <div class="h-px bg-slate-200 dark:bg-slate-700 flex-1"></div>
                                     <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">${dateObj.toLocaleDateString(currentLang==='TR'?'tr-TR':'en-US', { weekday:'short', month:'short', day:'numeric' })}</span>
@@ -1043,9 +1084,10 @@
                                 `;
                                 fragment.appendChild(dateHeader);
 
-                                matches.forEach(item => {
+                                matches.forEach((item, idx) => {
                                     const card = document.createElement('div');
-                                    card.className = "bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm cursor-pointer hover:border-blue-300 dark:hover:border-blue-500 transition-all active:scale-[0.98]";
+                                    card.className = "bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm cursor-pointer hover:border-blue-300 dark:hover:border-blue-500 transition-all active:scale-[0.98] animate-fade-in-up hover:shadow-md";
+                                    card.style.animationDelay = `${idx * 0.05}s`;
                                     card.onclick = () => jumpToDate(day.date);
                                     
                                     let highlightClass = "text-slate-800 dark:text-slate-200";
@@ -1170,16 +1212,21 @@
 
             function goToToday() {
                 if (navigator.vibrate) navigator.vibrate(5);
-                const todayStr = DateUtils.getTodayString();
-                document.getElementById('datePicker').value = todayStr;
-                updateDateDisplay(new Date());
-                if(viewMode === 'search') toggleSearch();
                 
-                const container = document.getElementById('scheduleContainer');
-                container.classList.remove('animate-fade-in-up');
-                void container.offsetWidth;
-                container.classList.add('animate-fade-in-up');
-                refreshView();
+                // Animation logic
+                const wrapper = document.getElementById('mainContentWrapper');
+                wrapper.classList.add('opacity-0', 'translate-y-4');
+                
+                setTimeout(() => {
+                    const todayStr = DateUtils.getTodayString();
+                    document.getElementById('datePicker').value = todayStr;
+                    updateDateDisplay(new Date());
+                    if(viewMode === 'search') toggleSearch();
+                    
+                    refreshView();
+                    
+                    wrapper.classList.remove('opacity-0', 'translate-y-4');
+                }, 250);
             }
 
             function changeDay(offset) {
@@ -1189,23 +1236,38 @@
                 
                 if(viewMode === 'search') toggleSearch();
 
-                const currentDate = DateUtils.parse(picker.value);
-                const jump = viewMode === 'week' ? (offset * 7) : offset;
-                currentDate.setDate(currentDate.getDate() + jump);
-                if (viewMode === 'day') { 
-                    while (currentDate.getDay() === 0 || currentDate.getDay() === 6) {
-                        currentDate.setDate(currentDate.getDate() + (offset > 0 ? 1 : -1));
+                // Animation Phase 1: Slide Out
+                const wrapper = document.getElementById('mainContentWrapper');
+                const slideOutClass = offset > 0 ? 'slide-out-left' : 'slide-out-right';
+                const slideInClass = offset > 0 ? 'slide-out-right' : 'slide-out-left'; // Prepare for entry
+                
+                wrapper.classList.add(slideOutClass);
+                
+                setTimeout(() => {
+                    // Logic Phase
+                    const currentDate = DateUtils.parse(picker.value);
+                    const jump = viewMode === 'week' ? (offset * 7) : offset;
+                    currentDate.setDate(currentDate.getDate() + jump);
+                    if (viewMode === 'day') { 
+                        while (currentDate.getDay() === 0 || currentDate.getDay() === 6) {
+                            currentDate.setDate(currentDate.getDate() + (offset > 0 ? 1 : -1));
+                        }
                     }
-                }
-                
-                picker.value = DateUtils.normalize(currentDate);
-                updateDateDisplay(currentDate);
-                
-                const container = document.getElementById('scheduleContainer');
-                container.classList.remove('animate-fade-in-up');
-                void container.offsetWidth; 
-                container.classList.add('animate-fade-in-up'); 
-                refreshView();
+                    picker.value = DateUtils.normalize(currentDate);
+                    updateDateDisplay(currentDate);
+                    refreshView();
+
+                    // Animation Phase 2: Instant Move to Start Position
+                    wrapper.classList.remove(slideOutClass);
+                    wrapper.classList.add(slideInClass);
+                    
+                    // Force Reflow
+                    void wrapper.offsetWidth;
+
+                    // Animation Phase 3: Slide In
+                    wrapper.classList.remove(slideInClass);
+                    
+                }, 150); // Matches CSS transition duration
             }
 
             function setLanguage(lang, shouldProcess = true) {
@@ -1282,9 +1344,9 @@
                 else if (dStr === yesterday.toDateString()) label = TRANSLATIONS[currentLang].yesterday;
                 
                 if (label) {
-                    displayEl.innerHTML = `<div class="flex flex-col items-center leading-none"><span class="text-[9px] text-blue-400 dark:text-blue-300 font-bold uppercase tracking-widest mb-0.5">${label}</span><span class="text-sm font-bold text-slate-800 dark:text-slate-200">${datePart}</span></div>`;
+                    displayEl.innerHTML = `<div class="flex flex-col items-center leading-none animate-fade-in-up"><span class="text-[9px] text-blue-400 dark:text-blue-300 font-bold uppercase tracking-widest mb-0.5">${label}</span><span class="text-sm font-bold text-slate-800 dark:text-slate-200">${datePart}</span></div>`;
                 } else {
-                    displayEl.innerHTML = `<span class="text-sm font-bold text-slate-700 dark:text-slate-200">${datePart}</span>`;
+                    displayEl.innerHTML = `<span class="text-sm font-bold text-slate-700 dark:text-slate-200 animate-fade-in-up">${datePart}</span>`;
                 }
             }
 
@@ -1367,7 +1429,7 @@
                 const dateObj = DateUtils.parse(targetDateString);
                 const dayOfWeek = dateObj.getDay();
                 if (dayOfWeek === 0 || dayOfWeek === 6) {
-                    showEmptyState(TRANSLATIONS[currentLang].weekendTitle, MESSAGES.WEEKEND[currentLang], '<i class="fas fa-couch text-amber-300"></i>');
+                    showEmptyState(TRANSLATIONS[currentLang].weekendTitle, MESSAGES.WEEKEND[currentLang], '<i class="fas fa-couch text-amber-300 animate-bounce-slight"></i>');
                     return;
                 }
 
@@ -1389,13 +1451,13 @@
                     return false;
                 };
 
-                if(checkType('new_year_item', TRANSLATIONS[currentLang].newYearTitle, MESSAGES.NEW_YEAR[currentLang], '<i class="fas fa-glass-cheers text-pink-400"></i>')) return;
-                if(checkType('eid_item', TRANSLATIONS[currentLang].eidTitle, MESSAGES.EID[currentLang], '<i class="fas fa-moon text-yellow-400"></i>')) return;
-                if(checkType('holiday_item', TRANSLATIONS[currentLang].holidayTitle, MESSAGES.HOLIDAY[currentLang], '<i class="fas fa-umbrella-beach text-cyan-400"></i>')) return;
+                if(checkType('new_year_item', TRANSLATIONS[currentLang].newYearTitle, MESSAGES.NEW_YEAR[currentLang], '<i class="fas fa-glass-cheers text-pink-400 animate-bounce-slight"></i>')) return;
+                if(checkType('eid_item', TRANSLATIONS[currentLang].eidTitle, MESSAGES.EID[currentLang], '<i class="fas fa-moon text-yellow-400 animate-bounce-slight"></i>')) return;
+                if(checkType('holiday_item', TRANSLATIONS[currentLang].holidayTitle, MESSAGES.HOLIDAY[currentLang], '<i class="fas fa-umbrella-beach text-cyan-400 animate-bounce-slight"></i>')) return;
 
                 const actualLessons = classes.filter(c => c.type !== 'lunch');
                 if (actualLessons.length > 0 && actualLessons.every(c => c.type === 'freelance')) {
-                    showEmptyState(TRANSLATIONS[currentLang].freelanceTitle, MESSAGES.FREELANCE[currentLang], '<i class="fas fa-laptop-house text-indigo-400"></i>');
+                    showEmptyState(TRANSLATIONS[currentLang].freelanceTitle, MESSAGES.FREELANCE[currentLang], '<i class="fas fa-laptop-house text-indigo-400 animate-bounce-slight"></i>');
                 } else {
                     renderClasses(classes, targetDateString);
                 }
@@ -1419,17 +1481,18 @@
                     const classes = getClassesForDate(dateStr);
                     
                     const col = document.createElement('div');
-                    col.className = "flex flex-col gap-2 min-h-[200px]";
+                    col.className = "flex flex-col gap-2 min-h-[200px] animate-fade-in-up";
+                    col.style.animationDelay = `${i * 0.1}s`;
                     
                     const isToday = dateStr === todayStr;
-                    const headerBg = isToday ? 'bg-blue-600 text-white' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200';
+                    const headerBg = isToday ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200';
                     
                     const locale = currentLang === 'TR' ? 'tr-TR' : 'en-US';
                     const dayName = currentDay.toLocaleDateString(locale, { weekday: 'short' });
                     const dayNum = currentDay.getDate();
                     
                     let colContent = `
-                        <div class="p-3 rounded-xl ${headerBg} shadow-sm border border-slate-100 dark:border-slate-700 mb-2 text-center sticky top-20 z-10 md:static md:z-auto">
+                        <div class="p-3 rounded-xl ${headerBg} shadow-sm border border-slate-100 dark:border-slate-700 mb-2 text-center sticky top-20 z-10 md:static md:z-auto transition-transform hover:scale-105 duration-300">
                             <div class="text-xs uppercase font-bold opacity-80">${dayName}</div>
                             <div class="text-lg font-bold">${dayNum}</div>
                         </div>
@@ -1451,7 +1514,7 @@
                             }
 
                             colContent += `
-                                <div class="p-3 rounded-xl border ${cardClass} shadow-sm text-sm hover:shadow-md transition-shadow duration-200">
+                                <div class="p-3 rounded-xl border ${cardClass} shadow-sm text-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02]">
                                     <div class="font-mono text-[10px] font-bold text-slate-400 dark:text-slate-500 mb-1">${cls.time}</div>
                                     <div class="font-bold text-slate-700 dark:text-slate-200 leading-tight line-clamp-3">${cls.lines[0]}</div>
                                 </div>
@@ -1501,7 +1564,8 @@
                     const card = document.createElement('div');
               
                     card.className = `relative animate-fade-in-up ${isLast ? 'last-item' : ''} mb-0`;
-                    card.style.animationDelay = `${index * 0.05}s`;
+                    // Refined stagger for smoother wave
+                    card.style.animationDelay = `${index * 0.07}s`;
                     
                     let circleClass = "bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-600";
                     let iconClass = "text-slate-300 dark:text-slate-500";
@@ -1537,8 +1601,8 @@
                         iconClass = theme.icon;
                     }
 
-                    if (cls.isLab) badgeHtml = `<span class="bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-300 text-[10px] font-bold px-2 py-0.5 rounded border border-rose-200 dark:border-rose-800 ml-2">${t.badgeLab}</span>`;
-                    else if (cls.isClinical) badgeHtml = `<span class="bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-300 text-[10px] font-bold px-2 py-0.5 rounded border border-violet-200 dark:border-violet-800 ml-2">${t.badgeClinical}</span>`;
+                    if (cls.isLab) badgeHtml = `<span class="bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-300 text-[10px] font-bold px-2 py-0.5 rounded border border-rose-200 dark:border-rose-800 ml-2 shadow-sm">${t.badgeLab}</span>`;
+                    else if (cls.isClinical) badgeHtml = `<span class="bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-300 text-[10px] font-bold px-2 py-0.5 rounded border border-violet-200 dark:border-violet-800 ml-2 shadow-sm">${t.badgeClinical}</span>`;
                     
                     if (isNow) {
                         badgeHtml += `<span class="bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-full animate-pulse shadow-sm shadow-blue-200 dark:shadow-none ml-2 inline-flex items-center">${t.now} ${timeBadge}</span>`;
@@ -1561,7 +1625,7 @@
                         <div class="flex flex-row md:grid md:grid-cols-[100px_60px_1fr] md:gap-2">
                             <div class="flex flex-col items-end pt-4 pr-3 w-14 shrink-0 md:w-auto md:pt-6 md:pr-2"><span class="text-xs md:text-xl ${timeColor} font-bold tracking-tight font-mono">${cls.time}</span></div>
                             <div class="relative flex flex-col items-center shrink-0 md:pt-4">
-                                <div class="w-12 h-12 rounded-full flex items-center justify-center z-10 ${circleClass} transition-all duration-300"><i class="fas ${icon} ${iconClass} text-sm"></i></div>
+                                <div class="w-12 h-12 rounded-full flex items-center justify-center z-10 ${circleClass} transition-all duration-300 group-hover:scale-110"><i class="fas ${icon} ${iconClass} text-sm"></i></div>
                                 <div class="time-connector mobile-connector md:hidden"></div>
                                 <div class="time-connector desktop-connector hidden md:block"></div>
                             </div>
@@ -1645,7 +1709,7 @@
             function setLoading(isLoading) { document.getElementById('loadingState').classList.toggle('hidden', !isLoading); }
         })();
     </script>
-    <div id="menuModal" class="hidden fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 transition-opacity duration-300">
+    <div id="menuModal" class="hidden fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 transition-opacity duration-500">
     <div class="bg-white dark:bg-slate-900 rounded-[2rem] max-w-sm md:max-w-4xl w-full h-[80vh] flex flex-col shadow-2xl animate-modal-pop relative border border-white/20 dark:border-slate-700 overflow-hidden">
         
         <div class="p-6 pb-2 shrink-0 flex justify-between items-center z-10 bg-white dark:bg-slate-900">
@@ -1653,7 +1717,7 @@
                 <h3 id="txt-menu-title" class="text-xl font-black text-slate-800 dark:text-white tracking-tight">Dining Menu</h3>
                 <p id="menuDateDisplay" class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Today</p>
             </div>
-            <button id="closeMenuBtn" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+            <button id="closeMenuBtn" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors hover:rotate-90 duration-300">
                 <i class="fas fa-times text-sm"></i>
             </button>
         </div>
@@ -1666,7 +1730,7 @@
             
             <div id="menuContent" class="hidden space-y-3 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4 pb-4"></div>
 
-            <div id="menuError" class="hidden flex flex-col items-center justify-center py-8 text-center bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700/50 p-6 col-span-full">
+            <div id="menuError" class="hidden flex flex-col items-center justify-center py-8 text-center bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700/50 p-6 col-span-full animate-fade-in-up">
                 <div class="text-3xl text-slate-300 mb-3"><i class="fas fa-wifi"></i></div>
                 <p id="txt-menu-offline" class="text-xs text-slate-400 mb-4 font-medium">Menu unavailable offline.</p>
                 <a id="txt-menu-open" href="https://aybu.edu.tr/sks/tr/sayfa/6265/" target="_blank" class="text-blue-500 hover:underline text-xs font-bold">Open Website &rarr;</a>
