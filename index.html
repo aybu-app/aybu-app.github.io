@@ -1480,7 +1480,7 @@
 
                     const [h, m] = cls.time.split(':').map(Number);
                     const startMins = h * 60 + m;
-                    const endMins = startMins + 59; // Assumption: 1 hour blocks
+                    const endMins = startMins + 50; // Lesson is 50 minutes
 
                     if (isToday) {
                          if (currentMinutes >= startMins && currentMinutes < endMins) {
@@ -1676,3 +1676,4 @@
 </div>
 </body>
 </html>
+
