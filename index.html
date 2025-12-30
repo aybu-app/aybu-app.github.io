@@ -1,17 +1,19 @@
 <!DOCTYPE html>
 <html lang="en" class="transition-colors duration-500 ease-in-out scroll-smooth">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="description" content="AYBU Medicine Phase I Schedule - Offline Capable">
     <title>AYBU Schedule</title>
-    
+
     <!-- Preconnects -->
     <link rel="preconnect" href="https://cdn.tailwindcss.com">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://cdn.sheetjs.com">
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
-    
+
     <!-- PWA Meta -->
     <meta name="theme-color" content="#ffffff">
     <link rel="manifest" href="manifest.json">
@@ -19,222 +21,366 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="AYBU Sched">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/833/833593.png">
-    
+
     <!-- Styles -->
     <link rel="stylesheet" href="css/styles.css">
-    
+
     <!-- Scripts & Fonts -->
     <script src="js/tailwind.config.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js" defer></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
     <script>
-        (function() {
+        (function () {
             try {
                 const savedTheme = localStorage.getItem('aybu_theme_v1');
                 const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
                 if (savedTheme === 'dark' || (!savedTheme && systemDark)) {
                     document.documentElement.classList.add('dark');
                 }
-            } catch(e){}
+            } catch (e) { }
         })();
     </script>
 </head>
-<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-500 flex flex-col overflow-x-hidden">
+
+<body
+    class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-500 flex flex-col overflow-x-hidden">
     <!-- Install Banner -->
-    <div id="installBanner" class="hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-[length:200%_auto] animate-gradient-x text-white px-4 py-3 shadow-lg relative z-50 cursor-pointer border-b border-white/10">
+    <div id="installBanner"
+        class="hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-[length:200%_auto] animate-gradient-x text-white px-4 py-3 shadow-lg relative z-50 cursor-pointer border-b border-white/10">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm shadow-inner border border-white/10 animate-bounce-slight">
+                <div
+                    class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm shadow-inner border border-white/10 animate-bounce-slight">
                     <i class="fas fa-download text-white text-sm"></i>
                 </div>
                 <div class="flex flex-col">
-                    <span id="txt-install-banner-title" class="font-bold text-sm tracking-wide leading-tight">Install App</span>
-                    <span id="txt-install-banner-desc" class="text-[11px] text-indigo-100/90 font-medium leading-tight">Get offline access & faster loading</span>
+                    <span id="txt-install-banner-title" class="font-bold text-sm tracking-wide leading-tight">Install
+                        App</span>
+                    <span id="txt-install-banner-desc"
+                        class="text-[11px] text-indigo-100/90 font-medium leading-tight">Get offline access & faster
+                        loading</span>
                 </div>
             </div>
             <div class="flex items-center gap-3">
-                <span id="txt-install-action" class="hidden md:inline-block text-xs font-bold bg-white/20 px-3 py-1.5 rounded-lg hover:bg-white/30 transition-colors">Install</span>
-                <button aria-label="Close" id="closeInstallBtn" class="text-white/60 hover:text-white p-2 -mr-2 hover:bg-white/10 rounded-full transition-colors">
+                <span id="txt-install-action"
+                    class="hidden md:inline-block text-xs font-bold bg-white/20 px-3 py-1.5 rounded-lg hover:bg-white/30 transition-colors">Install</span>
+                <button aria-label="Close" id="closeInstallBtn"
+                    class="text-white/60 hover:text-white p-2 -mr-2 hover:bg-white/10 rounded-full transition-colors">
                     <i class="fas fa-times text-sm"></i>
                 </button>
             </div>
         </div>
     </div>
 
-    <header class="sticky top-0 z-40 px-3 md:px-4 lg:px-8 pt-safe-header pb-2 shadow-sm transition-all duration-300 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-700/50 supports-[backdrop-filter]:bg-white/60 supports-[backdrop-filter]:dark:bg-slate-900/60">
+    <header
+        class="sticky top-0 z-40 px-3 md:px-4 lg:px-8 pt-safe-header pb-2 shadow-sm transition-all duration-300 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-700/50 supports-[backdrop-filter]:bg-white/60 supports-[backdrop-filter]:dark:bg-slate-900/60">
         <div class="max-w-7xl mx-auto flex flex-col gap-3">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                <div class="flex items-center justify-between md:justify-start gap-2 md:gap-3 lg:gap-4 w-full md:w-auto shrink-0">
+                <div
+                    class="flex items-center justify-between md:justify-start gap-2 md:gap-3 lg:gap-4 w-full md:w-auto shrink-0">
                     <div class="flex items-center gap-2 md:gap-3 cursor-default min-w-0 group">
-                        <div id="phase-icon" class="w-9 h-9 md:w-10 md:h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white font-extrabold text-sm shadow-lg shadow-blue-500/30 transform transition-transform duration-500 group-hover:rotate-6 shrink-0">D1</div>
+                        <div id="phase-icon"
+                            class="w-9 h-9 md:w-10 md:h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white font-extrabold text-sm shadow-lg shadow-blue-500/30 transform transition-transform duration-500 group-hover:rotate-6 shrink-0">
+                            D1</div>
                         <div class="min-w-0 md:min-w-[140px] lg:min-w-[160px]">
-                            <h1 id="txt-title" class="font-extrabold text-sm md:text-base leading-tight text-slate-900 dark:text-white tracking-tight truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Phase I</h1>
-                            <p id="txt-subtitle" class="text-[10px] md:text-xs text-slate-500 dark:text-slate-400 font-bold tracking-wide uppercase truncate">AYBU Medicine</p>
+                            <h1 id="txt-title"
+                                class="font-extrabold text-sm md:text-base leading-tight text-slate-900 dark:text-white tracking-tight truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                Phase I</h1>
+                            <p id="txt-subtitle"
+                                class="text-[10px] md:text-xs text-slate-500 dark:text-slate-400 font-bold tracking-wide uppercase truncate">
+                                AYBU Medicine</p>
                         </div>
                     </div>
                     <div class="flex items-center gap-1 md:gap-2 shrink-0">
-                        <button id="langToggleBtn" class="flex items-center bg-slate-100 dark:bg-slate-800 p-0.5 md:p-1 rounded-lg cursor-pointer select-none border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-blue-300 dark:hover:border-blue-700 transition-colors">
-                            <div id="lang-tr" class="px-1.5 md:px-2.5 py-1 rounded-md text-[10px] font-bold text-slate-400 dark:text-slate-500 transition-all">TR</div>
-                            <div id="lang-en" class="px-1.5 md:px-2.5 py-1 rounded-md text-[10px] font-bold bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 shadow-sm transition-all">EN</div>
+                        <button id="langToggleBtn"
+                            class="flex items-center bg-slate-100 dark:bg-slate-800 p-0.5 md:p-1 rounded-lg cursor-pointer select-none border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-blue-300 dark:hover:border-blue-700 transition-colors">
+                            <div id="lang-tr"
+                                class="px-1.5 md:px-2.5 py-1 rounded-md text-[10px] font-bold text-slate-400 dark:text-slate-500 transition-all">
+                                TR</div>
+                            <div id="lang-en"
+                                class="px-1.5 md:px-2.5 py-1 rounded-md text-[10px] font-bold bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 shadow-sm transition-all">
+                                EN</div>
                         </button>
                         <div class="hidden md:flex items-center gap-2">
-                            <button aria-label="Toggle Theme" id="themeToggleBtn" class="btn-press h-9 w-9 lg:w-auto lg:px-3 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 relative group">
-                                <i id="darkModeIcon" class="fas fa-circle-half-stroke text-xs transition-transform duration-500 group-hover:rotate-180"></i>
-                                <span id="txt-btn-theme" class="hidden lg:inline-block ml-2 text-xs font-bold tracking-wide">Theme</span>
-                                <span id="themeTooltip" class="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[9px] px-2 py-1 rounded opacity-0 transition-opacity duration-300 pointer-events-none whitespace-nowrap z-50 shadow-sm">Auto</span>
+                            <button aria-label="Toggle Theme" id="themeToggleBtn"
+                                class="btn-press h-9 w-9 lg:w-auto lg:px-3 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 relative group">
+                                <i id="darkModeIcon"
+                                    class="fas fa-circle-half-stroke text-xs transition-transform duration-500 group-hover:rotate-180"></i>
+                                <span id="txt-btn-theme"
+                                    class="hidden lg:inline-block ml-2 text-xs font-bold tracking-wide">Theme</span>
+                                <span id="themeTooltip"
+                                    class="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[9px] px-2 py-1 rounded opacity-0 transition-opacity duration-300 pointer-events-none whitespace-nowrap z-50 shadow-sm">Auto</span>
                             </button>
-                            <button aria-label="Cafeteria Menu" id="openMenuBtn" class="btn-press h-9 w-9 lg:w-auto lg:px-3 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700">
+                            <button aria-label="Cafeteria Menu" id="openMenuBtn"
+                                class="btn-press h-9 w-9 lg:w-auto lg:px-3 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700">
                                 <i class="fas fa-utensils text-xs"></i>
-                                <span id="txt-btn-menu" class="hidden lg:inline-block ml-2 text-xs font-bold tracking-wide">Menu</span>
+                                <span id="txt-btn-menu"
+                                    class="hidden lg:inline-block ml-2 text-xs font-bold tracking-wide">Menu</span>
                             </button>
-                            <button aria-label="Switch View" id="viewToggleBtn" class="btn-press h-9 w-9 lg:w-auto lg:px-3 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700" title="Switch View">
+                            <button aria-label="Switch View" id="viewToggleBtn"
+                                class="btn-press h-9 w-9 lg:w-auto lg:px-3 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700"
+                                title="Switch View">
                                 <i class="fas fa-columns text-xs"></i>
-                                <span id="txt-btn-view" class="hidden lg:inline-block ml-2 text-xs font-bold tracking-wide">View</span>
+                                <span id="txt-btn-view"
+                                    class="hidden lg:inline-block ml-2 text-xs font-bold tracking-wide">View</span>
                             </button>
-                             <button aria-label="Search" id="searchBtn" class="btn-press h-9 w-9 lg:w-auto lg:px-3 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700">
+                            <button aria-label="Search" id="searchBtn"
+                                class="btn-press h-9 w-9 lg:w-auto lg:px-3 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700">
                                 <i class="fas fa-search text-xs"></i>
-                                <span id="txt-btn-search" class="hidden lg:inline-block ml-2 text-xs font-bold tracking-wide">Search</span>
-                             </button>
-                         </div>
+                                <span id="txt-btn-search"
+                                    class="hidden lg:inline-block ml-2 text-xs font-bold tracking-wide">Search</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <div id="dateControls" class="flex items-center justify-between gap-2 bg-slate-100/80 dark:bg-slate-800/80 p-1.5 rounded-2xl backdrop-blur-sm border border-white/50 dark:border-slate-700/50 shadow-sm w-full md:w-auto md:min-w-[260px] lg:min-w-[320px] transition-all hover:shadow-md">
-                    <button aria-label="Previous Day" id="prevDayBtn" class="btn-press w-10 h-10 flex flex-none items-center justify-center rounded-xl bg-white dark:bg-slate-700 text-slate-400 dark:text-slate-300 shadow-sm hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                <div id="dateControls"
+                    class="flex items-center justify-between gap-2 bg-slate-100/80 dark:bg-slate-800/80 p-1.5 rounded-2xl backdrop-blur-sm border border-white/50 dark:border-slate-700/50 shadow-sm w-full md:w-auto md:min-w-[260px] lg:min-w-[320px] transition-all hover:shadow-md">
+                    <button aria-label="Previous Day" id="prevDayBtn"
+                        class="btn-press w-10 h-10 flex flex-none items-center justify-center rounded-xl bg-white dark:bg-slate-700 text-slate-400 dark:text-slate-300 shadow-sm hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                         <i class="fas fa-chevron-left text-xs"></i>
                     </button>
                     <div class="relative flex-1 group h-10">
-                        <input aria-label="Date Picker" type="date" id="datePicker" class="opacity-0 absolute inset-0 w-full h-full z-20 cursor-pointer">
-                        <div class="flex items-center justify-center gap-3 w-full h-full bg-white dark:bg-slate-700 border border-slate-200/60 dark:border-slate-600 rounded-xl shadow-sm group-hover:border-blue-300 dark:group-hover:border-blue-500 transition-all px-2 cursor-pointer">
+                        <input aria-label="Date Picker" type="date" id="datePicker"
+                            class="opacity-0 absolute inset-0 w-full h-full z-20 cursor-pointer">
+                        <div
+                            class="flex items-center justify-center gap-3 w-full h-full bg-white dark:bg-slate-700 border border-slate-200/60 dark:border-slate-600 rounded-xl shadow-sm group-hover:border-blue-300 dark:group-hover:border-blue-500 transition-all px-2 cursor-pointer">
                             <div id="dateDisplay" class="flex-1 text-center select-none"></div>
                         </div>
                     </div>
-                     <button aria-label="Next Day" id="nextDayBtn" class="btn-press w-10 h-10 flex flex-none items-center justify-center rounded-xl bg-white dark:bg-slate-700 text-slate-400 dark:text-slate-300 shadow-sm hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                    <button aria-label="Next Day" id="nextDayBtn"
+                        class="btn-press w-10 h-10 flex flex-none items-center justify-center rounded-xl bg-white dark:bg-slate-700 text-slate-400 dark:text-slate-300 shadow-sm hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                         <i class="fas fa-chevron-right text-xs"></i>
                     </button>
                 </div>
             </div>
             <div id="searchContainer" class="w-full">
                 <div class="relative group">
-                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>
-                    <input type="text" id="searchInput" placeholder="Search entire semester..." 
-                           class="w-full pl-10 pr-10 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 focus:border-blue-300 dark:focus:border-blue-500 outline-none transition-all text-sm font-medium placeholder:text-slate-400 dark:text-slate-200">
-                    <button aria-label="Close Search" id="closeSearchBtn" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rose-500 p-1 transition-colors">
+                    <i
+                        class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>
+                    <input type="text" id="searchInput" placeholder="Search entire semester..."
+                        class="w-full pl-10 pr-10 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 focus:border-blue-300 dark:focus:border-blue-500 outline-none transition-all text-sm font-medium placeholder:text-slate-400 dark:text-slate-200">
+                    <button aria-label="Close Search" id="closeSearchBtn"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rose-500 p-1 transition-colors">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
             </div>
         </div>
-        
+
         <div class="h-[3px] w-full bg-slate-100 dark:bg-slate-800 absolute bottom-0 left-0 group overflow-visible">
-            <div id="dayProgressBar" class="h-full bg-gradient-to-r from-cyan-500 to-blue-600 w-0 transition-[width] duration-1000 ease-linear rounded-r-sm relative shadow-[0_0_10px_rgba(59,130,246,0.5)]">
-             <div id="progressBead" class="hidden absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 bg-white dark:bg-slate-700 border-2 border-blue-600 dark:border-blue-400 rounded-full shadow-md z-10"></div>
+            <div id="dayProgressBar"
+                class="h-full bg-gradient-to-r from-cyan-500 to-blue-600 w-0 transition-[width] duration-1000 ease-linear rounded-r-sm relative shadow-[0_0_10px_rgba(59,130,246,0.5)]">
+                <div id="progressBead"
+                    class="hidden absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 bg-white dark:bg-slate-700 border-2 border-blue-600 dark:border-blue-400 rounded-full shadow-md z-10">
+                </div>
             </div>
-            <div id="txt-day-progress" class="absolute top-2 left-1/2 -translate-x-1/2 bg-slate-800/90 text-white text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-0 backdrop-blur-sm shadow-sm">Day Progress</div>
+            <div id="txt-day-progress"
+                class="absolute top-2 left-1/2 -translate-x-1/2 bg-slate-800/90 text-white text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-0 backdrop-blur-sm shadow-sm">
+                Day Progress</div>
         </div>
     </header>
 
     <main class="w-full max-w-7xl mx-auto p-4 md:p-8 flex-1 slide-fade-wrapper" id="mainContentWrapper">
-        <div id="scheduleContainer" class="hidden mt-4 relative pl-1 pb-10 md:pl-0 md:pb-0 md:max-w-4xl md:mx-auto content-optimized"></div>
+        <div id="scheduleContainer"
+            class="hidden mt-4 relative pl-1 pb-10 md:pl-0 md:pb-0 md:max-w-4xl md:mx-auto content-optimized"></div>
         <div id="weekContainer" class="hidden mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4"></div>
         <div id="searchResultsContainer" class="hidden mt-4 space-y-4 md:max-w-4xl md:mx-auto"></div>
 
         <div id="emptyState" class="hidden text-center py-24 px-6 animate-fade-in-up">
-            <div id="emptyIcon" class="text-6xl text-slate-200 dark:text-slate-700 mb-5 transform transition-transform hover:scale-110 duration-500 inline-block drop-shadow-sm"><i class="fas fa-calendar-check"></i></div>
+            <div id="emptyIcon"
+                class="text-6xl text-slate-200 dark:text-slate-700 mb-5 transform transition-transform hover:scale-110 duration-500 inline-block drop-shadow-sm">
+                <i class="fas fa-calendar-check"></i>
+            </div>
             <h3 id="txt-empty-title" class="text-2xl font-bold text-slate-700 dark:text-slate-300">No Classes Found</h3>
-            <p id="txt-empty-desc" class="text-slate-400 dark:text-slate-500 text-base max-w-[280px] mx-auto leading-relaxed font-medium">Check the date or switch language.</p>
+            <p id="txt-empty-desc"
+                class="text-slate-400 dark:text-slate-500 text-base max-w-[280px] mx-auto leading-relaxed font-medium">
+                Check the date or switch language.</p>
         </div>
 
         <div id="noSearchResults" class="hidden text-center py-16 px-6 animate-fade-in-up">
-             <div class="text-4xl text-slate-200 dark:text-slate-700 mb-4 inline-block"><i class="fas fa-search"></i></div>
-             <h3 id="txt-no-results-title" class="text-lg font-bold text-slate-700 dark:text-slate-300">No matching classes</h3>
-             <p id="txt-no-results-desc" class="text-slate-400 dark:text-slate-500 text-sm">Try searching for a subject name or room.</p>
+            <div class="text-4xl text-slate-200 dark:text-slate-700 mb-4 inline-block"><i class="fas fa-search"></i>
+            </div>
+            <h3 id="txt-no-results-title" class="text-lg font-bold text-slate-700 dark:text-slate-300">No matching
+                classes</h3>
+            <p id="txt-no-results-desc" class="text-slate-400 dark:text-slate-500 text-sm">Try searching for a subject
+                name or room.</p>
         </div>
 
         <div id="loadingState" class="w-full max-w-3xl mx-auto mt-8 px-2 transition-opacity duration-300">
             <div class="space-y-8 animate-pulse">
-                <div class="flex flex-row md:grid md:grid-cols-[100px_60px_1fr] md:gap-2"><div class="flex flex-col items-end pr-3 pt-4"><div class="h-4 w-12 bg-slate-200 dark:bg-slate-700 rounded-lg"></div></div><div class="flex flex-col items-center"><div class="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-full border-4 border-slate-50 dark:border-slate-900"></div><div class="h-full w-0.5 bg-slate-200 dark:bg-slate-700 my-2"></div></div><div class="flex-1 pl-3"><div class="h-28 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700"></div></div></div>
-                <div class="flex flex-row md:grid md:grid-cols-[100px_60px_1fr] md:gap-2"><div class="flex flex-col items-end pr-3 pt-4"><div class="h-4 w-12 bg-slate-200 dark:bg-slate-700 rounded-lg"></div></div><div class="flex flex-col items-center"><div class="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-full border-4 border-slate-50 dark:border-slate-900"></div><div class="h-full w-0.5 bg-slate-200 dark:bg-slate-700 my-2"></div></div><div class="flex-1 pl-3"><div class="h-28 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700"></div></div></div>
+                <div class="flex flex-row md:grid md:grid-cols-[100px_60px_1fr] md:gap-2">
+                    <div class="flex flex-col items-end pr-3 pt-4">
+                        <div class="h-4 w-12 bg-slate-200 dark:bg-slate-700 rounded-lg"></div>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div
+                            class="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-full border-4 border-slate-50 dark:border-slate-900">
+                        </div>
+                        <div class="h-full w-0.5 bg-slate-200 dark:bg-slate-700 my-2"></div>
+                    </div>
+                    <div class="flex-1 pl-3">
+                        <div
+                            class="h-28 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700">
+                        </div>
+                    </div>
+                </div>
+                <div class="flex flex-row md:grid md:grid-cols-[100px_60px_1fr] md:gap-2">
+                    <div class="flex flex-col items-end pr-3 pt-4">
+                        <div class="h-4 w-12 bg-slate-200 dark:bg-slate-700 rounded-lg"></div>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div
+                            class="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-full border-4 border-slate-50 dark:border-slate-900">
+                        </div>
+                        <div class="h-full w-0.5 bg-slate-200 dark:bg-slate-700 my-2"></div>
+                    </div>
+                    <div class="flex-1 pl-3">
+                        <div
+                            class="h-28 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700">
+                        </div>
+                    </div>
+                </div>
             </div>
-            <p id="txt-loading" class="text-center text-slate-400 dark:text-slate-500 text-xs mt-8 font-bold tracking-widest uppercase">Loading Schedule...</p>
+            <p id="txt-loading"
+                class="text-center text-slate-400 dark:text-slate-500 text-xs mt-8 font-bold tracking-widest uppercase">
+                Loading Schedule...<br>
+                <span id="loading-help" class="hidden text-[9px] normal-case opacity-70 mt-2 block font-normal">
+                    Stuck? Try running: <code
+                        class="bg-slate-200 dark:bg-slate-700 px-1 rounded">python3 -m http.server</code>
+                </span>
+            </p>
         </div>
     </main>
-    
-    <div id="installModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 transition-opacity duration-500">
-        <div class="bg-white dark:bg-slate-800 rounded-[2rem] max-w-sm w-full p-6 shadow-2xl animate-modal-pop relative border border-white/20 dark:border-slate-700 overflow-hidden">
-            <div class="absolute -top-10 -right-10 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl pointer-events-none"></div>
-            <button aria-label="Close Modal" id="closeInstallModalBtn" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"><i class="fas fa-times text-xl"></i></button>
-            <h3 id="txt-install-title" class="text-xl font-bold text-slate-800 dark:text-white mb-6 text-center relative z-10">Install App 🚀</h3>
-            <div class="flex items-start gap-4 mb-4 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-100 dark:border-slate-700 hover:border-blue-100 transition-colors group cursor-pointer">
-                <div class="text-3xl text-slate-800 dark:text-slate-200 group-hover:scale-110 transition-transform"><i class="fab fa-apple"></i></div>
-                <div><h4 class="font-bold text-slate-700 dark:text-slate-200 text-sm mb-1">iOS (Safari)</h4><p id="txt-install-ios" class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">1. Tap Share <i class='fas fa-share-square mx-1'></i><br>2. 'Add to Home Screen'</p></div>
+
+    <div id="installModal"
+        class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 transition-opacity duration-500">
+        <div
+            class="bg-white dark:bg-slate-800 rounded-[2rem] max-w-sm w-full p-6 shadow-2xl animate-modal-pop relative border border-white/20 dark:border-slate-700 overflow-hidden">
+            <div class="absolute -top-10 -right-10 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl pointer-events-none">
             </div>
-            <div class="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-100 dark:border-slate-700 hover:border-green-100 transition-colors group cursor-pointer">
-                <div class="text-3xl text-green-500 group-hover:scale-110 transition-transform"><i class="fab fa-android"></i></div>
-                <div><h4 class="font-bold text-slate-700 dark:text-slate-200 text-sm mb-1">Android (Chrome)</h4><p id="txt-install-android" class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">1. Tap Menu <i class='fas fa-ellipsis-v mx-1'></i><br>2. 'Install App'</p></div>
+            <button aria-label="Close Modal" id="closeInstallModalBtn"
+                class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"><i
+                    class="fas fa-times text-xl"></i></button>
+            <h3 id="txt-install-title"
+                class="text-xl font-bold text-slate-800 dark:text-white mb-6 text-center relative z-10">Install App 🚀
+            </h3>
+            <div
+                class="flex items-start gap-4 mb-4 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-100 dark:border-slate-700 hover:border-blue-100 transition-colors group cursor-pointer">
+                <div class="text-3xl text-slate-800 dark:text-slate-200 group-hover:scale-110 transition-transform"><i
+                        class="fab fa-apple"></i></div>
+                <div>
+                    <h4 class="font-bold text-slate-700 dark:text-slate-200 text-sm mb-1">iOS (Safari)</h4>
+                    <p id="txt-install-ios" class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">1. Tap
+                        Share <i class='fas fa-share-square mx-1'></i><br>2. 'Add to Home Screen'</p>
+                </div>
             </div>
-            <button id="txt-install-close" class="mt-6 w-full bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl active:scale-95 transition-all shadow-lg shadow-blue-900/10">Got it</button>
+            <div
+                class="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-100 dark:border-slate-700 hover:border-green-100 transition-colors group cursor-pointer">
+                <div class="text-3xl text-green-500 group-hover:scale-110 transition-transform"><i
+                        class="fab fa-android"></i></div>
+                <div>
+                    <h4 class="font-bold text-slate-700 dark:text-slate-200 text-sm mb-1">Android (Chrome)</h4>
+                    <p id="txt-install-android" class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">1.
+                        Tap Menu <i class='fas fa-ellipsis-v mx-1'></i><br>2. 'Install App'</p>
+                </div>
+            </div>
+            <button id="txt-install-close"
+                class="mt-6 w-full bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl active:scale-95 transition-all shadow-lg shadow-blue-900/10">Got
+                it</button>
         </div>
     </div>
 
     <!-- Bottom Navigation Bar (Mobile Only) -->
-    <nav class="md:hidden fixed bottom-0 left-0 w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 z-50 flex justify-around items-center px-2 pt-3 pb-safe-nav shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.1)]">
-        <button id="mobileSearchBtn" class="flex flex-col items-center gap-1 p-2 w-16 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors active:scale-95 group">
+    <nav
+        class="md:hidden fixed bottom-0 left-0 w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 z-50 flex justify-around items-center px-2 pt-3 pb-safe-nav shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.1)]">
+        <button id="mobileSearchBtn"
+            class="flex flex-col items-center gap-1 p-2 w-16 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors active:scale-95 group">
             <i class="fas fa-search text-xl mb-0.5 group-hover:-translate-y-1 transition-transform duration-300"></i>
             <span id="txt-mobile-search" class="text-[10px] font-bold tracking-wide">Search</span>
         </button>
-        <button id="mobileMenuBtn" class="flex flex-col items-center gap-1 p-2 w-16 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors active:scale-95 group">
+        <button id="mobileMenuBtn"
+            class="flex flex-col items-center gap-1 p-2 w-16 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors active:scale-95 group">
             <i class="fas fa-utensils text-xl mb-0.5 group-hover:-translate-y-1 transition-transform duration-300"></i>
             <span id="txt-mobile-menu" class="text-[10px] font-bold tracking-wide">Menu</span>
         </button>
-        <button id="mobileViewBtn" class="flex flex-col items-center gap-1 p-2 w-16 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors active:scale-95 group">
+        <button id="mobileViewBtn"
+            class="flex flex-col items-center gap-1 p-2 w-16 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors active:scale-95 group">
             <i class="fas fa-columns text-xl mb-0.5 group-hover:-translate-y-1 transition-transform duration-300"></i>
             <span id="txt-mobile-view" class="text-[10px] font-bold tracking-wide">View</span>
         </button>
-        <button id="mobileThemeBtn" class="flex flex-col items-center gap-1 p-2 w-16 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors active:scale-95 group">
-            <i class="fas fa-circle-half-stroke text-xl mb-0.5 group-hover:rotate-180 transition-transform duration-500"></i>
+        <button id="mobileThemeBtn"
+            class="flex flex-col items-center gap-1 p-2 w-16 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors active:scale-95 group">
+            <i
+                class="fas fa-circle-half-stroke text-xl mb-0.5 group-hover:rotate-180 transition-transform duration-500"></i>
             <span id="txt-mobile-theme" class="text-[10px] font-bold tracking-wide">Theme</span>
         </button>
     </nav>
 
-    <footer class="w-full max-w-7xl mx-auto px-4 py-6 text-center pb-24 md:pb-6 opacity-60 hover:opacity-100 transition-opacity">
+    <footer
+        class="w-full max-w-7xl mx-auto px-4 py-6 text-center pb-24 md:pb-6 opacity-60 hover:opacity-100 transition-opacity">
         <div class="text-[10px] font-bold text-slate-300 dark:text-slate-700 tracking-widest uppercase">
             AYBU Medicine Schedule • v2.8 Enhanced
         </div>
     </footer>
 
-    <button aria-label="Go to Today" id="todayBtn" class="fixed bottom-24 right-6 md:bottom-10 md:right-10 bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 w-14 h-14 rounded-2xl shadow-2xl shadow-blue-900/20 border border-blue-50 dark:border-slate-600 flex items-center justify-center z-40 btn-press transition-all duration-500 ease-in-out hover:bg-blue-50 dark:hover:bg-slate-600 group opacity-0 translate-y-10 pointer-events-none" title="Go to Today">
+    <button aria-label="Go to Today" id="todayBtn"
+        class="fixed bottom-24 right-6 md:bottom-10 md:right-10 bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 w-14 h-14 rounded-2xl shadow-2xl shadow-blue-900/20 border border-blue-50 dark:border-slate-600 flex items-center justify-center z-40 btn-press transition-all duration-500 ease-in-out hover:bg-blue-50 dark:hover:bg-slate-600 group opacity-0 translate-y-10 pointer-events-none"
+        title="Go to Today">
         <i class="fas fa-calendar-day text-xl group-hover:scale-110 transition-transform"></i>
     </button>
-    
-    <script src="js/app.js"></script>
 
-    <div id="menuModal" class="hidden fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 transition-opacity duration-500">
-        <div class="bg-white dark:bg-slate-900 rounded-[2rem] max-w-sm md:max-w-4xl w-full h-[80vh] flex flex-col shadow-2xl animate-modal-pop relative border border-white/20 dark:border-slate-700 overflow-hidden">
+    <script>
+        // Failsafe for double-click file:// opening
+        setTimeout(() => {
+            const loadingHelp = document.getElementById('loading-help');
+            if (loadingHelp && document.getElementById('txt-loading').innerText.includes('Loading')) {
+                loadingHelp.classList.remove('hidden');
+            }
+        }, 2000);
+    </script>
+    <script src="js/app.js"
+        onerror="document.getElementById('txt-loading').innerHTML = '<span class=\'text-rose-500\'>Script Load Error</span><br><span class=\'text-[9px]\'>Browser blocked external script. Try standard local server.</span>';"></script>
+
+    <div id="menuModal"
+        class="hidden fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 transition-opacity duration-500">
+        <div
+            class="bg-white dark:bg-slate-900 rounded-[2rem] max-w-sm md:max-w-4xl w-full h-[80vh] flex flex-col shadow-2xl animate-modal-pop relative border border-white/20 dark:border-slate-700 overflow-hidden">
             <div class="p-6 pb-2 shrink-0 flex justify-between items-center z-10 bg-white dark:bg-slate-900">
                 <div>
-                    <h3 id="txt-menu-title" class="text-xl font-black text-slate-800 dark:text-white tracking-tight">Dining Menu</h3>
-                    <p id="menuDateDisplay" class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Today</p>
+                    <h3 id="txt-menu-title" class="text-xl font-black text-slate-800 dark:text-white tracking-tight">
+                        Dining Menu</h3>
+                    <p id="menuDateDisplay"
+                        class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Today</p>
                 </div>
-                <button id="closeMenuBtn" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors hover:rotate-90 duration-300">
+                <button id="closeMenuBtn"
+                    class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors hover:rotate-90 duration-300">
                     <i class="fas fa-times text-sm"></i>
                 </button>
             </div>
             <div class="flex-1 overflow-y-auto p-6 pt-2 content-optimized" id="menuContainer">
                 <div id="menuLoading" class="flex flex-col items-center justify-center py-12">
-                    <div class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                    <p id="txt-menu-fetching" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Fetching...</p>
+                    <div class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4">
+                    </div>
+                    <p id="txt-menu-fetching" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                        Fetching...</p>
                 </div>
-                <div id="menuContent" class="hidden space-y-3 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4 pb-4"></div>
-                <div id="menuError" class="hidden flex flex-col items-center justify-center py-8 text-center bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700/50 p-6 col-span-full animate-fade-in-up">
+                <div id="menuContent"
+                    class="hidden space-y-3 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4 pb-4"></div>
+                <div id="menuError"
+                    class="hidden flex flex-col items-center justify-center py-8 text-center bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700/50 p-6 col-span-full animate-fade-in-up">
                     <div class="text-3xl text-slate-300 mb-3"><i class="fas fa-wifi"></i></div>
-                    <p id="txt-menu-offline" class="text-xs text-slate-400 mb-4 font-medium">Menu unavailable offline.</p>
-                    <a id="txt-menu-open" href="https://aybu.edu.tr/sks/tr/sayfa/6265/" target="_blank" class="text-blue-500 hover:underline text-xs font-bold">Open Website &rarr;</a>
+                    <p id="txt-menu-offline" class="text-xs text-slate-400 mb-4 font-medium">Menu unavailable offline.
+                    </p>
+                    <a id="txt-menu-open" href="https://aybu.edu.tr/sks/tr/sayfa/6265/" target="_blank"
+                        class="text-blue-500 hover:underline text-xs font-bold">Open Website &rarr;</a>
                 </div>
             </div>
         </div>
     </div>
 </body>
+
 </html>
