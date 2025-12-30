@@ -757,7 +757,7 @@ function renderWeekView(targetDateString) {
         col.style.animationDelay = `${i * 0.1}s`;
 
         const isToday = dateStr === todayStr;
-        const headerBg = isToday ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200';
+        const headerBg = isToday ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'bg-white/80 dark:bg-slate-800/80 backdrop-blur text-slate-700 dark:text-slate-200';
 
         const locale = currentLang === 'TR' ? 'tr-TR' : 'en-US';
         const dayName = currentDay.toLocaleDateString(locale, { weekday: 'short' });
@@ -774,15 +774,16 @@ function renderWeekView(targetDateString) {
             colContent += `<div class="text-center text-slate-300 dark:text-slate-600 text-xs py-10 font-bold uppercase tracking-wider">Empty</div>`;
         } else {
             classes.forEach(cls => {
-                let cardClass = "bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700";
-                if (['holiday_item', 'new_year_item', 'eid_item'].includes(cls.type)) cardClass = "bg-teal-50 dark:bg-teal-900/20 border-teal-100 dark:border-teal-900/50";
-                else if (cls.isLab) cardClass = "bg-rose-50 dark:bg-rose-900/20 border-rose-100 dark:border-rose-900/50";
-                else if (cls.isClinical) cardClass = "bg-violet-50 dark:bg-violet-900/20 border-violet-100 dark:border-violet-900/50";
-                else if (cls.type === 'freelance') cardClass = "bg-slate-50 dark:bg-slate-900 border-slate-100 dark:border-slate-800 opacity-60";
-                else if (cls.type === 'lunch') cardClass = "bg-amber-50 dark:bg-amber-900/10 border-amber-100 dark:border-amber-900/30 border-dashed opacity-80";
+                let cardClass = "bg-white/80 dark:bg-slate-800/80 border-slate-100 dark:border-slate-700 backdrop-blur-sm";
+                if (['holiday_item', 'new_year_item', 'eid_item'].includes(cls.type)) cardClass = "bg-teal-50/50 dark:bg-teal-900/20 border-teal-100 dark:border-teal-900/50";
+                else if (cls.isLab) cardClass = "bg-rose-50/50 dark:bg-rose-900/20 border-rose-100 dark:border-rose-900/50";
+                else if (cls.isClinical) cardClass = "bg-violet-50/50 dark:bg-violet-900/20 border-violet-100 dark:border-violet-900/50";
+                else if (cls.type === 'freelance') cardClass = "bg-slate-50/50 dark:bg-slate-900/50 border-slate-100 dark:border-slate-800 opacity-60";
+                else if (cls.type === 'lunch') cardClass = "bg-amber-50/50 dark:bg-amber-900/10 border-amber-100 dark:border-amber-900/30 border-dashed opacity-80";
                 else {
                     const theme = getSubjectTheme(cls.lines[0]);
-                    cardClass = `bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 border-l-4 ${theme.border}`;
+                    if (theme.bg) cardClass = `${theme.bg} dark:bg-opacity-10 border-slate-100 dark:border-slate-700 border-l-4 ${theme.border}`;
+                    else cardClass = `bg-white/80 dark:bg-slate-800/80 border-slate-100 dark:border-slate-700 border-l-4 ${theme.border}`;
                 }
 
                 colContent += `
@@ -821,13 +822,11 @@ function renderClasses(classes, targetDateStr) {
             if (currentMinutes >= startMins && currentMinutes < endMins) {
                 isNow = true;
                 const diff = endMins - currentMinutes;
-                timeBadge = `<span class="opacity-80 font-normal ml-1 border-l border-white/30 pl-1">${diff} ${t.minLeft}</span>`;
+                timeBadge = `<span class="opacity-80 font-normal ml-1 border-l border-white/30 pl-1 text-[10px] tracking-wide">${diff} ${t.minLeft}</span>`;
             } else if (currentMinutes < startMins && (startMins - currentMinutes) <= 60 && !isUpcoming) {
-                // Find the first upcoming class within 60 mins
-                // Simple check: is this upcoming?
                 const diff = startMins - currentMinutes;
-                isUpcoming = true; // Use this to style if needed, or just add badge
-                timeBadge = `<span class="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[9px] font-bold px-1.5 py-0.5 rounded ml-2">${t.startsIn} ${diff}m</span>`;
+                isUpcoming = true;
+                timeBadge = `<span class="bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ml-2 border border-indigo-100 dark:border-indigo-500/30">${t.startsIn} ${diff}m</span>`;
             }
         }
 
@@ -836,75 +835,104 @@ function renderClasses(classes, targetDateStr) {
         const card = document.createElement('div');
 
         card.className = `relative animate-fade-in-up ${isLast ? 'last-item' : ''} mb-0`;
-        // Refined stagger for smoother wave
-        card.style.animationDelay = `${index * 0.07}s`;
+        card.style.animationDelay = `${index * 0.05}s`;
 
-        let circleClass = "bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-600";
+        // Default Icon Circle (Glassy)
+        let circleClass = "bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200/60 dark:border-slate-700 shadow-sm z-20 relative";
         let iconClass = "text-slate-300 dark:text-slate-500";
         let icon = "fa-clock";
-        let cardBg = "bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 shadow-sm hover:border-blue-200 dark:hover:border-blue-700";
+
+        // Default Card (Glassy)
+        let cardBg = "bg-white/70 dark:bg-slate-800/60 backdrop-blur-md border border-white/50 dark:border-slate-700/50 shadow-sm hover:shadow-md hover:border-blue-200 dark:hover:border-slate-600 transition-all duration-300";
         let timeColor = "text-slate-400 dark:text-slate-500";
         let badgeHtml = '';
 
         if (isNow) {
-            circleClass = "bg-blue-600 ring-4 ring-blue-100 dark:ring-blue-900 scale-110 shadow-lg shadow-blue-200/50 dark:shadow-none";
-            iconClass = "text-white";
-            cardBg = "glow-border shadow-lg transform md:scale-[1.02] border-blue-200 dark:border-blue-800";
-            timeColor = "text-blue-600 dark:text-blue-400 font-extrabold scale-110 origin-right transition-transform";
+            circleClass = "bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/40 border-2 border-white dark:border-slate-800 scale-125 z-30";
+            iconClass = "text-white animate-pulse";
+            cardBg = "glow-border bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl border-blue-200 dark:border-blue-500/30 shadow-xl transform md:scale-[1.03]";
+            timeColor = "text-blue-600 dark:text-blue-400 font-black scale-105 origin-right transition-transform";
         } else if (isLunch) {
-            circleClass = "bg-amber-100 dark:bg-amber-900/30 border-2 border-amber-200 dark:border-amber-800";
-            iconClass = "text-amber-500 dark:text-amber-400"; icon = "fa-utensils";
-            cardBg = "bg-amber-50/50 dark:bg-amber-900/10 border-amber-100 dark:border-amber-900/30 border-dashed opacity-80";
+            circleClass = "bg-amber-50 dark:bg-amber-900/40 border border-amber-200 dark:border-amber-700/50";
+            iconClass = "text-amber-400 dark:text-amber-500"; icon = "fa-utensils";
+            cardBg = "bg-amber-50/40 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-800/50 border-dashed";
         } else if (cls.type === 'freelance') {
-            circleClass = "bg-slate-100 dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-600";
-            iconClass = "text-slate-400 dark:text-slate-500"; icon = "fa-book-reader";
-            cardBg = "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 border-dashed opacity-80";
+            circleClass = "bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700";
+            iconClass = "text-slate-300 dark:text-slate-600"; icon = "fa-book-open";
+            cardBg = "bg-slate-50/50 dark:bg-slate-900/20 border border-slate-100 dark:border-slate-800 border-dashed opacity-75 grayscale-[0.5] hover:grayscale-0 hover:opacity-100";
         } else if (cls.isLab) {
-            circleClass = "bg-rose-100 dark:bg-rose-900/30 border-2 border-rose-200 dark:border-rose-800";
+            circleClass = "bg-rose-50 dark:bg-rose-900/30 border border-rose-200 dark:border-rose-800";
             iconClass = "text-rose-500 dark:text-rose-400"; icon = "fa-flask";
-            cardBg = "bg-rose-50/50 dark:bg-rose-900/10 border-rose-200 dark:border-rose-900/30 shadow-md border-l-4 border-l-rose-500 dark:border-l-rose-600";
+            cardBg = "bg-rose-50/30 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/30";
         } else if (cls.isClinical) {
-            circleClass = "bg-violet-100 dark:bg-violet-900/30 border-2 border-violet-200 dark:border-violet-800";
-            iconClass = "text-violet-500 dark:text-violet-400"; icon = "fa-stethoscope";
-            cardBg = "bg-violet-50/50 dark:bg-violet-900/10 border-violet-200 dark:border-violet-900/30 shadow-md border-l-4 border-l-violet-500 dark:border-l-violet-600";
+            circleClass = "bg-violet-50 dark:bg-violet-900/30 border border-violet-200 dark:border-violet-800";
+            iconClass = "text-violet-500 dark:text-violet-400"; icon = "fa-heart-pulse";
+            cardBg = "bg-violet-50/30 dark:bg-violet-900/10 border border-violet-100 dark:border-violet-900/30";
         } else {
             const theme = getSubjectTheme(cls.lines[0]);
-            cardBg = `bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm border-l-4 ${theme.border}`;
-            iconClass = theme.icon;
+            // Use subtle colored backgrounds for normal classes too
+            if (theme.bg) cardBg = `${theme.bg} dark:bg-opacity-10 border border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-600 backdrop-blur-sm shadow-sm transition-all`;
+            else cardBg = `bg-white/80 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700 backdrop-blur-sm shadow-sm hover:border-slate-300 transition-all`;
+
+            // Icon color from palette
+            if (theme.icon) {
+                // Parse the color from the class (e.g., text-sky-500) to apply to circle bg lightly
+                // Simplified: just use white/dark circle, icon has color
+                iconClass = theme.icon;
+            }
         }
 
-        if (cls.isLab) badgeHtml = `<span class="bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-300 text-[10px] font-bold px-2 py-0.5 rounded border border-rose-200 dark:border-rose-800 ml-2 shadow-sm">${t.badgeLab}</span>`;
-        else if (cls.isClinical) badgeHtml = `<span class="bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-300 text-[10px] font-bold px-2 py-0.5 rounded border border-violet-200 dark:border-violet-800 ml-2 shadow-sm">${t.badgeClinical}</span>`;
+        // --- BADGES (New Pill Design) ---
+        const badgeBase = "inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase shadow-sm border ml-2";
+
+        if (cls.isLab) badgeHtml = `<span class="${badgeBase} bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-500/30"><span class="w-1.5 h-1.5 rounded-full bg-rose-500 mr-1.5 animate-pulse"></span>${t.badgeLab}</span>`;
+        else if (cls.isClinical) badgeHtml = `<span class="${badgeBase} bg-violet-100 dark:bg-violet-500/20 text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-500/30"><span class="w-1.5 h-1.5 rounded-full bg-violet-500 mr-1.5 animate-pulse"></span>${t.badgeClinical}</span>`;
 
         if (isNow) {
-            badgeHtml += `<span class="bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-full animate-pulse shadow-sm shadow-blue-200 dark:shadow-none ml-2 inline-flex items-center">${t.now} ${timeBadge}</span>`;
+            badgeHtml += `<span class="${badgeBase} bg-blue-600 text-white border-blue-500 shadow-blue-500/30"><i class="fas fa-play text-[8px] mr-1.5"></i>${t.now} ${timeBadge}</span>`;
         } else if (isUpcoming && timeBadge) {
             badgeHtml += timeBadge;
         }
 
+        // --- CONTENT LINES ---
         let linesHtml = '';
         cls.lines.forEach((line, idx) => {
-            if (isLunch) linesHtml += `<div class="font-bold text-amber-700/80 dark:text-amber-500 text-base leading-tight italic">${line}</div>`;
-            else if (cls.type === 'freelance') linesHtml += `<div class="font-medium text-slate-500 dark:text-slate-400 italic text-base">${line}</div>`;
+            if (isLunch) linesHtml += `<div class="font-bold text-amber-600/80 dark:text-amber-500/80 text-sm italic tracking-wide">${line}</div>`;
+            else if (cls.type === 'freelance') linesHtml += `<div class="font-medium text-slate-400 dark:text-slate-500 italic text-sm">${line}</div>`;
             else {
-                if (idx === 0) linesHtml += `<div class="font-bold text-slate-800 dark:text-slate-100 text-lg leading-tight mb-1">${line}</div>`;
-                else if (idx === 1) linesHtml += `<div class="font-medium text-slate-600 dark:text-slate-400 text-sm leading-snug mb-2">${line}</div>`;
-                else linesHtml += `<div class="flex items-center gap-2 text-slate-400 dark:text-slate-500 text-xs mt-1"><i class="fas fa-user-circle"></i><span>${line}</span></div>`;
+                if (idx === 0) linesHtml += `<div class="font-extrabold text-slate-800 dark:text-slate-100 text-[17px] leading-tight mb-1 tracking-tight">${line}</div>`;
+                else if (idx === 1) linesHtml += `<div class="font-semibold text-slate-500 dark:text-slate-400 text-xs leading-snug mb-2 uppercase tracking-wide opacity-80">${line}</div>`;
+                else linesHtml += `<div class="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 text-[11px] font-medium mt-1 bg-slate-50 dark:bg-slate-700/50 px-2 py-1 rounded w-fit"><i class="fas fa-user-circle text-xs opacity-70"></i><span>${line}</span></div>`;
             }
         });
 
         card.innerHTML = `
-            <div class="flex flex-row md:grid md:grid-cols-[100px_60px_1fr] md:gap-2">
-                <div class="flex flex-col items-end pt-4 pr-3 w-14 shrink-0 md:w-auto md:pt-6 md:pr-2"><span class="text-xs md:text-xl ${timeColor} font-bold tracking-tight font-mono">${cls.time}</span></div>
-                <div class="relative flex flex-col items-center shrink-0 md:pt-4">
-                    <div class="w-12 h-12 rounded-full flex items-center justify-center z-10 ${circleClass} transition-all duration-300 group-hover:scale-110"><i class="fas ${icon} ${iconClass} text-sm"></i></div>
-                    <div class="time-connector mobile-connector md:hidden"></div>
-                    <div class="time-connector desktop-connector hidden md:block"></div>
+            <div class="flex flex-row md:grid md:grid-cols-[80px_48px_1fr] md:gap-4 group">
+                <!-- Time Column -->
+                <div class="flex flex-col items-end pt-5 pr-2 w-14 shrink-0 md:w-auto md:pt-6">
+                    <span class="text-sm md:text-lg ${timeColor} font-bold tracking-tighter font-mono transition-colors duration-300">${cls.time}</span>
                 </div>
-                <div class="flex-1 min-w-0 pl-3 md:pl-0 pb-8 md:pb-6">
-                    <div class="p-5 rounded-2xl border ${cardBg} md:hover:scale-[1.01] md:hover:shadow-lg transition-all duration-300 h-full flex flex-col justify-center">
-                        <div class="flex justify-between items-center ${badgeHtml ? 'mb-2' : ''} md:mb-1"><div class="flex items-center">${badgeHtml}</div></div>
-                        <div>${linesHtml}</div>
+                
+                <!-- Timeline Axis -->
+                <div class="relative flex flex-col items-center shrink-0 md:pt-4">
+                     <div class="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all duration-500 ${circleClass} group-hover:scale-110 group-hover:shadow-md">
+                        <i class="fas ${icon} ${iconClass} text-xs md:text-sm transition-colors duration-300"></i>
+                     </div>
+                     <!-- Connector Line -->
+                     <div class="time-connector mobile-connector md:hidden absolute top-9 bottom-[-16px] left-[19px] w-[2px] bg-slate-200 dark:bg-slate-700/50"></div>
+                     <div class="time-connector desktop-connector hidden md:block absolute top-[3rem] bottom-[-2rem] left-1/2 -translate-x-1/2 w-[2px] bg-slate-200 dark:bg-slate-700/50"></div>
+                </div>
+
+                <!-- Content Card -->
+                <div class="flex-1 min-w-0 pl-3 md:pl-0 pb-6 md:pb-6 relative z-10">
+                    <div class="p-5 rounded-[1.5rem] ${cardBg} h-full flex flex-col justify-center relative overflow-hidden group-hover:translate-x-1 transition-transform duration-300">
+                        <!-- Decorative bg blob for cards -->
+                        <div class="absolute -right-4 -top-4 w-20 h-20 bg-current opacity-[0.03] rounded-full blur-2xl pointer-events-none text-blue-500 dark:text-white"></div>
+                        
+                        <div class="flex flex-wrap justify-between items-start gap-2 mb-1">
+                             <div class="flex-1 min-w-0">${linesHtml}</div>
+                             ${badgeHtml ? `<div class="shrink-0 pt-0.5">${badgeHtml}</div>` : ''}
+                        </div>
                     </div>
                 </div>
             </div>

@@ -16,11 +16,12 @@ const CONSTANTS = {
 };
 
 const SUBJECT_PALETTE = [
-    { border: 'border-l-sky-500 dark:border-l-sky-400', icon: 'text-sky-500 dark:text-sky-400' },
-    { border: 'border-l-emerald-500 dark:border-l-emerald-400', icon: 'text-emerald-500 dark:text-emerald-400' },
-    { border: 'border-l-indigo-500 dark:border-l-indigo-400', icon: 'text-indigo-500 dark:text-indigo-400' },
-    { border: 'border-l-teal-500 dark:border-l-teal-400', icon: 'text-teal-500 dark:text-teal-400' },
-    { border: 'border-l-fuchsia-500 dark:border-l-fuchsia-400', icon: 'text-fuchsia-500 dark:text-fuchsia-400' },
+    { border: 'border-l-sky-500 dark:border-l-sky-400', icon: 'text-sky-500 dark:text-sky-400', bg: 'bg-sky-50 dark:bg-sky-900/20' },
+    { border: 'border-l-emerald-500 dark:border-l-emerald-400', icon: 'text-emerald-500 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
+    { border: 'border-l-indigo-500 dark:border-l-indigo-400', icon: 'text-indigo-500 dark:text-indigo-400', bg: 'bg-indigo-50 dark:bg-indigo-900/20' },
+    { border: 'border-l-pink-500 dark:border-l-pink-400', icon: 'text-pink-500 dark:text-pink-400', bg: 'bg-pink-50 dark:bg-pink-900/20' },
+    { border: 'border-l-orange-500 dark:border-l-orange-400', icon: 'text-orange-500 dark:text-orange-400', bg: 'bg-orange-50 dark:bg-orange-900/20' },
+    { border: 'border-l-cyan-500 dark:border-l-cyan-400', icon: 'text-cyan-500 dark:text-cyan-400', bg: 'bg-cyan-50 dark:bg-cyan-900/20' },
 ];
 
 const TRANSLATIONS = {
