@@ -12,6 +12,7 @@ body {
     touch-action: manipulation;
     width: 100%;
     position: relative;
+    overscroll-behavior-y: none;
     background-color: #f8fafc;
     background-image:
         radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.1) 0px, transparent 50%),
@@ -129,6 +130,21 @@ body {
 }
 
 /* Safe area padding - FIXED for iOS PWA */
+input,
+textarea,
+select {
+    font-size: 16px;
+}
+
+@media (min-width: 768px) {
+
+    input,
+    textarea,
+    select {
+        font-size: inherit;
+    }
+}
+
 .pb-safe {
     padding-bottom: env(safe-area-inset-bottom, 20px);
 }
