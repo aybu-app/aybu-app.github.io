@@ -1,0 +1,1752 @@
+<!DOCTYPE html>
+<html lang="en" class="transition-colors duration-500 ease-in-out scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="description" content="AYBU Medicine Phase I Schedule - Offline Capable">
+    <title>AYBU Schedule</title>
+    
+    <!-- Preconnects -->
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://cdn.sheetjs.com">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+
+    <!-- PWA Meta -->
+    <meta name="theme-color" content="#ffffff">
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AYBU Sched">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/833/833593.png">
+    
+    <!-- Tailwind Setup with Custom Animations -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'modal-pop': 'modalPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'gradient-x': 'gradientMove 15s ease infinite',
+                        'bounce-slight': 'bounceSlight 2s infinite',
+                        'spin-slow': 'spin 3s linear infinite',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px) scale(0.98)' },
+                            '100%': { opacity: '1', transform: 'translateY(0) scale(1)' }
+                        },
+                        modalPop: {
+                            '0%': { opacity: '0', transform: 'scale(0.95) translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'scale(1) translateY(0)' }
+                        },
+                        gradientMove: { 
+                            '0%, 100%': { 'background-position': '0% 50%' },
+                            '50%': { 'background-position': '100% 50%' }
+                        },
+                        bounceSlight: {
+                            '0%, 100%': { transform: 'translateY(-5%)' },
+                            '50%': { transform: 'translateY(0)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Scripts & Fonts -->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js" defer></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* CORE UX STYLES */
+        html { 
+            touch-action: manipulation; 
+            overflow-x: hidden;
+            width: 100%;
+            -webkit-font-smoothing: antialiased;
+        }
+        body { 
+            -webkit-tap-highlight-color: transparent; 
+            overflow-x: hidden; 
+            touch-action: manipulation; 
+            width: 100%;
+            position: relative;
+        }
+        
+        .content-optimized { content-visibility: auto; contain-intrinsic-size: 100px; }
+        
+        /* Glassy Gradients */
+        .glow-border { position: relative; z-index: 1; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .glow-border::before {
+            content: ""; position: absolute; inset: -2px; border-radius: 20px;
+            background: linear-gradient(135deg, #60a5fa, #8b5cf6, #3b82f6);
+            background-size: 200% 200%; animation: gradientMove 3s ease infinite;
+            z-index: -1; opacity: 0.7; pointer-events: none; transition: opacity 0.3s ease;
+        }
+        
+        /* Time Connectors */
+        .time-connector { position: absolute; z-index: 0; background-color: #e2e8f0; transition: background-color 0.3s; } 
+        .dark .time-connector { background-color: #334155; }
+        .mobile-connector { left: 23px; top: 45px; bottom: -20px; width: 2px; }
+        .desktop-connector { display: none; }
+        .last-item .time-connector { display: none; }
+        @media (min-width: 768px) {
+            .desktop-connector { left: 50%; transform: translateX(-50%); top: 3rem; bottom: -2rem; width: 2px; display: block; }
+        }
+
+        /* Micro-interactions */
+        .btn-press { transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s, box-shadow 0.2s; touch-action: manipulation; }
+        .btn-press:active { transform: scale(0.92); }
+        .btn-press:hover { transform: translateY(-1px); }
+        
+        /* Search Animation */
+        #searchContainer { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); max-height: 0; overflow: hidden; opacity: 0; transform: translateY(-10px); }
+        #searchContainer.open { max-height: 80px; opacity: 1; margin-top: 0.5rem; transform: translateY(0); }
+        
+        /* Safe area padding - FIXED for iOS PWA */
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
+        
+        .pt-safe-header {
+            padding-top: calc(env(safe-area-inset-top) + 0.75rem);
+        }
+        
+        .pb-safe-nav {
+            padding-bottom: calc(env(safe-area-inset-bottom) + 0.75rem);
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        /* Slide Transitions for Days */
+        .slide-fade-wrapper {
+            transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+        }
+        .slide-out-left { opacity: 0; transform: translateX(-20px); }
+        .slide-out-right { opacity: 0; transform: translateX(20px); }
+        .slide-in-reset { opacity: 1; transform: translateX(0); }
+    </style>
+    <script>
+        (function() {
+            try {
+                const savedTheme = localStorage.getItem('aybu_theme_v1');
+                const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (savedTheme === 'dark' || (!savedTheme && systemDark)) {
+                    document.documentElement.classList.add('dark');
+                }
+            } catch(e){}
+        })();
+    </script>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-500 flex flex-col overflow-x-hidden">
+
+    <!-- Install Banner -->
+    <div id="installBanner" class="hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-[length:200%_auto] animate-gradient-x text-white px-4 py-3 shadow-lg relative z-50 cursor-pointer border-b border-white/10">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm shadow-inner border border-white/10 animate-bounce-slight">
+                    <i class="fas fa-download text-white text-sm"></i>
+                </div>
+                <div class="flex flex-col">
+                    <span id="txt-install-banner-title" class="font-bold text-sm tracking-wide leading-tight">Install App</span>
+                    <span id="txt-install-banner-desc" class="text-[11px] text-indigo-100/90 font-medium leading-tight">Get offline access & faster loading</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <span id="txt-install-action" class="hidden md:inline-block text-xs font-bold bg-white/20 px-3 py-1.5 rounded-lg hover:bg-white/30 transition-colors">Install</span>
+                <button aria-label="Close" id="closeInstallBtn" class="text-white/60 hover:text-white p-2 -mr-2 hover:bg-white/10 rounded-full transition-colors">
+                    <i class="fas fa-times text-sm"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Updated Header with Safe Area Class -->
+    <header class="sticky top-0 z-40 px-3 md:px-4 lg:px-8 pt-safe-header pb-2 shadow-sm transition-all duration-300 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-700/50 supports-[backdrop-filter]:bg-white/60 supports-[backdrop-filter]:dark:bg-slate-900/60">
+        <div class="max-w-7xl mx-auto flex flex-col gap-3">
+            
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div class="flex items-center justify-between md:justify-start gap-2 md:gap-3 lg:gap-4 w-full md:w-auto shrink-0">
+                    <!-- Logo / Title Section -->
+                    <div class="flex items-center gap-2 md:gap-3 cursor-default min-w-0 group">
+                        <div id="phase-icon" class="w-9 h-9 md:w-10 md:h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white font-extrabold text-sm shadow-lg shadow-blue-500/30 transform transition-transform duration-500 group-hover:rotate-6 shrink-0">
+                            D1
+                        </div>
+                        <div class="min-w-0 md:min-w-[140px] lg:min-w-[160px]">
+                            <h1 id="txt-title" class="font-extrabold text-sm md:text-base leading-tight text-slate-900 dark:text-white tracking-tight truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Phase I</h1>
+                            <p id="txt-subtitle" class="text-[10px] md:text-xs text-slate-500 dark:text-slate-400 font-bold tracking-wide uppercase truncate">AYBU Medicine</p>
+                        </div>
+                    </div>
+
+                    <!-- Desktop Actions & Mobile Lang -->
+                    <div class="flex items-center gap-1 md:gap-2 shrink-0">
+                        <!-- Language Toggle -->
+                        <button id="langToggleBtn" class="flex items-center bg-slate-100 dark:bg-slate-800 p-0.5 md:p-1 rounded-lg cursor-pointer select-none border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-blue-300 dark:hover:border-blue-700 transition-colors">
+                            <div id="lang-tr" class="px-1.5 md:px-2.5 py-1 rounded-md text-[10px] font-bold text-slate-400 dark:text-slate-500 transition-all">TR</div>
+                            <div id="lang-en" class="px-1.5 md:px-2.5 py-1 rounded-md text-[10px] font-bold bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 shadow-sm transition-all">EN</div>
+                        </button>
+                        
+                        <!-- Desktop Only Buttons -->
+                        <div class="hidden md:flex items-center gap-2">
+                            <button aria-label="Toggle Theme" id="themeToggleBtn" class="btn-press h-9 w-9 lg:w-auto lg:px-3 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 relative group">
+                                <i id="darkModeIcon" class="fas fa-circle-half-stroke text-xs transition-transform duration-500 group-hover:rotate-180"></i>
+                                <span id="txt-btn-theme" class="hidden lg:inline-block ml-2 text-xs font-bold tracking-wide">Theme</span>
+                                <span id="themeTooltip" class="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[9px] px-2 py-1 rounded opacity-0 transition-opacity duration-300 pointer-events-none whitespace-nowrap z-50 shadow-sm">Auto</span>
+                            </button>
+
+                            <button aria-label="Cafeteria Menu" id="openMenuBtn" class="btn-press h-9 w-9 lg:w-auto lg:px-3 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700">
+                                <i class="fas fa-utensils text-xs"></i>
+                                <span id="txt-btn-menu" class="hidden lg:inline-block ml-2 text-xs font-bold tracking-wide">Menu</span>
+                            </button>
+
+                            <button aria-label="Switch View" id="viewToggleBtn" class="btn-press h-9 w-9 lg:w-auto lg:px-3 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700" title="Switch View">
+                                <i class="fas fa-columns text-xs"></i>
+                                <span id="txt-btn-view" class="hidden lg:inline-block ml-2 text-xs font-bold tracking-wide">View</span>
+                            </button>
+                            
+                             <button aria-label="Search" id="searchBtn" class="btn-press h-9 w-9 lg:w-auto lg:px-3 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700">
+                                <i class="fas fa-search text-xs"></i>
+                                <span id="txt-btn-search" class="hidden lg:inline-block ml-2 text-xs font-bold tracking-wide">Search</span>
+                             </button>
+                         </div>
+                    </div>
+                </div>
+
+                <!-- Date Controls -->
+                <div id="dateControls" class="flex items-center justify-between gap-2 bg-slate-100/80 dark:bg-slate-800/80 p-1.5 rounded-2xl backdrop-blur-sm border border-white/50 dark:border-slate-700/50 shadow-sm w-full md:w-auto md:min-w-[260px] lg:min-w-[320px] transition-all hover:shadow-md">
+                    <button aria-label="Previous Day" id="prevDayBtn" class="btn-press w-10 h-10 flex flex-none items-center justify-center rounded-xl bg-white dark:bg-slate-700 text-slate-400 dark:text-slate-300 shadow-sm hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                        <i class="fas fa-chevron-left text-xs"></i>
+                    </button>
+                    
+                    <div class="relative flex-1 group h-10">
+                        <input aria-label="Date Picker" type="date" id="datePicker" class="opacity-0 absolute inset-0 w-full h-full z-20 cursor-pointer">
+                        <div class="flex items-center justify-center gap-3 w-full h-full bg-white dark:bg-slate-700 border border-slate-200/60 dark:border-slate-600 rounded-xl shadow-sm group-hover:border-blue-300 dark:group-hover:border-blue-500 transition-all px-2 cursor-pointer">
+                            <div id="dateDisplay" class="flex-1 text-center select-none"></div>
+                        </div>
+                    </div>
+
+                     <button aria-label="Next Day" id="nextDayBtn" class="btn-press w-10 h-10 flex flex-none items-center justify-center rounded-xl bg-white dark:bg-slate-700 text-slate-400 dark:text-slate-300 shadow-sm hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                        <i class="fas fa-chevron-right text-xs"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div id="searchContainer" class="w-full">
+                <div class="relative group">
+                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>
+                    <input type="text" id="searchInput" placeholder="Search entire semester..." 
+                           class="w-full pl-10 pr-10 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 focus:border-blue-300 dark:focus:border-blue-500 outline-none transition-all text-sm font-medium placeholder:text-slate-400 dark:text-slate-200">
+                    <button aria-label="Close Search" id="closeSearchBtn" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rose-500 p-1 transition-colors">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="h-[3px] w-full bg-slate-100 dark:bg-slate-800 absolute bottom-0 left-0 group overflow-visible">
+            <div id="dayProgressBar" class="h-full bg-gradient-to-r from-cyan-500 to-blue-600 w-0 transition-[width] duration-1000 ease-linear rounded-r-sm relative shadow-[0_0_10px_rgba(59,130,246,0.5)]">
+             <div id="progressBead" class="hidden absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 bg-white dark:bg-slate-700 border-2 border-blue-600 dark:border-blue-400 rounded-full shadow-md z-10"></div>
+            </div>
+            <div id="txt-day-progress" class="absolute top-2 left-1/2 -translate-x-1/2 bg-slate-800/90 text-white text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-0 backdrop-blur-sm shadow-sm">
+                Day Progress
+            </div>
+        </div>
+    </header>
+
+    <main class="w-full max-w-7xl mx-auto p-4 md:p-8 flex-1 slide-fade-wrapper" id="mainContentWrapper">
+        <!-- Day View Container -->
+        <div id="scheduleContainer" class="hidden mt-4 relative pl-1 pb-10 md:pl-0 md:pb-0 md:max-w-4xl md:mx-auto content-optimized"></div>
+        
+        <!-- Week View Container -->
+        <div id="weekContainer" class="hidden mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4"></div>
+        
+        <div id="searchResultsContainer" class="hidden mt-4 space-y-4 md:max-w-4xl md:mx-auto"></div>
+
+        <div id="emptyState" class="hidden text-center py-24 px-6 animate-fade-in-up">
+            <div id="emptyIcon" class="text-6xl text-slate-200 dark:text-slate-700 mb-5 transform transition-transform hover:scale-110 duration-500 inline-block drop-shadow-sm"><i class="fas fa-calendar-check"></i></div>
+            <h3 id="txt-empty-title" class="text-2xl font-bold text-slate-700 dark:text-slate-300">No Classes Found</h3>
+            <p id="txt-empty-desc" class="text-slate-400 dark:text-slate-500 text-base max-w-[280px] mx-auto leading-relaxed font-medium">Check the date or switch language.</p>
+        </div>
+
+        <div id="noSearchResults" class="hidden text-center py-16 px-6 animate-fade-in-up">
+             <div class="text-4xl text-slate-200 dark:text-slate-700 mb-4 inline-block"><i class="fas fa-search"></i></div>
+             <h3 id="txt-no-results-title" class="text-lg font-bold text-slate-700 dark:text-slate-300">No matching classes</h3>
+             <p id="txt-no-results-desc" class="text-slate-400 dark:text-slate-500 text-sm">Try searching for a subject name or room.</p>
+        </div>
+
+        <div id="loadingState" class="w-full max-w-3xl mx-auto mt-8 px-2 transition-opacity duration-300">
+            <div class="space-y-8 animate-pulse">
+                <div class="flex flex-row md:grid md:grid-cols-[100px_60px_1fr] md:gap-2"><div class="flex flex-col items-end pr-3 pt-4"><div class="h-4 w-12 bg-slate-200 dark:bg-slate-700 rounded-lg"></div></div><div class="flex flex-col items-center"><div class="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-full border-4 border-slate-50 dark:border-slate-900"></div><div class="h-full w-0.5 bg-slate-200 dark:bg-slate-700 my-2"></div></div><div class="flex-1 pl-3"><div class="h-28 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700"></div></div></div>
+                <div class="flex flex-row md:grid md:grid-cols-[100px_60px_1fr] md:gap-2"><div class="flex flex-col items-end pr-3 pt-4"><div class="h-4 w-12 bg-slate-200 dark:bg-slate-700 rounded-lg"></div></div><div class="flex flex-col items-center"><div class="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-full border-4 border-slate-50 dark:border-slate-900"></div><div class="h-full w-0.5 bg-slate-200 dark:bg-slate-700 my-2"></div></div><div class="flex-1 pl-3"><div class="h-28 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700"></div></div></div>
+            </div>
+            <p id="txt-loading" class="text-center text-slate-400 dark:text-slate-500 text-xs mt-8 font-bold tracking-widest uppercase">Loading Schedule...</p>
+        </div>
+    </main>
+    
+    <div id="installModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 transition-opacity duration-500">
+        <div class="bg-white dark:bg-slate-800 rounded-[2rem] max-w-sm w-full p-6 shadow-2xl animate-modal-pop relative border border-white/20 dark:border-slate-700 overflow-hidden">
+            <!-- Decorative circle -->
+            <div class="absolute -top-10 -right-10 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl pointer-events-none"></div>
+            
+            <button aria-label="Close Modal" id="closeInstallModalBtn" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"><i class="fas fa-times text-xl"></i></button>
+            <h3 id="txt-install-title" class="text-xl font-bold text-slate-800 dark:text-white mb-6 text-center relative z-10">Install App 🚀</h3>
+            <div class="flex items-start gap-4 mb-4 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-100 dark:border-slate-700 hover:border-blue-100 transition-colors group cursor-pointer">
+                <div class="text-3xl text-slate-800 dark:text-slate-200 group-hover:scale-110 transition-transform"><i class="fab fa-apple"></i></div>
+                <div><h4 class="font-bold text-slate-700 dark:text-slate-200 text-sm mb-1">iOS (Safari)</h4><p id="txt-install-ios" class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">1. Tap Share <i class='fas fa-share-square mx-1'></i><br>2. 'Add to Home Screen'</p></div>
+            </div>
+            <div class="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-100 dark:border-slate-700 hover:border-green-100 transition-colors group cursor-pointer">
+                <div class="text-3xl text-green-500 group-hover:scale-110 transition-transform"><i class="fab fa-android"></i></div>
+                <div><h4 class="font-bold text-slate-700 dark:text-slate-200 text-sm mb-1">Android (Chrome)</h4><p id="txt-install-android" class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">1. Tap Menu <i class='fas fa-ellipsis-v mx-1'></i><br>2. 'Install App'</p></div>
+            </div>
+            <button id="txt-install-close" class="mt-6 w-full bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl active:scale-95 transition-all shadow-lg shadow-blue-900/10">Got it</button>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation Bar (Mobile Only) - Updated with Safe Area Class -->
+    <nav class="md:hidden fixed bottom-0 left-0 w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 z-50 flex justify-around items-center px-2 pt-3 pb-safe-nav shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.1)]">
+        <button id="mobileSearchBtn" class="flex flex-col items-center gap-1 p-2 w-16 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors active:scale-95 group">
+            <i class="fas fa-search text-xl mb-0.5 group-hover:-translate-y-1 transition-transform duration-300"></i>
+            <span id="txt-mobile-search" class="text-[10px] font-bold tracking-wide">Search</span>
+        </button>
+        <button id="mobileMenuBtn" class="flex flex-col items-center gap-1 p-2 w-16 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors active:scale-95 group">
+            <i class="fas fa-utensils text-xl mb-0.5 group-hover:-translate-y-1 transition-transform duration-300"></i>
+            <span id="txt-mobile-menu" class="text-[10px] font-bold tracking-wide">Menu</span>
+        </button>
+        <button id="mobileViewBtn" class="flex flex-col items-center gap-1 p-2 w-16 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors active:scale-95 group">
+            <i class="fas fa-columns text-xl mb-0.5 group-hover:-translate-y-1 transition-transform duration-300"></i>
+            <span id="txt-mobile-view" class="text-[10px] font-bold tracking-wide">View</span>
+        </button>
+        <button id="mobileThemeBtn" class="flex flex-col items-center gap-1 p-2 w-16 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors active:scale-95 group">
+            <i class="fas fa-circle-half-stroke text-xl mb-0.5 group-hover:rotate-180 transition-transform duration-500"></i>
+            <span id="txt-mobile-theme" class="text-[10px] font-bold tracking-wide">Theme</span>
+        </button>
+    </nav>
+
+    <footer class="w-full max-w-7xl mx-auto px-4 py-6 text-center pb-24 md:pb-6 opacity-60 hover:opacity-100 transition-opacity">
+        <div class="text-[10px] font-bold text-slate-300 dark:text-slate-700 tracking-widest uppercase">
+            AYBU Medicine Schedule • v2.8 Enhanced
+        </div>
+    </footer>
+
+    <button aria-label="Go to Today" id="todayBtn" class="fixed bottom-24 right-6 md:bottom-10 md:right-10 bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 w-14 h-14 rounded-2xl shadow-2xl shadow-blue-900/20 border border-blue-50 dark:border-slate-600 flex items-center justify-center z-40 btn-press transition-all duration-500 ease-in-out hover:bg-blue-50 dark:hover:bg-slate-600 group opacity-0 translate-y-10 pointer-events-none" title="Go to Today">
+        <i class="fas fa-calendar-day text-xl group-hover:scale-110 transition-transform"></i>
+    </button>
+
+    <script>
+        (function() {
+            "use strict";
+
+            // --- 1. CONFIGURATION ---
+            const CONFIG = {
+                SCHEDULE_FILENAME: 'schedule.xlsx',
+                SPLIT_COLUMN_INDEX: 8, 
+                STORAGE_KEYS: { DATA: 'aybu_data_v48', LANG: 'aybu_lang_v48', THEME: 'aybu_theme_v1' }
+            };
+
+            const CONSTANTS = {
+                HOLIDAYS: ["holiday", "tatil", "sömestr", "semester", "yarıyıl", "break", "resmi", "ara tatil", "ulusal", "cumhuriyet", "zafer", "emek", "demokrasi"],
+                NEW_YEAR: ["yılbaşı", "yilbasi", "new year", "noel", "happy new year", "yeni yıl", "yeniyıl", "yeni yil"],
+                EID: ["ramazan", "ramadan", "eid", "bayram", "kurban", "seker", "şeker"],
+                CLINICAL: ["clinical skills", "clinical skill", "klinik beceri", "cst", "beceri eğitimi"],
+                LAB_EXCLUDES: ["inkılab", "history"]
+            };
+            
+            const SUBJECT_PALETTE = [
+                { border: 'border-l-sky-500 dark:border-l-sky-400', icon: 'text-sky-500 dark:text-sky-400' },
+                { border: 'border-l-emerald-500 dark:border-l-emerald-400', icon: 'text-emerald-500 dark:text-emerald-400' },
+                { border: 'border-l-indigo-500 dark:border-l-indigo-400', icon: 'text-indigo-500 dark:text-indigo-400' },
+                { border: 'border-l-teal-500 dark:border-l-teal-400', icon: 'text-teal-500 dark:text-teal-400' },
+                { border: 'border-l-fuchsia-500 dark:border-l-fuchsia-400', icon: 'text-fuchsia-500 dark:text-fuchsia-400' },
+            ];
+
+            // --- 2. UTILITIES ---
+            const DateUtils = {
+                _cachedToday: null,
+                normalize: (cellVal) => {
+                    if (!cellVal) return null;
+                    if (cellVal instanceof Date) {
+                        const safeDate = new Date(cellVal.getTime() + (12 * 60 * 60 * 1000));
+                        return `${safeDate.getUTCFullYear()}-${String(safeDate.getUTCMonth() + 1).padStart(2, '0')}-${String(safeDate.getUTCDate()).padStart(2, '0')}`;
+                    }
+                    if (typeof cellVal === 'string') {
+                        const s = cellVal.trim();
+                        // STRICT YYYY-MM-DD REGEX check to prevent garbage
+                        if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s; 
+                        if (s.includes('T')) {
+                            const part = s.split('T')[0];
+                            if (/^\d{4}-\d{2}-\d{2}$/.test(part)) return part;
+                        }
+                    }
+                    return null;
+                },
+                parse: (dateStr) => {
+                    if (!dateStr) return null;
+                    const parts = dateStr.split('-');
+                    if (parts.length !== 3) return null;
+                    const y = parseInt(parts[0]);
+                    const m = parseInt(parts[1]) - 1;
+                    const d = parseInt(parts[2]);
+                    const date = new Date(y, m, d);
+                    if (isNaN(date.getTime())) return null;
+                    return date;
+                },
+                getTodayString: () => {
+                    if (DateUtils._cachedToday) return DateUtils._cachedToday;
+                    const now = new Date();
+                    const y = now.getFullYear();
+                    const m = String(now.getMonth() + 1).padStart(2, '0');
+                    const d = String(now.getDate()).padStart(2, '0');
+                    DateUtils._cachedToday = `${y}-${m}-${d}`;
+                    return DateUtils._cachedToday;
+                }
+            };
+
+            function getSubjectTheme(title) {
+                if(!title) return SUBJECT_PALETTE[0];
+                let hash = 0;
+                for (let i = 0; i < title.length; i++) hash = title.charCodeAt(i) + ((hash << 5) - hash);
+                const index = Math.abs(hash) % SUBJECT_PALETTE.length;
+                return SUBJECT_PALETTE[index];
+            }
+
+            // --- 3. STATE ---
+            let workbookData = null;
+            let searchIndexes = { EN: [], TR: [] }; 
+            let currentLang = 'EN';
+            let viewMode = 'day';
+
+            const TRANSLATIONS = {
+                EN: {
+                    title: "Phase I", subtitle: "AYBU Medicine",
+                    emptyTitle: "No Classes Found", emptyDesc: "Nothing scheduled.", loading: "Loading Schedule...",
+                    now: "NOW", lunch: "Lunch Break", freelance: "Freelance / Self Study", today: "Today", tomorrow: "Tomorrow",
+                    yesterday: "Yesterday", dateNotFound: "Date not found in English section.", weekendTitle: "Weekend Vibes",
+                    freelanceTitle: "Self-Study Day", holidayTitle: "Semester Break", newYearTitle: "Happy New Year!",
+                    eidTitle: "Eid Mubarak!", logoText: "P1", badgeLab: "LAB", badgeClinical: "SKILLS", 
+                    fetchError: "Could not auto-load 'schedule.xlsx'.",
+                    installBannerTitle: "Install App", installBannerDesc: "Get offline access & faster loading",
+                    installTitle: "Install App 🚀",
+                    installIOS: "1. Tap the Share icon <i class='fas fa-share-square mx-1'></i><br>2. Scroll down & tap 'Add to Home Screen'",
+                    installAndroid: "1. Tap menu icon <i class='fas fa-ellipsis-v mx-1'></i><br>2. Tap 'Add to Home Screen' or 'Install App'",
+                    installClose: "Got it",
+                    minLeft: "m left", startsIn: "Starts in",
+                    btnTheme: "Theme", btnMenu: "Menu", btnView: "View", btnSearch: "Search",
+                    mobileSearch: "Search", mobileMenu: "Menu", mobileView: "View", mobileTheme: "Theme",
+                    menuTitle: "Dining Menu", menuFetching: "Fetching...", menuOffline: "Menu unavailable offline.", menuOpen: "Open Website",
+                    searchPlaceholder: "Search entire semester...",
+                    noResultsTitle: "No matching classes", noResultsDesc: "Try searching for a subject name or room.",
+                    dayProgress: "Day Progress",
+                    installAction: "Install",
+                    themeAuto: "Auto", themeLight: "Light", themeDark: "Dark",
+                    tooltipToday: "Go to Today", tooltipView: "Switch View"
+                },
+                TR: {
+                    title: "Dönem I", subtitle: "AYBÜ Tıp Fakültesi",
+                    emptyTitle: "Ders Bulunamadı", emptyDesc: "Ders yok.", loading: "Yükleniyor...",
+                    now: "ŞU AN", lunch: "Öğle Arası", freelance: "Bireysel Çalışma", today: "Bugün", tomorrow: "Yarın",
+                    yesterday: "Dün", dateNotFound: "Türkçe bölümünde tarih bulunamadı.", weekendTitle: "Hafta Sonu Modu",
+                    freelanceTitle: "Bireysel Çalışma Günü", holidayTitle: "İyi Tatiller!", newYearTitle: "Mutlu Yıllar!",
+                    eidTitle: "İyi Bayramlar!", logoText: "D1", badgeLab: "LAB", badgeClinical: "BECERİ", 
+                    fetchError: "'schedule.xlsx' bulunamadı.",
+                    installBannerTitle: "Uygulamayı Yükle", installBannerDesc: "Çevrimdışı erişim ve hızlı yükleme",
+                    installTitle: "Uygulamayı Yükle 🚀",
+                    installIOS: "1. Paylaş simgesine dokunun <i class='fas fa-share-square mx-1'></i><br>2. Aşağı inip 'Ana Ekrana Ekle'yi seçin",
+                    installAndroid: "1. Menü simgesine dokunun <i class='fas fa-ellipsis-v mx-1'></i><br>2. 'Ana Ekrana Ekle' veya 'Yükle'yi seçin",
+                    installClose: "Tamam",
+                    minLeft: "dk kaldı", startsIn: "Başlıyor:",
+                    btnTheme: "Tema", btnMenu: "Yemek", btnView: "Görünüm", btnSearch: "Ara",
+                    mobileSearch: "Ara", mobileMenu: "Yemek", mobileView: "Görünüm", mobileTheme: "Tema",
+                    menuTitle: "Yemek Listesi", menuFetching: "Yükleniyor...", menuOffline: "Menü çevrimdışı kullanılamaz.", menuOpen: "Siteyi Aç",
+                    searchPlaceholder: "Tüm dönemde ara...",
+                    noResultsTitle: "Eşleşen ders yok", noResultsDesc: "Ders adı veya sınıf aramayı deneyin.",
+                    dayProgress: "Gün İlerlemesi",
+                    installAction: "Yükle",
+                    themeAuto: "Otomatik", themeLight: "Açık", themeDark: "Koyu",
+                    tooltipToday: "Bugüne Git", tooltipView: "Görünümü Değiştir"
+                }
+            };
+
+            const MESSAGES = {
+                WEEKEND: { EN: ["It's the weekend! Time to recharge 🔋", "No classes today. Go touch some grass 🌱"], TR: ["Hafta sonu geldi! Şarj olma zamanı 🔋", "Bugün ders yok. Çimlere basma vakti 🌱"] },
+                FREELANCE: { EN: ["Focus mode: ON. You got this! 💡", "Library day? Or coffee shop? ☕"], TR: ["Odaklanma modu: AÇIK. Yapabilirsin! 💡", "Kütüphane mi, kafe mi? ☕"] },
+                HOLIDAY: { EN: ["Enjoy your holidays! ✈️"], TR: ["Tatilin tadını çıkar! ✈️"] },
+                NEW_YEAR: { EN: ["Happy New Year! 🎉"], TR: ["Mutlu Yıllar! 🎉"] },
+                EID: { EN: ["Eid Mubarak! 🍬"], TR: ["İyi Bayramlar! 🍬"] }
+            };
+
+            // --- 4. INITIALIZATION ---
+
+            document.addEventListener('DOMContentLoaded', () => {
+                setupEventListeners();
+                initTheme(); 
+                initLang(); 
+                initDate();
+                
+                if ('serviceWorker' in navigator) {
+                   navigator.serviceWorker.register('sw.js').catch(err => console.log('SW fail', err));
+                }
+                initMenuSystem();
+
+                setInterval(updateDayProgress, 30000); 
+                // Auto refresh view every minute to update "X min left"
+                setInterval(() => {
+                    if(viewMode === 'day' && document.getElementById('datePicker').value === DateUtils.getTodayString()) {
+                        refreshView();
+                    }
+                }, 60000);
+                
+                initApp();
+                checkInstallBanner();
+            });
+            // --- MENU SYSTEM INTEGRATION ---
+            const MENU_CONFIG = {
+                URL: 'https://aybu.edu.tr/sks/tr/sayfa/6265/',
+                PROXIES: [
+                    { get: (u) => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`, parse: async (r) => (await r.json()).contents },
+                    { get: (u) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`, parse: (r) => r.text() },
+                    { get: (u) => `https://corsproxy.io/?${encodeURIComponent(u)}`, parse: (r) => r.text() }
+                ]
+            };
+
+            function initMenuSystem() {
+                const modal = document.getElementById('menuModal');
+                const btn = document.getElementById('openMenuBtn');
+                const mobileBtn = document.getElementById('mobileMenuBtn'); // Add mobile button
+                const closeBtn = document.getElementById('closeMenuBtn');
+                
+                if(!modal) return;
+                
+                const openMenu = () => {
+                    modal.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden'; 
+                    fetchMenuData(); 
+                };
+
+                if(btn) btn.onclick = openMenu;
+                if(mobileBtn) mobileBtn.onclick = openMenu; // Bind mobile button
+
+                const closeMenu = () => {
+                    modal.classList.add('hidden');
+                    document.body.style.overflow = '';
+                };
+
+                if(closeBtn) closeBtn.onclick = closeMenu;
+                modal.onclick = (e) => { if(e.target === modal) closeMenu(); };
+
+                // Background Fetch Strategy
+                // Trigger fetch shortly after load to populate cache/DOM
+                // Use requestIdleCallback if available for performance
+                const bgFetch = () => setTimeout(fetchMenuData, 1500);
+                if (window.requestIdleCallback) window.requestIdleCallback(bgFetch);
+                else bgFetch();
+            }
+
+            const MENU_CACHE_KEY = 'aybu_menu_cache_v2'; 
+
+            async function fetchMenuData() {
+                const container = document.getElementById('menuContent');
+                const loading = document.getElementById('menuLoading');
+                const error = document.getElementById('menuError');
+                
+                const todayStr = new Date().toDateString();
+                try {
+                    const cached = JSON.parse(localStorage.getItem(MENU_CACHE_KEY));
+                    if (cached && cached.date === todayStr && cached.html) {
+                        processMenuHtml(cached.html);
+                        loading.classList.add('hidden');
+                        return;
+                    }
+                } catch(e) { console.log('Cache parse error'); }
+
+                if(container.children.length > 0) return;
+
+                loading.classList.remove('hidden');
+                error.classList.add('hidden');
+
+                const promises = MENU_CONFIG.PROXIES.map(proxy => 
+                    new Promise(async (resolve, reject) => {
+                        try {
+                            const res = await fetch(proxy.get(MENU_CONFIG.URL)); 
+                            if (!res.ok) throw new Error('Status ' + res.status);
+                            const text = await proxy.parse(res);
+                            if (text && text.length > 500) resolve(text);
+                            else reject('Empty/Short content');
+                        } catch (e) {
+                            reject(e);
+                        }
+                    })
+                );
+
+                try {
+                    const html = await Promise.any(promises);
+                    localStorage.setItem(MENU_CACHE_KEY, JSON.stringify({
+                        date: todayStr,
+                        html: html
+                    }));
+                    processMenuHtml(html);
+                    loading.classList.add('hidden'); // Hide loading on success
+                } catch (aggregateError) {
+                    console.error("All proxies failed", aggregateError);
+                    // Don't hide loading here if we want to show error state, 
+                    // but since it's background fetch, we should probably set error state in DOM
+                    // so it's ready when user opens.
+                    loading.classList.add('hidden');
+                    error.classList.remove('hidden');
+                }
+            }
+
+            function processMenuHtml(htmlContent) {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(htmlContent, 'text/html');
+                const text = doc.body.innerText || "";
+                const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+
+                const today = new Date();
+                const dateDisplay = document.getElementById('menuDateDisplay');
+                if(dateDisplay) {
+                     dateDisplay.textContent = today.toLocaleDateString(currentLang==='TR'?'tr-TR':'en-US', { weekday:'long', day:'numeric', month:'long' });
+                }
+
+                if(today.getDay() === 0 || today.getDay() === 6) {
+                    renderMenuMessage("Weekend Mode", "No service today.", "fa-couch", "text-amber-400");
+                    return;
+                }
+
+                const daysMap = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"];
+                const todayName = daysMap[today.getDay() - 1];
+
+                let foundWeek = false;
+                let capturing = false;
+                let items = [];
+
+                const dateRegex = /(\d{2}\.\d{2}\.\d{4})\s*-\s*(\d{2}\.\d{2}\.\d{4})/;
+
+                for (const line of lines) {
+                    const match = line.match(dateRegex);
+                    if (match) {
+                        const [d1, m1, y1] = match[1].split('.');
+                        const [d2, m2, y2] = match[2].split('.');
+                        const start = new Date(`${y1}-${m1}-${d1}`);
+                        const end = new Date(`${y2}-${m2}-${d2}`);
+                        end.setHours(23,59,59);
+                        
+                        if (today >= start && today <= end) foundWeek = true;
+                        else foundWeek = false;
+                        
+                        capturing = false;
+                        continue;
+                    }
+
+                    if (foundWeek) {
+                        if (daysMap.includes(line)) {
+                            capturing = (line === todayName);
+                            continue;
+                        }
+                        if (capturing) {
+                            if (line.includes("HIZLI ERİŞİM") || line.includes("İLETİŞİM") || line.includes("Kalite")) break;
+                            items.push(line);
+                        }
+                    }
+                }
+
+                renderMenuItems(items);
+            }
+
+            function renderMenuItems(items) {
+                const container = document.getElementById('menuContent');
+                container.innerHTML = '';
+                
+                if (!items || items.length === 0) {
+                    renderMenuMessage("Menu Not Found", "Could not parse today's menu.", "fa-search", "text-slate-300");
+                    return;
+                }
+
+                items.forEach((item, idx) => {
+                    let text = item;
+                    let cal = '';
+                    const calMatch = item.match(/(\d+)\s*kkal/);
+                    if (calMatch) {
+                        text = item.replace(calMatch[0], '').trim();
+                        cal = calMatch[0];
+                    }
+
+                    let icon = 'fa-circle';
+                    let color = 'text-slate-300 dark:text-slate-600';
+                    const l = text.toLowerCase();
+                    if(l.includes('çorba')) { icon = 'fa-mug-hot'; color = 'text-amber-500'; }
+                    else if(l.includes('pilav') || l.includes('makarna')) { icon = 'fa-bowl-rice'; color = 'text-yellow-500'; }
+                    else if(l.includes('tavuk') || l.includes('et') || l.includes('köfte') || l.includes('kebab')) { icon = 'fa-drumstick-bite'; color = 'text-rose-500'; }
+                    else if(l.includes('tatlı') || l.includes('baklava') || l.includes('puding') || l.includes('helva')) { icon = 'fa-cookie'; color = 'text-pink-500'; }
+                    else if(l.includes('salata') || l.includes('meyve') || l.includes('cacık')) { icon = 'fa-leaf'; color = 'text-green-500'; }
+                    else if(l.includes('yoğurt') || l.includes('ayran')) { icon = 'fa-bottle-water'; color = 'text-blue-400'; }
+
+                    const div = document.createElement('div');
+                    div.className = "bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl flex items-center gap-4 animate-fade-in-up border border-slate-100 dark:border-slate-700/50 hover:border-blue-100 dark:hover:border-slate-600 transition-all hover:scale-[1.02] duration-300";
+                    div.style.animationDelay = `${idx * 0.05}s`;
+                    div.innerHTML = `
+                        <div class="w-10 h-10 rounded-full bg-white dark:bg-slate-700 flex items-center justify-center shrink-0 shadow-sm">
+                            <i class="fas ${icon} ${color}"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-bold text-slate-700 dark:text-slate-200 text-sm leading-tight">${text}</div>
+                        </div>
+                        ${cal ? `<span class="bg-white dark:bg-slate-700 text-slate-400 dark:text-slate-400 text-[10px] font-bold px-2 py-1 rounded-lg border border-slate-100 dark:border-slate-600">${cal}</span>` : ''}
+                    `;
+                    container.appendChild(div);
+                });
+                container.classList.remove('hidden');
+            }
+
+            function renderMenuMessage(title, sub, icon, iconColor) {
+                const container = document.getElementById('menuContent');
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-8 text-center bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700/50 border-dashed col-span-full animate-fade-in-up">
+                        <i class="fas ${icon} ${iconColor} text-3xl mb-3"></i>
+                        <h3 class="font-bold text-slate-700 dark:text-slate-200">${title}</h3>
+                        <p class="text-xs text-slate-400">${sub}</p>
+                    </div>`;
+                container.classList.remove('hidden');
+            }
+
+            function setupEventListeners() {
+                document.getElementById('installBanner').onclick = openInstallModal;
+                document.getElementById('closeInstallBtn').onclick = (e) => { e.stopPropagation(); closeInstallBanner(); };
+                
+                // Header Buttons
+                document.getElementById('langToggleBtn').onclick = toggleLanguage;
+                
+                const themeBtn = document.getElementById('themeToggleBtn');
+                if(themeBtn) themeBtn.onclick = toggleDarkMode;
+                const viewBtn = document.getElementById('viewToggleBtn');
+                if(viewBtn) viewBtn.onclick = toggleViewMode;
+                const searchBtn = document.getElementById('searchBtn');
+                if(searchBtn) searchBtn.onclick = toggleSearch;
+
+                // Mobile Bottom Nav Buttons
+                document.getElementById('mobileThemeBtn').onclick = toggleDarkMode;
+                document.getElementById('mobileViewBtn').onclick = toggleViewMode;
+                document.getElementById('mobileSearchBtn').onclick = toggleSearch;
+                // Note: Mobile Menu Btn handled in initMenuSystem
+                
+                document.getElementById('prevDayBtn').onclick = () => changeDay(-1);
+                document.getElementById('nextDayBtn').onclick = () => changeDay(1);
+                document.getElementById('datePicker').addEventListener('change', (e) => {
+                    const d = DateUtils.parse(e.target.value);
+                    updateDateDisplay(d);
+                    document.getElementById('searchContainer').classList.contains('open') ? toggleSearch() : refreshView();
+                });
+                document.getElementById('searchInput').addEventListener('input', (e) => handleGlobalSearch(e.target.value));
+                document.getElementById('closeSearchBtn').onclick = toggleSearch;
+                document.getElementById('closeInstallModalBtn').onclick = closeInstallModal;
+                document.getElementById('txt-install-close').onclick = closeInstallModal;
+                document.getElementById('todayBtn').onclick = goToToday;
+            }
+
+            // --- THEME & NAV LOGIC ---
+            let themeTooltipTimeout;
+            function initTheme() {
+                const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+                const apply = () => {
+                    const saved = localStorage.getItem(CONFIG.STORAGE_KEYS.THEME);
+                    const isDark = saved === 'dark' || (!saved && mediaQuery.matches);
+                    document.documentElement.classList.toggle('dark', isDark);
+                    updateThemeIcon(saved, false); 
+                };
+                apply();
+                mediaQuery.addEventListener('change', () => !localStorage.getItem(CONFIG.STORAGE_KEYS.THEME) && apply());
+            }
+
+            function toggleDarkMode() {
+                if (navigator.vibrate) navigator.vibrate(5);
+                const current = localStorage.getItem(CONFIG.STORAGE_KEYS.THEME);
+                let next = current === null ? 'light' : (current === 'light' ? 'dark' : null);
+                if (next) localStorage.setItem(CONFIG.STORAGE_KEYS.THEME, next);
+                else localStorage.removeItem(CONFIG.STORAGE_KEYS.THEME);
+                const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+                const isDark = next === 'dark' || (!next && mediaQuery.matches);
+                document.documentElement.classList.toggle('dark', isDark);
+                updateThemeIcon(next, true);
+            }
+
+            function updateThemeIcon(state, showFeedback = false) {
+                // Update Desktop Icon
+                const icon = document.getElementById('darkModeIcon');
+                const tooltip = document.getElementById('themeTooltip');
+                
+                // Update Mobile Icon
+                const mobileIcon = document.querySelector('#mobileThemeBtn i');
+
+                let labelKey = 'themeAuto';
+                let iconClass = 'fas fa-circle-half-stroke';
+                let colorClass = 'text-slate-400 dark:text-slate-500';
+
+                if (state === 'light') { 
+                    iconClass = 'fas fa-sun'; colorClass = 'text-yellow-500'; labelKey = 'themeLight'; 
+                } else if (state === 'dark') { 
+                    iconClass = 'fas fa-moon'; colorClass = 'text-blue-400'; labelKey = 'themeDark'; 
+                } 
+
+                if(icon) icon.className = `${iconClass} ${colorClass} text-xs transition-transform duration-500`;
+                if(mobileIcon) mobileIcon.className = `${iconClass} text-xl mb-0.5 transition-transform duration-500`;
+
+                if(tooltip) {
+                    tooltip.textContent = TRANSLATIONS[currentLang][labelKey];
+                    if (showFeedback) {
+                        tooltip.classList.remove('opacity-0'); tooltip.classList.add('opacity-100');
+                        clearTimeout(themeTooltipTimeout);
+                        themeTooltipTimeout = setTimeout(() => { tooltip.classList.remove('opacity-100'); tooltip.classList.add('opacity-0'); }, 1500);
+                    } else { tooltip.classList.remove('opacity-100'); tooltip.classList.add('opacity-0'); }
+                }
+            }
+
+            function initLang() {
+                const saved = localStorage.getItem(CONFIG.STORAGE_KEYS.LANG);
+                setLanguage(saved || 'EN', false);
+            }
+
+            function initDate() {
+                const now = new Date();
+                document.getElementById('datePicker').value = DateUtils.getTodayString();
+                updateDateDisplay(now);
+                updateDayProgress();
+            }
+
+            function checkInstallBanner() {
+                if (!window.matchMedia('(display-mode: standalone)').matches && !localStorage.getItem('installBannerDismissed')) {
+                    document.getElementById('installBanner').classList.remove('hidden');
+                }
+            }
+            
+            function toggleLanguage() {
+                if (navigator.vibrate) navigator.vibrate(5);
+                const newLang = currentLang === 'EN' ? 'TR' : 'EN';
+                setLanguage(newLang);
+            }
+
+            function toggleViewMode() {
+                if (viewMode === 'search') { viewMode = 'day'; toggleSearch(); return; }
+                
+                // Simple transition for view mode
+                const wrapper = document.getElementById('mainContentWrapper');
+                wrapper.classList.add('opacity-0', 'scale-95');
+                
+                setTimeout(() => {
+                    viewMode = viewMode === 'day' ? 'week' : 'day';
+                    const iconClass = viewMode === 'day' ? 'fas fa-columns' : 'fas fa-calendar-day';
+                    
+                    const dBtn = document.getElementById('viewToggleBtn');
+                    if(dBtn) dBtn.querySelector('i').className = `${iconClass} text-xs`;
+
+                    const mBtn = document.getElementById('mobileViewBtn');
+                    if(mBtn) mBtn.querySelector('i').className = `${iconClass} text-xl mb-0.5`;
+
+                    const pickerVal = document.getElementById('datePicker').value;
+                    if(pickerVal) updateDateDisplay(DateUtils.parse(pickerVal));
+
+                    refreshView();
+                    
+                    wrapper.classList.remove('opacity-0', 'scale-95');
+                }, 200);
+            }
+
+            function refreshView() {
+                const pickerVal = document.getElementById('datePicker').value;
+                if(!pickerVal || !workbookData) return;
+                
+                checkTodayFabVisibility(); // Check if FAB should be shown
+
+                document.getElementById('searchResultsContainer').classList.add('hidden');
+                document.getElementById('noSearchResults').classList.add('hidden');
+                document.getElementById('dateControls').classList.remove('hidden'); 
+
+                if (viewMode === 'day') {
+                    document.getElementById('scheduleContainer').classList.remove('hidden');
+                    document.getElementById('weekContainer').classList.add('hidden');
+                    document.getElementById('emptyState').classList.add('hidden');
+                    processSchedule(pickerVal);
+                } else if (viewMode === 'week') {
+                    document.getElementById('scheduleContainer').classList.add('hidden');
+                    document.getElementById('weekContainer').classList.remove('hidden');
+                    document.getElementById('emptyState').classList.add('hidden');
+                    renderWeekView(pickerVal);
+                }
+            }
+
+            function checkTodayFabVisibility() {
+                const pickerVal = document.getElementById('datePicker').value;
+                const todayStr = DateUtils.getTodayString();
+                const btn = document.getElementById('todayBtn');
+                
+                if (pickerVal === todayStr) {
+                    // Hide FAB if viewing today
+                    btn.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none');
+                } else {
+                    // Show FAB if viewing another day
+                    btn.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
+                }
+            }
+
+            function toggleSearch() {
+                const container = document.getElementById('searchContainer');
+                const input = document.getElementById('searchInput');
+                container.classList.toggle('open');
+                
+                if(container.classList.contains('open')) {
+                    input.focus();
+                    viewMode = 'search'; 
+                    document.getElementById('scheduleContainer').classList.add('hidden');
+                    document.getElementById('weekContainer').classList.add('hidden');
+                    document.getElementById('emptyState').classList.add('hidden');
+                    document.getElementById('dateControls').classList.add('hidden'); 
+                    handleGlobalSearch(input.value);
+                } else {
+                    input.value = '';
+                    viewMode = 'day'; 
+                    document.getElementById('searchResultsContainer').innerHTML = '';
+                    document.getElementById('searchResultsContainer').classList.add('hidden');
+                    document.getElementById('noSearchResults').classList.add('hidden');
+                    refreshView(); 
+                    input.blur();
+                }
+            }
+
+            // --- DATA ENGINE ---
+
+            function buildSearchIndexes() {
+                if (!workbookData) return;
+                searchIndexes = { EN: [], TR: [] };
+                for (let r = 0; r < workbookData.length; r++) {
+                    const row = workbookData[r];
+                    for (let c = 0; c < row.length; c++) {
+                        const dateStr = DateUtils.normalize(row[c]);
+                        if (dateStr) {
+                            const langKey = c <= CONFIG.SPLIT_COLUMN_INDEX ? 'TR' : 'EN';
+                            const classes = extractClassesForColumn(r, c, langKey).filter(c => c.type !== 'lunch');
+                            if (classes.length > 0) {
+                                searchIndexes[langKey].push({ date: dateStr, items: classes });
+                            }
+                        }
+                    }
+                }
+            }
+
+            function extractClassesForColumn(dateRowIndex, targetColIndex, langOverride = null) {
+                const classes = [];
+                const isEnglish = langOverride ? (langOverride === 'EN') : (currentLang === 'EN');
+                
+                // PRIORITY: Check known time columns first (1 for TR, 9 for EN)
+                let timeColIndex = -1;
+                const candidates = isEnglish ? [9, 10, 0, 1] : [1, 0];
+                
+                // 1. Check priority columns
+                for (let offset = 1; offset <= 4; offset++) {
+                    const checkRow = workbookData[dateRowIndex + offset];
+                    if (!checkRow) continue;
+                    
+                    for (const c of candidates) {
+                        const val = String(checkRow[c] || "").trim();
+                        // Strict regex
+                        if (val.match(/^\d{1,2}[:.]\d{2}/)) {
+                            timeColIndex = c;
+                            break;
+                        }
+                    }
+                    if (timeColIndex !== -1) break;
+                }
+
+                // 2. If not found, scan locally (legacy behavior, but safer now)
+                if (timeColIndex === -1) {
+                    for(let offset = 1; offset <= 4; offset++) {
+                        const checkRow = workbookData[dateRowIndex + offset];
+                        if(checkRow) {
+                            for (let c = targetColIndex; c >= 0; c--) {
+                                const val = String(checkRow[c] || "").trim();
+                                if (val.match(/^\d{1,2}[:.]\d{2}/)) { 
+                                    timeColIndex = c; 
+                                    break; 
+                                }
+                            }
+                        }
+                        if (timeColIndex !== -1) break;
+                    }
+                }
+                
+                // Fallback default
+                if (timeColIndex === -1) timeColIndex = isEnglish ? 9 : 1; 
+
+                let r = dateRowIndex + 1;
+                const maxRows = Math.min(workbookData.length, dateRowIndex + 60);
+                
+                while (r < maxRows) {
+                    const row = workbookData[r];
+                    // Calculate time FIRST to determine if it's a lesson row
+                    const timeVal = timeColIndex !== -1 ? String(row[timeColIndex]).trim() : "";
+                    const timeMatch = timeVal.match(/(\d{1,2})[:.](\d{2})/);
+                    
+                    // CRITICAL FIX: Only check for barrier if this is NOT a lesson row (no time).
+                    // This prevents lessons with "Komite" in the title from being treated as barriers.
+                    if (!timeMatch) {
+                        if (isRowBarrier(row)) break;
+                    }
+
+                    if (timeMatch) {
+                        let timeSlot = `${timeMatch[1]}:${timeMatch[2]}`;
+                        const hour = parseInt(timeMatch[1]);
+                        const isLunchTime = (hour === 12 || hour === 13);
+                        let contentLines = [];
+                        const cellVal = row[targetColIndex];
+                        if (cellVal && !isGarbageContent(cellVal)) {
+                            const s = String(cellVal).trim();
+                            if(s.length > 2) contentLines.push(s);
+                        }
+                        
+                        let subR = r + 1;
+                        while (subR < maxRows) {
+                            const subRow = workbookData[subR];
+                            // Check if next row has time (is next lesson)
+                            const nextTime = String(subRow[timeColIndex] || "").trim();
+                            if (nextTime.match(/\d{1,2}[:.]\d{2}/)) break; 
+                            
+                            // Check if next row is barrier (only if no time, implicit)
+                            if (isRowBarrier(subRow)) break; 
+                            
+                            const nextVal = subRow[targetColIndex];
+                            if (nextVal && !isGarbageContent(nextVal)) {
+                                 const s = String(nextVal).trim();
+                                 if(s.length > 2 && !contentLines.includes(s)) contentLines.push(s);
+                            }
+                            subR++;
+                        }
+                        r = subR - 1;
+                        if (contentLines.length > 0) {
+                            const rawJoined = contentLines.join(" ");
+                            const joinedLower = rawJoined.toLocaleLowerCase('tr-TR');
+                            let isLab = rawJoined.toUpperCase().includes("LAB") && !CONSTANTS.LAB_EXCLUDES.some(ex => joinedLower.includes(ex));
+                            const isClinical = CONSTANTS.CLINICAL.some(kw => joinedLower.includes(kw));
+                            const isFreelance = joinedLower.includes("freelance") || joinedLower.includes("bireysel");
+                            const isLunchText = joinedLower.includes("lunch") || joinedLower.includes("öğle arası");
+                            
+                            let type = 'normal';
+                            if (CONSTANTS.NEW_YEAR.some(kw => joinedLower.includes(kw))) type = 'new_year_item';
+                            else if (CONSTANTS.EID.some(kw => joinedLower.includes(kw))) type = 'eid_item';
+                            else if (CONSTANTS.HOLIDAYS.some(kw => joinedLower.includes(kw))) type = 'holiday_item';
+                            else if (isLunchText) type = 'lunch';
+                            else if (isFreelance) type = 'freelance';
+                            
+                            const finalType = type === 'lunch' ? 'lunch' : type;
+                            classes.push({ time: timeSlot, lines: finalType === 'lunch' ? [TRANSLATIONS[isEnglish ? 'EN' : 'TR'].lunch] : contentLines, raw: rawJoined, isLab, isClinical, type: finalType });
+                        } else if (isLunchTime) {
+                            classes.push({ time: timeSlot, lines: [TRANSLATIONS[isEnglish ? 'EN' : 'TR'].lunch], raw: "Lunch", isLab: false, isClinical: false, type: 'lunch' });
+                        }
+                    }
+                    r++;
+                }
+                
+                return classes.filter((cls, index, self) => 
+                    cls.type !== 'lunch' || index === self.findIndex((t) => t.type === 'lunch')
+                );
+            }
+
+            // --- SEARCH & RENDERING ---
+
+            let debounceTimer;
+            function handleGlobalSearch(query) {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    const term = query.toLowerCase().trim();
+                    const container = document.getElementById('searchResultsContainer');
+                    const noRes = document.getElementById('noSearchResults');
+                    
+                    if (term.length < 2) {
+                        container.innerHTML = ''; container.classList.add('hidden'); noRes.classList.add('hidden'); return;
+                    }
+
+                    container.classList.remove('hidden'); container.innerHTML = '';
+                    
+                    let count = 0;
+                    const fragment = document.createDocumentFragment();
+                    const currentIndex = searchIndexes[currentLang];
+
+                    if (currentIndex) {
+                        for (const day of currentIndex) {
+                            const matches = day.items.filter(item => item.raw.toLowerCase().includes(term));
+                            if (matches.length > 0) {
+                                const dateObj = DateUtils.parse(day.date);
+                                if (!dateObj) continue; // Skip invalid dates
+
+                                const dateHeader = document.createElement('div');
+                                dateHeader.className = "flex items-center gap-2 mt-6 mb-2 px-2 animate-fade-in-up";
+                                dateHeader.innerHTML = `
+                                    <div class="h-px bg-slate-200 dark:bg-slate-700 flex-1"></div>
+                                    <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">${dateObj.toLocaleDateString(currentLang==='TR'?'tr-TR':'en-US', { weekday:'short', month:'short', day:'numeric' })}</span>
+                                    <div class="h-px bg-slate-200 dark:bg-slate-700 flex-1"></div>
+                                `;
+                                fragment.appendChild(dateHeader);
+
+                                matches.forEach((item, idx) => {
+                                    const card = document.createElement('div');
+                                    card.className = "bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm cursor-pointer hover:border-blue-300 dark:hover:border-blue-500 transition-all active:scale-[0.98] animate-fade-in-up hover:shadow-md";
+                                    card.style.animationDelay = `${idx * 0.05}s`;
+                                    card.onclick = () => jumpToDate(day.date);
+                                    
+                                    let highlightClass = "text-slate-800 dark:text-slate-200";
+                                    if(item.isLab) highlightClass = "text-rose-600 dark:text-rose-400";
+                                    if(item.isClinical) highlightClass = "text-violet-600 dark:text-violet-400";
+
+                                    const line0 = highlightMatch(item.lines[0], term);
+                                    const line1 = item.lines.length > 1 ? highlightMatch(item.lines[1], term) : '';
+
+                                    card.innerHTML = `
+                                        <div class="flex justify-between items-start">
+                                            <div class="flex-1">
+                                                <div class="font-bold text-sm ${highlightClass}">${line0}</div>
+                                                ${item.lines.length > 1 ? `<div class="text-xs text-slate-500 mt-1">${line1}</div>` : ''}
+                                            </div>
+                                            <span class="font-mono text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 px-2 py-1 rounded-lg ml-3">${item.time}</span>
+                                        </div>
+                                    `;
+                                    fragment.appendChild(card);
+                                    count++;
+                                });
+                            }
+                            if (count >= 50) break;
+                        }
+                    }
+
+                    container.appendChild(fragment);
+                    noRes.classList.toggle('hidden', count > 0);
+                }, 250);
+            }
+
+            function jumpToDate(dateStr) {
+                toggleSearch();
+                document.getElementById('datePicker').value = dateStr;
+                updateDateDisplay(DateUtils.parse(dateStr));
+                refreshView();
+            }
+
+            // --- APP LOADING ---
+            async function initApp() {
+                setLoading(true);
+                let cachedData = null;
+
+                try {
+                    const stored = localStorage.getItem(CONFIG.STORAGE_KEYS.DATA);
+                    if(stored) {
+                        cachedData = JSON.parse(stored);
+                        workbookData = cachedData;
+                        refreshView();
+                        setLoading(false); 
+                        setTimeout(() => buildSearchIndexes(), 50);
+                    }
+                } catch(e) { console.error("Cache load error:", e); }
+
+                try {
+                    const response = await fetch(CONFIG.SCHEDULE_FILENAME + '?v=' + new Date().getTime());
+                    if (!response.ok) throw new Error("Auto-fetch failed");
+                    
+                    const arrayBuffer = await response.arrayBuffer();
+                    const waitForXLSX = () => new Promise(resolve => {
+                        if (window.XLSX) resolve();
+                        else document.querySelector('script[src*="xlsx"]').addEventListener('load', resolve);
+                    });
+                    await waitForXLSX();
+
+                    const workbook = XLSX.read(arrayBuffer, { type: 'array', cellDates: true });
+                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                    let rawData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+                    const freshData = rawData.map(row => row.map(cell => {
+                        if (cell instanceof Date) return DateUtils.normalize(cell);
+                        return cell;
+                    }));
+                    const freshString = JSON.stringify(freshData);
+                    const cachedString = cachedData ? JSON.stringify(cachedData) : "";
+                    if (freshString !== cachedString) {
+                        workbookData = freshData;
+                        localStorage.setItem(CONFIG.STORAGE_KEYS.DATA, freshString);
+                        completeInit(); 
+                    } else if(!cachedData) {
+                        completeInit();
+                    }
+                } catch (err) {
+                    console.warn("Fetch failed (Demo Mode):", err);
+                    if(!workbookData) {
+                        workbookData = generateMockData();
+                        completeInit();
+                        const toast = document.createElement('div');
+                        toast.className = "fixed bottom-24 left-1/2 -translate-x-1/2 bg-amber-100 text-amber-800 px-4 py-2 rounded-full shadow-lg text-xs font-bold z-50 animate-fade-in-up border border-amber-200 pointer-events-none";
+                        toast.innerHTML = "<i class='fas fa-info-circle mr-2'></i>Demo Mode: Using Mock Data";
+                        document.body.appendChild(toast);
+                        setTimeout(() => toast.remove(), 4000);
+                    }
+                }
+            }
+
+            function completeInit() {
+                setLoading(false);
+                buildSearchIndexes();
+                refreshView();
+            }
+
+            function updateDayProgress() {
+                const now = new Date();
+                const start = new Date(now); start.setHours(8, 30, 0, 0); 
+                const end = new Date(now); end.setHours(17, 30, 0, 0);
+                const total = end - start;
+                const current = now - start;
+                
+                let percent = 0;
+                if (now < start) percent = 0;
+                else if (now > end) percent = 100;
+                else percent = (current / total) * 100;
+                
+                const bar = document.getElementById('dayProgressBar');
+                const bead = document.getElementById('progressBead');
+                if(bar) {
+                    bar.classList.remove('animate-pulse');
+                    bar.style.width = `${percent}%`;
+                    if(bead) bead.classList.remove('hidden');
+                }
+            }
+
+            function goToToday() {
+                if (navigator.vibrate) navigator.vibrate(5);
+                
+                // Animation logic
+                const wrapper = document.getElementById('mainContentWrapper');
+                wrapper.classList.add('opacity-0', 'translate-y-4');
+                
+                setTimeout(() => {
+                    const todayStr = DateUtils.getTodayString();
+                    document.getElementById('datePicker').value = todayStr;
+                    updateDateDisplay(new Date());
+                    if(viewMode === 'search') toggleSearch();
+                    
+                    refreshView();
+                    
+                    wrapper.classList.remove('opacity-0', 'translate-y-4');
+                }, 250);
+            }
+
+            function changeDay(offset) {
+                if (navigator.vibrate) navigator.vibrate(5);
+                const picker = document.getElementById('datePicker');
+                if (!picker.value) return;
+                
+                if(viewMode === 'search') toggleSearch();
+
+                // Animation Phase 1: Slide Out
+                const wrapper = document.getElementById('mainContentWrapper');
+                const slideOutClass = offset > 0 ? 'slide-out-left' : 'slide-out-right';
+                const slideInClass = offset > 0 ? 'slide-out-right' : 'slide-out-left'; // Prepare for entry
+                
+                wrapper.classList.add(slideOutClass);
+                
+                setTimeout(() => {
+                    // Logic Phase
+                    const currentDate = DateUtils.parse(picker.value);
+                    const jump = viewMode === 'week' ? (offset * 7) : offset;
+                    currentDate.setDate(currentDate.getDate() + jump);
+                    if (viewMode === 'day') { 
+                        while (currentDate.getDay() === 0 || currentDate.getDay() === 6) {
+                            currentDate.setDate(currentDate.getDate() + (offset > 0 ? 1 : -1));
+                        }
+                    }
+                    picker.value = DateUtils.normalize(currentDate);
+                    updateDateDisplay(currentDate);
+                    refreshView();
+
+                    // Animation Phase 2: Instant Move to Start Position
+                    wrapper.classList.remove(slideOutClass);
+                    wrapper.classList.add(slideInClass);
+                    
+                    // Force Reflow
+                    void wrapper.offsetWidth;
+
+                    // Animation Phase 3: Slide In
+                    wrapper.classList.remove(slideInClass);
+                    
+                }, 150); // Matches CSS transition duration
+            }
+
+            function setLanguage(lang, shouldProcess = true) {
+                currentLang = lang;
+                localStorage.setItem(CONFIG.STORAGE_KEYS.LANG, lang);
+                const trBtn = document.getElementById('lang-tr');
+                const enBtn = document.getElementById('lang-en');
+                const active = "px-1.5 md:px-2.5 py-1 rounded-md text-[10px] font-bold bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm transition-all";
+                const inactive = "px-1.5 md:px-2.5 py-1 rounded-md text-[10px] font-bold text-slate-400 dark:text-slate-500 transition-all hover:text-slate-600 dark:hover:text-slate-300";
+                
+                if (lang === 'EN') { enBtn.className = active; trBtn.className = inactive; } 
+                else { trBtn.className = active.replace('text-blue-600', 'text-red-600 dark:text-red-400'); enBtn.className = inactive; }
+
+                const t = TRANSLATIONS[lang];
+                ['txt-title', 'txt-subtitle', 'txt-loading', 'txt-install-banner-title', 'txt-install-banner-desc', 'txt-install-title', 'txt-install-close', 
+                 'txt-btn-theme', 'txt-btn-menu', 'txt-btn-view', 'txt-btn-search',
+                 'txt-mobile-search', 'txt-mobile-menu', 'txt-mobile-view', 'txt-mobile-theme',
+                 'txt-menu-title', 'txt-menu-fetching', 'txt-menu-offline', 'txt-menu-open',
+                 'txt-no-results-title', 'txt-no-results-desc', 'txt-day-progress', 'txt-install-action'].forEach(id => {
+                    const el = document.getElementById(id);
+                    const key = id.replace('txt-','').replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+                    if(el) {
+                        if (t[key]) el.textContent = t[key];
+                        else if (t[id.replace('txt-','')]) el.textContent = t[id.replace('txt-','')];
+                    }
+                });
+                document.getElementById('phase-icon').textContent = t.logoText;
+                document.getElementById('txt-install-ios').innerHTML = t.installIOS;
+                document.getElementById('txt-install-android').innerHTML = t.installAndroid;
+                document.getElementById('searchInput').placeholder = t.searchPlaceholder;
+                document.getElementById('todayBtn').title = t.tooltipToday;
+                document.getElementById('viewToggleBtn').title = t.tooltipView;
+                
+                const currentTheme = localStorage.getItem(CONFIG.STORAGE_KEYS.THEME);
+                updateThemeIcon(currentTheme || 'auto', false);
+
+                const pickerDate = document.getElementById('datePicker').value;
+                if(pickerDate) updateDateDisplay(DateUtils.parse(pickerDate));
+                if (shouldProcess && workbookData) refreshView();
+            }
+
+            function updateDateDisplay(dateObj) {
+                const displayEl = document.getElementById('dateDisplay');
+                
+                if (viewMode === 'week') {
+                     const current = new Date(dateObj);
+                     const day = current.getDay();
+                     const diff = current.getDate() - day + (day === 0 ? -6 : 1);
+                     const monday = new Date(current); 
+                     monday.setDate(diff);
+                     
+                     const friday = new Date(monday);
+                     friday.setDate(monday.getDate() + 4);
+                     
+                     const locale = currentLang === 'TR' ? 'tr-TR' : 'en-US';
+                     const startStr = monday.toLocaleDateString(locale, { month: 'short', day: 'numeric' });
+                     const endStr = friday.toLocaleDateString(locale, { month: 'short', day: 'numeric' });
+                     
+                     displayEl.innerHTML = `<span class="text-sm font-bold text-slate-700 dark:text-slate-200">${startStr} - ${endStr}</span>`;
+                     return;
+                }
+
+                const today = new Date();
+                const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
+                const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+                
+                const dStr = dateObj.toDateString();
+                const locale = currentLang === 'TR' ? 'tr-TR' : 'en-US';
+                const datePart = dateObj.toLocaleDateString(locale, { weekday: 'short', month: 'short', day: 'numeric' });
+                
+                let label = null;
+                if (dStr === today.toDateString()) label = TRANSLATIONS[currentLang].today;
+                else if (dStr === tomorrow.toDateString()) label = TRANSLATIONS[currentLang].tomorrow;
+                else if (dStr === yesterday.toDateString()) label = TRANSLATIONS[currentLang].yesterday;
+                
+                if (label) {
+                    displayEl.innerHTML = `<div class="flex flex-col items-center leading-none animate-fade-in-up"><span class="text-[9px] text-blue-400 dark:text-blue-300 font-bold uppercase tracking-widest mb-0.5">${label}</span><span class="text-sm font-bold text-slate-800 dark:text-slate-200">${datePart}</span></div>`;
+                } else {
+                    displayEl.innerHTML = `<span class="text-sm font-bold text-slate-700 dark:text-slate-200 animate-fade-in-up">${datePart}</span>`;
+                }
+            }
+
+            function isRowBarrier(row) {
+                if (!row || !Array.isArray(row)) return false;
+                for (let i = 0; i < row.length; i++) {
+                    const val = row[i];
+                    if (!val) continue;
+                    if (typeof val === 'string' && val.length > 5) {
+                        // Date check (YYYY-MM-DD)
+                        if(val[4] === '-' && val.length === 10) return true; 
+                        
+                        const s = val.toLocaleLowerCase('tr-TR').trim();
+                        
+                        // Week/Hafta headers
+                        if (s === 'week' || s === 'hafta') return true;
+                        
+                        // Committee/Phase headers
+                        if (s.startsWith('committee') || s.startsWith('komite') || s.startsWith('phase') || s.startsWith('dönem')) {
+                            // FIX: Stricter barrier detection.
+                            // 1. Length must be short (e.g. "Committee 1" is short, "Committee 1 Assessment Hour" is long)
+                            // 2. Should not contain lesson-specific keywords
+                            if (s.length < 30 && 
+                                !s.includes('saati') && 
+                                !s.includes('değerlendirme') && 
+                                !s.includes('introduction') &&
+                                !s.includes('panel') // Added for Oct 15 issue
+                               ) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
+
+            function isGarbageContent(val) {
+                if (!val) return false;
+                const s = String(val).trim();
+                if (s.length === 0 || s.includes("GMT") || /^\d+$/.test(s)) return true;
+                if (['mon','tue','wed','thu','fri'].some(d => s.toLowerCase().startsWith('('+d))) return true;
+                const lower = s.toLocaleLowerCase('tr-TR');
+                // FIX: Removed 'komite'/'committee' from garbage filter
+                if (lower === 'week' || lower === 'hafta') return true;
+                return false;
+            }
+
+            function getClassesForDate(targetDateString) {
+                if (!workbookData) return [];
+                let dateRowIndex = -1;
+                let targetColIndex = -1;
+                const isEnglish = currentLang === 'EN';
+                
+                outerLoop:
+                for (let r = 0; r < workbookData.length; r++) {
+                    const row = workbookData[r];
+                    for (let c = 0; c < row.length; c++) {
+                        if (String(row[c]).trim() === targetDateString) {
+                            if ((isEnglish && c > CONFIG.SPLIT_COLUMN_INDEX) || (!isEnglish && c <= CONFIG.SPLIT_COLUMN_INDEX)) {
+                                dateRowIndex = r;
+                                targetColIndex = c;
+                                break outerLoop;
+                            }
+                        }
+                    }
+                }
+
+                if (dateRowIndex === -1) return [];
+                return extractClassesForColumn(dateRowIndex, targetColIndex);
+            }
+
+            // --- RENDER LOGIC ---
+
+            function processSchedule(targetDateString) {
+                const container = document.getElementById('scheduleContainer');
+                const emptyState = document.getElementById('emptyState');
+                container.innerHTML = '';
+                emptyState.classList.add('hidden');
+
+                const dateObj = DateUtils.parse(targetDateString);
+                const dayOfWeek = dateObj.getDay();
+                if (dayOfWeek === 0 || dayOfWeek === 6) {
+                    showEmptyState(TRANSLATIONS[currentLang].weekendTitle, MESSAGES.WEEKEND[currentLang], '<i class="fas fa-couch text-amber-300 animate-bounce-slight"></i>');
+                    return;
+                }
+
+                document.getElementById('emptyIcon').innerHTML = '<i class="fas fa-calendar-times"></i>';
+                document.getElementById('txt-empty-title').textContent = TRANSLATIONS[currentLang].emptyTitle;
+
+                const classes = getClassesForDate(targetDateString);
+
+                if (classes.length === 0) {
+                     showEmptyState(TRANSLATIONS[currentLang].emptyTitle, [TRANSLATIONS[currentLang].emptyDesc], '<i class="fas fa-calendar-check"></i>');
+                     return;
+                }
+
+                const checkType = (type, title, msgs, icon) => {
+                    if(classes.some(c => c.type === type)) {
+                         showEmptyState(title, msgs, icon);
+                         return true;
+                    }
+                    return false;
+                };
+
+                if(checkType('new_year_item', TRANSLATIONS[currentLang].newYearTitle, MESSAGES.NEW_YEAR[currentLang], '<i class="fas fa-glass-cheers text-pink-400 animate-bounce-slight"></i>')) return;
+                if(checkType('eid_item', TRANSLATIONS[currentLang].eidTitle, MESSAGES.EID[currentLang], '<i class="fas fa-moon text-yellow-400 animate-bounce-slight"></i>')) return;
+                if(checkType('holiday_item', TRANSLATIONS[currentLang].holidayTitle, MESSAGES.HOLIDAY[currentLang], '<i class="fas fa-umbrella-beach text-cyan-400 animate-bounce-slight"></i>')) return;
+
+                const actualLessons = classes.filter(c => c.type !== 'lunch');
+                if (actualLessons.length > 0 && actualLessons.every(c => c.type === 'freelance')) {
+                    showEmptyState(TRANSLATIONS[currentLang].freelanceTitle, MESSAGES.FREELANCE[currentLang], '<i class="fas fa-laptop-house text-indigo-400 animate-bounce-slight"></i>');
+                } else {
+                    renderClasses(classes, targetDateString);
+                }
+            }
+
+            function renderWeekView(targetDateString) {
+                const container = document.getElementById('weekContainer');
+                container.innerHTML = '';
+                
+                const dateObj = DateUtils.parse(targetDateString);
+                const day = dateObj.getDay();
+                const diff = dateObj.getDate() - day + (day === 0 ? -6 : 1); 
+                const monday = new Date(dateObj.setDate(diff));
+                const fragment = document.createDocumentFragment();
+                const todayStr = DateUtils.getTodayString();
+                
+                for(let i=0; i<5; i++) {
+                    const currentDay = new Date(monday);
+                    currentDay.setDate(monday.getDate() + i);
+                    const dateStr = DateUtils.normalize(currentDay);
+                    const classes = getClassesForDate(dateStr);
+                    
+                    const col = document.createElement('div');
+                    col.className = "flex flex-col gap-2 min-h-[200px] animate-fade-in-up";
+                    col.style.animationDelay = `${i * 0.1}s`;
+                    
+                    const isToday = dateStr === todayStr;
+                    const headerBg = isToday ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200';
+                    
+                    const locale = currentLang === 'TR' ? 'tr-TR' : 'en-US';
+                    const dayName = currentDay.toLocaleDateString(locale, { weekday: 'short' });
+                    const dayNum = currentDay.getDate();
+                    
+                    let colContent = `
+                        <div class="p-3 rounded-xl ${headerBg} shadow-sm border border-slate-100 dark:border-slate-700 mb-2 text-center sticky top-20 z-10 md:static md:z-auto transition-transform hover:scale-105 duration-300">
+                            <div class="text-xs uppercase font-bold opacity-80">${dayName}</div>
+                            <div class="text-lg font-bold">${dayNum}</div>
+                        </div>
+                    `;
+                    
+                    if(classes.length === 0) {
+                        colContent += `<div class="text-center text-slate-300 dark:text-slate-600 text-xs py-10 font-bold uppercase tracking-wider">Empty</div>`;
+                    } else {
+                        classes.forEach(cls => {
+                            let cardClass = "bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700";
+                            if (['holiday_item', 'new_year_item', 'eid_item'].includes(cls.type)) cardClass = "bg-teal-50 dark:bg-teal-900/20 border-teal-100 dark:border-teal-900/50";
+                            else if(cls.isLab) cardClass = "bg-rose-50 dark:bg-rose-900/20 border-rose-100 dark:border-rose-900/50";
+                            else if(cls.isClinical) cardClass = "bg-violet-50 dark:bg-violet-900/20 border-violet-100 dark:border-violet-900/50";
+                            else if(cls.type === 'freelance') cardClass = "bg-slate-50 dark:bg-slate-900 border-slate-100 dark:border-slate-800 opacity-60";
+                            else if(cls.type === 'lunch') cardClass = "bg-amber-50 dark:bg-amber-900/10 border-amber-100 dark:border-amber-900/30 border-dashed opacity-80";
+                            else {
+                                const theme = getSubjectTheme(cls.lines[0]);
+                                cardClass = `bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 border-l-4 ${theme.border}`;
+                            }
+
+                            colContent += `
+                                <div class="p-3 rounded-xl border ${cardClass} shadow-sm text-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02]">
+                                    <div class="font-mono text-[10px] font-bold text-slate-400 dark:text-slate-500 mb-1">${cls.time}</div>
+                                    <div class="font-bold text-slate-700 dark:text-slate-200 leading-tight line-clamp-3">${cls.lines[0]}</div>
+                                </div>
+                            `;
+                        });
+                    }
+                    col.innerHTML = colContent;
+                    fragment.appendChild(col);
+                }
+                container.appendChild(fragment);
+            }
+
+            function renderClasses(classes, targetDateStr) {
+                const container = document.getElementById('scheduleContainer');
+                const t = TRANSLATIONS[currentLang];
+                const fragment = document.createDocumentFragment();
+                
+                const now = new Date();
+                const currentMinutes = now.getHours() * 60 + now.getMinutes();
+                const isToday = targetDateStr === DateUtils.getTodayString();
+
+                classes.forEach((cls, index) => {
+                    let isNow = false;
+                    let isUpcoming = false;
+                    let timeBadge = '';
+
+                    const [h, m] = cls.time.split(':').map(Number);
+                    const startMins = h * 60 + m;
+                    const endMins = startMins + 50; // Lesson is 50 minutes
+
+                    if (isToday) {
+                         if (currentMinutes >= startMins && currentMinutes < endMins) {
+                            isNow = true;
+                            const diff = endMins - currentMinutes;
+                            timeBadge = `<span class="opacity-80 font-normal ml-1 border-l border-white/30 pl-1">${diff} ${t.minLeft}</span>`;
+                         } else if (currentMinutes < startMins && (startMins - currentMinutes) <= 60 && !isUpcoming) {
+                            // Find the first upcoming class within 60 mins
+                            // Simple check: is this upcoming?
+                             const diff = startMins - currentMinutes;
+                             isUpcoming = true; // Use this to style if needed, or just add badge
+                             timeBadge = `<span class="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[9px] font-bold px-1.5 py-0.5 rounded ml-2">${t.startsIn} ${diff}m</span>`;
+                         }
+                    }
+
+                    const isLunch = cls.type === 'lunch';
+                    const isLast = index === classes.length - 1;
+                    const card = document.createElement('div');
+              
+                    card.className = `relative animate-fade-in-up ${isLast ? 'last-item' : ''} mb-0`;
+                    // Refined stagger for smoother wave
+                    card.style.animationDelay = `${index * 0.07}s`;
+                    
+                    let circleClass = "bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-600";
+                    let iconClass = "text-slate-300 dark:text-slate-500";
+                    let icon = "fa-clock";
+                    let cardBg = "bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 shadow-sm hover:border-blue-200 dark:hover:border-blue-700";
+                    let timeColor = "text-slate-400 dark:text-slate-500"; 
+                    let badgeHtml = '';
+
+                    if (isNow) {
+                        circleClass = "bg-blue-600 ring-4 ring-blue-100 dark:ring-blue-900 scale-110 shadow-lg shadow-blue-200/50 dark:shadow-none";
+                        iconClass = "text-white"; 
+                        cardBg = "glow-border shadow-lg transform md:scale-[1.02] border-blue-200 dark:border-blue-800";
+                        timeColor = "text-blue-600 dark:text-blue-400 font-extrabold scale-110 origin-right transition-transform";
+                    } else if (isLunch) {
+                        circleClass = "bg-amber-100 dark:bg-amber-900/30 border-2 border-amber-200 dark:border-amber-800";
+                        iconClass = "text-amber-500 dark:text-amber-400"; icon = "fa-utensils"; 
+                        cardBg = "bg-amber-50/50 dark:bg-amber-900/10 border-amber-100 dark:border-amber-900/30 border-dashed opacity-80";
+                    } else if (cls.type === 'freelance') {
+                        circleClass = "bg-slate-100 dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-600";
+                        iconClass = "text-slate-400 dark:text-slate-500"; icon = "fa-book-reader"; 
+                        cardBg = "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 border-dashed opacity-80";
+                    } else if (cls.isLab) {
+                        circleClass = "bg-rose-100 dark:bg-rose-900/30 border-2 border-rose-200 dark:border-rose-800";
+                        iconClass = "text-rose-500 dark:text-rose-400"; icon = "fa-flask"; 
+                        cardBg = "bg-rose-50/50 dark:bg-rose-900/10 border-rose-200 dark:border-rose-900/30 shadow-md border-l-4 border-l-rose-500 dark:border-l-rose-600";
+                    } else if (cls.isClinical) {
+                        circleClass = "bg-violet-100 dark:bg-violet-900/30 border-2 border-violet-200 dark:border-violet-800";
+                        iconClass = "text-violet-500 dark:text-violet-400"; icon = "fa-stethoscope"; 
+                        cardBg = "bg-violet-50/50 dark:bg-violet-900/10 border-violet-200 dark:border-violet-900/30 shadow-md border-l-4 border-l-violet-500 dark:border-l-violet-600";
+                    } else {
+                        const theme = getSubjectTheme(cls.lines[0]);
+                        cardBg = `bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm border-l-4 ${theme.border}`;
+                        iconClass = theme.icon;
+                    }
+
+                    if (cls.isLab) badgeHtml = `<span class="bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-300 text-[10px] font-bold px-2 py-0.5 rounded border border-rose-200 dark:border-rose-800 ml-2 shadow-sm">${t.badgeLab}</span>`;
+                    else if (cls.isClinical) badgeHtml = `<span class="bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-300 text-[10px] font-bold px-2 py-0.5 rounded border border-violet-200 dark:border-violet-800 ml-2 shadow-sm">${t.badgeClinical}</span>`;
+                    
+                    if (isNow) {
+                        badgeHtml += `<span class="bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-full animate-pulse shadow-sm shadow-blue-200 dark:shadow-none ml-2 inline-flex items-center">${t.now} ${timeBadge}</span>`;
+                    } else if (isUpcoming && timeBadge) {
+                        badgeHtml += timeBadge;
+                    }
+                    
+                    let linesHtml = '';
+                    cls.lines.forEach((line, idx) => {
+                        if (isLunch) linesHtml += `<div class="font-bold text-amber-700/80 dark:text-amber-500 text-base leading-tight italic">${line}</div>`;
+                        else if (cls.type === 'freelance') linesHtml += `<div class="font-medium text-slate-500 dark:text-slate-400 italic text-base">${line}</div>`;
+                        else {
+                            if (idx === 0) linesHtml += `<div class="font-bold text-slate-800 dark:text-slate-100 text-lg leading-tight mb-1">${line}</div>`;
+                            else if (idx === 1) linesHtml += `<div class="font-medium text-slate-600 dark:text-slate-400 text-sm leading-snug mb-2">${line}</div>`;
+                            else linesHtml += `<div class="flex items-center gap-2 text-slate-400 dark:text-slate-500 text-xs mt-1"><i class="fas fa-user-circle"></i><span>${line}</span></div>`;
+                        }
+                    });
+                    
+                    card.innerHTML = `
+                        <div class="flex flex-row md:grid md:grid-cols-[100px_60px_1fr] md:gap-2">
+                            <div class="flex flex-col items-end pt-4 pr-3 w-14 shrink-0 md:w-auto md:pt-6 md:pr-2"><span class="text-xs md:text-xl ${timeColor} font-bold tracking-tight font-mono">${cls.time}</span></div>
+                            <div class="relative flex flex-col items-center shrink-0 md:pt-4">
+                                <div class="w-12 h-12 rounded-full flex items-center justify-center z-10 ${circleClass} transition-all duration-300 group-hover:scale-110"><i class="fas ${icon} ${iconClass} text-sm"></i></div>
+                                <div class="time-connector mobile-connector md:hidden"></div>
+                                <div class="time-connector desktop-connector hidden md:block"></div>
+                            </div>
+                            <div class="flex-1 min-w-0 pl-3 md:pl-0 pb-8 md:pb-6">
+                                <div class="p-5 rounded-2xl border ${cardBg} md:hover:scale-[1.01] md:hover:shadow-lg transition-all duration-300 h-full flex flex-col justify-center">
+                                    <div class="flex justify-between items-center ${badgeHtml ? 'mb-2' : ''} md:mb-1"><div class="flex items-center">${badgeHtml}</div></div>
+                                    <div>${linesHtml}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    fragment.appendChild(card);
+                });
+                container.appendChild(fragment);
+                
+                setTimeout(() => {
+                    const active = container.querySelector('.glow-border');
+                    if (active) active.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+                }, 600);
+            }
+
+            // --- 9. MOCK DATA ---
+            function generateMockData() {
+                const rows = [];
+                const dateRow = new Array(20).fill("");
+                const today = new Date();
+                for(let i=0; i<20; i++) {
+                    const d = new Date(today);
+                    d.setDate(today.getDate() + (i - 2)); 
+                    dateRow[i] = DateUtils.normalize(d);
+                }
+                rows.push(dateRow);
+                for(let i=0; i<4; i++) rows.push(new Array(20).fill(""));
+
+                const times = ["08:30", "09:30", "10:30", "11:30", "12:30", "13:30", "14:30", "15:30", "16:30"];
+                const subjsEN = ["Anatomy", "Histology", "Physiology", "Biochemistry", "Public Health", "Biophysics"];
+                const subjsTR = ["Anatomi", "Histoloji", "Fizyoloji", "Biyokimya", "Halk Sağlığı", "Biyofizik"];
+                times.forEach(t => {
+                    const row = new Array(20).fill("");
+                    row[0] = t; row[9] = t;
+                    for(let c=0; c<20; c++) {
+                        if(c === 0 || c === 9) continue;
+                        const dStr = dateRow[c];
+                        if(dStr) {
+                             const d = DateUtils.parse(dStr);
+                             if(d.getDay() === 0 || d.getDay() === 6) continue;
+                        }
+                        if(Math.random() > 0.4) {
+                            if(t === "12:30" || t === "13:30") row[c] = (c < 8) ? "Öğle Arası" : "Lunch";
+                            else {
+                                const pool = (c < 8) ? subjsTR : subjsEN;
+                                row[c] = pool[Math.floor(Math.random() * pool.length)] + (Math.random() > 0.7 ? " (Lab)" : "");
+                            }
+                        }
+                    }
+                    rows.push(row);
+                });
+                return rows;
+            }
+
+            function highlightMatch(text, term) {
+                if (!term) return text;
+                try {
+                    const escapedTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    const regex = new RegExp(`(${escapedTerm})`, 'gi');
+                    return text.replace(regex, '<span class="bg-yellow-200 dark:bg-yellow-900/60 text-slate-900 dark:text-yellow-100 rounded px-0.5 box-decoration-clone">$1</span>');
+                } catch(e) { return text; }
+            }
+
+            function showEmptyState(title, messages, iconHtml) {
+                const emptyState = document.getElementById('emptyState');
+                emptyState.classList.remove('hidden');
+                document.getElementById('txt-empty-title').textContent = title;
+                document.getElementById('emptyIcon').innerHTML = iconHtml;
+                document.getElementById('txt-empty-desc').textContent = Array.isArray(messages) ? messages[Math.floor(Math.random() * messages.length)] : messages;
+            }
+
+            function closeInstallModal() { document.getElementById('installModal').classList.add('hidden'); }
+            function closeInstallBanner() { document.getElementById('installBanner').classList.add('hidden'); localStorage.setItem('installBannerDismissed', 'true'); }
+            function openInstallModal() { document.getElementById('installModal').classList.remove('hidden'); }
+            function setLoading(isLoading) { document.getElementById('loadingState').classList.toggle('hidden', !isLoading); }
+        })();
+    </script>
+    <div id="menuModal" class="hidden fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 transition-opacity duration-500">
+    <div class="bg-white dark:bg-slate-900 rounded-[2rem] max-w-sm md:max-w-4xl w-full h-[80vh] flex flex-col shadow-2xl animate-modal-pop relative border border-white/20 dark:border-slate-700 overflow-hidden">
+        
+        <div class="p-6 pb-2 shrink-0 flex justify-between items-center z-10 bg-white dark:bg-slate-900">
+            <div>
+                <h3 id="txt-menu-title" class="text-xl font-black text-slate-800 dark:text-white tracking-tight">Dining Menu</h3>
+                <p id="menuDateDisplay" class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Today</p>
+            </div>
+            <button id="closeMenuBtn" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors hover:rotate-90 duration-300">
+                <i class="fas fa-times text-sm"></i>
+            </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-6 pt-2 content-optimized" id="menuContainer">
+            <div id="menuLoading" class="flex flex-col items-center justify-center py-12">
+                <div class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                <p id="txt-menu-fetching" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Fetching...</p>
+            </div>
+            
+            <div id="menuContent" class="hidden space-y-3 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4 pb-4"></div>
+
+            <div id="menuError" class="hidden flex flex-col items-center justify-center py-8 text-center bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700/50 p-6 col-span-full animate-fade-in-up">
+                <div class="text-3xl text-slate-300 mb-3"><i class="fas fa-wifi"></i></div>
+                <p id="txt-menu-offline" class="text-xs text-slate-400 mb-4 font-medium">Menu unavailable offline.</p>
+                <a id="txt-menu-open" href="https://aybu.edu.tr/sks/tr/sayfa/6265/" target="_blank" class="text-blue-500 hover:underline text-xs font-bold">Open Website &rarr;</a>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+
