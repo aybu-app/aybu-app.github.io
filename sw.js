@@ -1,8 +1,16 @@
-const CACHE_NAME = 'aybu-schedule-v2'; // Bump version when you update code
+const CACHE_NAME = 'aybu-schedule-v3'; // Bump version when you update code
 const ASSETS_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/manifest.json',
+  './',
+  './index.html',
+  './manifest.json',
+  './css/style.css',
+  './js/tailwind.config.js',
+  './js/theme-init.js',
+  './js/constants.js',
+  './js/globals.js',
+  './js/utils.js',
+  './js/menu.js',
+  './js/app.js',
   'https://cdn.tailwindcss.com',
   'https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
