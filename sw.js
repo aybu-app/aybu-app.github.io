@@ -1,8 +1,9 @@
-const CACHE_NAME = 'aybu-schedule-v3'; // Bump version when you update code
+const CACHE_NAME = 'aybu-schedule-v4'; // Bump version when you update code
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './manifest.json',
+  './assets/icons/icon.png',
   './css/style.css',
   './js/tailwind.config.js',
   './js/theme-init.js',
