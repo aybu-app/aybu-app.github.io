@@ -12,7 +12,12 @@ const CONSTANTS = {
     NEW_YEAR: ["yılbaşı", "yilbasi", "new year", "noel", "happy new year", "yeni yıl", "yeniyıl", "yeni yil"],
     EID: ["ramazan", "ramadan", "eid", "bayram", "kurban", "seker", "şeker"],
     CLINICAL: ["clinical skills", "clinical skill", "klinik beceri", "cst", "beceri eğitimi"],
-    LAB_EXCLUDES: ["inkılab", "history"]
+    LAB_EXCLUDES: ["inkılab", "history"],
+    BARRIER_KEYWORDS: {
+        TR: ["hafta", "komite", "dönem", "saati", "değerlendirme", "panel"],
+        EN: ["week", "committee", "phase", "introduction"]
+    },
+    GARBAGE_KEYWORDS: ["gmt", "mon", "tue", "wed", "thu", "fri"]
 };
 
 const SUBJECT_PALETTE = [

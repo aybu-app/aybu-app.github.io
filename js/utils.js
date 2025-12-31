@@ -1,7 +1,16 @@
 "use strict";
 
+/**
+ * Utility for Date operations.
+ * @namespace
+ */
 const DateUtils = {
     _cachedToday: null,
+    /**
+     * Normalizes a cell value to YYYY-MM-DD string.
+     * @param {any} cellVal - The value from Excel cell
+     * @returns {string|null} - YYYY-MM-DD string or null
+     */
     normalize: (cellVal) => {
         if (!cellVal) return null;
         if (cellVal instanceof Date) {
@@ -19,6 +28,11 @@ const DateUtils = {
         }
         return null;
     },
+    /**
+     * Parses YYYY-MM-DD string to Date object.
+     * @param {string} dateStr 
+     * @returns {Date|null}
+     */
     parse: (dateStr) => {
         if (!dateStr) return null;
         const parts = dateStr.split('-');
@@ -30,6 +44,10 @@ const DateUtils = {
         if (isNaN(date.getTime())) return null;
         return date;
     },
+    /**
+     * Returns today's date as YYYY-MM-DD string (cached).
+     * @returns {string}
+     */
     getTodayString: () => {
         if (DateUtils._cachedToday) return DateUtils._cachedToday;
         const now = new Date();
@@ -41,6 +59,11 @@ const DateUtils = {
     }
 };
 
+/**
+ * Gets a consistent theme (color palette) for a subject based on its title.
+ * @param {string} title 
+ * @returns {object} Theme object
+ */
 function getSubjectTheme(title) {
     if (!title) return SUBJECT_PALETTE[0];
     let hash = 0;
@@ -49,6 +72,12 @@ function getSubjectTheme(title) {
     return SUBJECT_PALETTE[index];
 }
 
+/**
+ * Highlights a search term within text.
+ * @param {string} text 
+ * @param {string} term 
+ * @returns {string} HTML string with highlighted term
+ */
 function highlightMatch(text, term) {
     if (!term) return text;
     try {
@@ -58,6 +87,11 @@ function highlightMatch(text, term) {
     } catch (e) { return text; }
 }
 
+/**
+ * Checks if a row represents a visual barrier/header in the schedule.
+ * @param {Array} row 
+ * @returns {boolean}
+ */
 function isRowBarrier(row) {
     if (!row || !Array.isArray(row)) return false;
     for (let i = 0; i < row.length; i++) {
@@ -69,17 +103,17 @@ function isRowBarrier(row) {
 
             const s = val.toLocaleLowerCase('tr-TR').trim();
 
-            // Week/Hafta headers
-            if (s === 'week' || s === 'hafta') return true;
+            // Use Constants
+            if (CONSTANTS.BARRIER_KEYWORDS.TR.includes(s) || CONSTANTS.BARRIER_KEYWORDS.EN.includes(s)) return true;
 
             // Committee/Phase headers
             if (s.startsWith('committee') || s.startsWith('komite') || s.startsWith('phase') || s.startsWith('dönem')) {
                 // FIX: Stricter barrier detection.
                 if (s.length < 30 &&
-                    !s.includes('saati') &&
-                    !s.includes('değerlendirme') &&
-                    !s.includes('introduction') &&
-                    !s.includes('panel') // Added for Oct 15 issue
+                    !s.includes(CONSTANTS.BARRIER_KEYWORDS.TR[3]) && // saati
+                    !s.includes(CONSTANTS.BARRIER_KEYWORDS.TR[4]) && // değerlendirme
+                    !s.includes(CONSTANTS.BARRIER_KEYWORDS.EN[3]) && // introduction
+                    !s.includes(CONSTANTS.BARRIER_KEYWORDS.TR[5])    // panel
                 ) {
                     return true;
                 }
@@ -89,12 +123,22 @@ function isRowBarrier(row) {
     return false;
 }
 
+/**
+ * Checks if a value is considered garbage/metadata content.
+ * @param {any} val 
+ * @returns {boolean}
+ */
 function isGarbageContent(val) {
     if (!val) return false;
     const s = String(val).trim();
     if (s.length === 0 || s.includes("GMT") || /^\d+$/.test(s)) return true;
-    if (['mon', 'tue', 'wed', 'thu', 'fri'].some(d => s.toLowerCase().startsWith('(' + d))) return true;
+
+    // Check Constants
     const lower = s.toLocaleLowerCase('tr-TR');
-    if (lower === 'week' || lower === 'hafta') return true;
+    if (CONSTANTS.GARBAGE_KEYWORDS.some(k => lower.includes(k))) return true;
+    if (lower.startsWith('(')) return true; // (mon etc
+
+    if (CONSTANTS.BARRIER_KEYWORDS.TR.includes(lower) || CONSTANTS.BARRIER_KEYWORDS.EN.includes(lower)) return true;
+
     return false;
 }
