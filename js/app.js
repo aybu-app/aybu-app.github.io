@@ -775,11 +775,12 @@ function renderWeekView(targetDateString) {
         } else {
             classes.forEach(cls => {
                 let cardClass = "bg-white/80 dark:bg-slate-800/80 border-slate-100 dark:border-slate-700 backdrop-blur-sm";
-                if (['holiday_item', 'new_year_item', 'eid_item'].includes(cls.type)) cardClass = "bg-teal-50/50 dark:bg-teal-900/20 border-teal-100 dark:border-teal-900/50";
-                else if (cls.isLab) cardClass = "bg-rose-50/50 dark:bg-rose-900/20 border-rose-100 dark:border-rose-900/50";
-                else if (cls.isClinical) cardClass = "bg-violet-50/50 dark:bg-violet-900/20 border-violet-100 dark:border-violet-900/50";
-                else if (cls.type === 'freelance') cardClass = "bg-slate-50/50 dark:bg-slate-900/50 border-slate-100 dark:border-slate-800 opacity-60";
-                else if (cls.type === 'lunch') cardClass = "bg-amber-50/50 dark:bg-amber-900/10 border-amber-100 dark:border-amber-900/30 border-dashed opacity-80";
+
+                if (STYLE_CONFIG.HOLIDAY.keywords.includes(cls.type)) cardClass = STYLE_CONFIG.HOLIDAY.classes;
+                else if (cls.isLab) cardClass = STYLE_CONFIG.LAB.classes;
+                else if (cls.isClinical) cardClass = STYLE_CONFIG.CLINICAL.classes;
+                else if (cls.type === 'freelance') cardClass = STYLE_CONFIG.FREELANCE.classes;
+                else if (cls.type === 'lunch') cardClass = STYLE_CONFIG.LUNCH.classes;
                 else {
                     const theme = getSubjectTheme(cls.lines[0]);
                     if (theme.bg) cardClass = `${theme.bg} dark:bg-opacity-10 border-slate-100 dark:border-slate-700 border-l-4 ${theme.border}`;

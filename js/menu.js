@@ -171,12 +171,14 @@ function renderMenuItems(items) {
         let icon = 'fa-circle';
         let color = 'text-slate-300 dark:text-slate-600';
         const l = text.toLowerCase();
-        if (l.includes('çorba')) { icon = 'fa-mug-hot'; color = 'text-amber-500'; }
-        else if (l.includes('pilav') || l.includes('makarna')) { icon = 'fa-bowl-rice'; color = 'text-yellow-500'; }
-        else if (l.includes('tavuk') || l.includes('et') || l.includes('köfte') || l.includes('kebab')) { icon = 'fa-drumstick-bite'; color = 'text-rose-500'; }
-        else if (l.includes('tatlı') || l.includes('baklava') || l.includes('puding') || l.includes('helva')) { icon = 'fa-cookie'; color = 'text-pink-500'; }
-        else if (l.includes('salata') || l.includes('meyve') || l.includes('cacık')) { icon = 'fa-leaf'; color = 'text-green-500'; }
-        else if (l.includes('yoğurt') || l.includes('ayran')) { icon = 'fa-bottle-water'; color = 'text-blue-400'; }
+
+        for (const k of MENU_KEYWORDS) {
+            if (k.keys.some(key => l.includes(key))) {
+                icon = k.icon;
+                color = k.color;
+                break;
+            }
+        }
 
         const div = document.createElement('div');
         div.className = "bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl flex items-center gap-4 animate-fade-in-up border border-slate-100 dark:border-slate-700/50 hover:border-blue-100 dark:hover:border-slate-600 transition-all hover:scale-[1.02] duration-300";
