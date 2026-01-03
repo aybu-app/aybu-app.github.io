@@ -181,16 +181,16 @@ function renderMenuItems(items) {
         }
 
         const div = document.createElement('div');
-        div.className = "bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl flex items-center gap-4 animate-fade-in-up border border-slate-100 dark:border-slate-700/50 hover:border-blue-100 dark:hover:border-slate-600 transition-all hover:scale-[1.02] duration-300";
+        div.className = "glass-panel p-4 rounded-2xl flex items-center gap-4 animate-fade-in-up border border-white/60 dark:border-slate-700/50 hover:border-indigo-200 dark:hover:border-indigo-500/50 transition-all hover:scale-[1.02] duration-300 shadow-sm";
         div.style.animationDelay = `${idx * 0.05}s`;
         div.innerHTML = `
-            <div class="w-10 h-10 rounded-full bg-white dark:bg-slate-700 flex items-center justify-center shrink-0 shadow-sm">
+            <div class="w-10 h-10 rounded-full bg-white/50 dark:bg-slate-800/50 flex items-center justify-center shrink-0 shadow-inner backdrop-blur-sm">
                 <i class="fas ${icon} ${color}"></i>
             </div>
             <div class="flex-1">
-                <div class="font-bold text-slate-700 dark:text-slate-200 text-sm leading-tight">${text}</div>
+                <div class="font-bold text-main text-sm leading-tight">${text}</div>
             </div>
-            ${cal ? `<span class="bg-white dark:bg-slate-700 text-slate-400 dark:text-slate-400 text-[10px] font-bold px-2 py-1 rounded-lg border border-slate-100 dark:border-slate-600">${cal}</span>` : ''}
+            ${cal ? `<span class="bg-white/50 dark:bg-slate-700/50 text-muted text-[10px] font-bold px-2 py-1 rounded-lg border border-white/40 dark:border-slate-600 shadow-sm">${cal}</span>` : ''}
         `;
         container.appendChild(div);
     });
@@ -200,10 +200,10 @@ function renderMenuItems(items) {
 function renderMenuMessage(title, sub, icon, iconColor) {
     const container = document.getElementById('menuContent');
     container.innerHTML = `
-        <div class="flex flex-col items-center justify-center py-8 text-center bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700/50 border-dashed col-span-full animate-fade-in-up">
-            <i class="fas ${icon} ${iconColor} text-3xl mb-3"></i>
-            <h3 class="font-bold text-slate-700 dark:text-slate-200">${title}</h3>
-            <p class="text-xs text-slate-400">${sub}</p>
+        <div class="flex flex-col items-center justify-center py-8 text-center glass-panel rounded-2xl border border-dashed border-white/60 dark:border-slate-700 col-span-full animate-fade-in-up">
+            <i class="fas ${icon} ${iconColor} text-3xl mb-3 opacity-80"></i>
+            <h3 class="font-bold text-main">${title}</h3>
+            <p class="text-xs text-muted">${sub}</p>
         </div>`;
     container.classList.remove('hidden');
 }
